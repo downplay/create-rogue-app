@@ -1,26 +1,15 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import { RogueProvider, initializeState } from "./game/RogueContext";
 
-function App() {
+const App = () => {
+  // TODO: This stuff goes in a useEngine hook
+  const [state, setState] = useState(() => initializeState());
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <RogueProvider state={state}>
+      <Layout></Layout>
+    </RogueProvider>
   );
-}
+};
 
 export default App;
