@@ -1,9 +1,15 @@
 import { useRef, useMemo, useEffect } from "react";
 import { v4 } from "uuid";
-import { EntitiesState } from "../game/types";
+import { EntitiesState, BaseEntitiesState } from '../game/types';
 import { createContext } from "../helpers/createContext";
 
 export const [useEntities, EntitiesProvider] = createContext<EntitiesState>();
+
+export const entitiesActions = {
+  register: (id:string, entities:BaseEntitiesState) => {
+    entities.state[]
+  }
+}
 
 export const useEntitiesState = (): [EntitiesState, string] => {
   const entities = useEntities();
@@ -34,3 +40,4 @@ export const useEntitiesState = (): [EntitiesState, string] => {
 
   return [context.state, context.updateState, id];
 };
+

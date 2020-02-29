@@ -1,13 +1,29 @@
-import React, { memo, useContext } from "react";
-import { Grid, Row, Cell } from "../../engine/grid";
+import React, { memo } from "react";
+import { Row, Cell } from "../../engine/grid";
 import { useGrid } from "../../engine/RogueContext";
+import styled from "styled-components";
+import { Line, Char } from "../../ui/Typography";
 
 type MapCellProps = {
   cell: Cell;
 };
 
+const Layer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+`;
+
 const MapCell = memo(({ cell }: MapCellProps) => {
-  return cell.tiles.map(s);
+  return (
+    <Char>
+      {cell.tiles.map(({ TileComponent }) => (
+        <Layer>
+          <TileComponent />
+        </Layer>
+      ))}
+    </Char>
+  );
 });
 
 type MapRowProps = {
@@ -15,12 +31,14 @@ type MapRowProps = {
 };
 
 const MapRow = memo(({ row }: MapRowProps) => {
-  return row.map((cell, index) => <MapCell key={index} cell={cell}></MapCell>);
+  return (
+    <Line>
+      {row.map((cell, index) => (
+        <MapCell key={index} cell={cell}></MapCell>
+      ))}
+    </Line>
+  );
 });
-
-type MapProps = {
-  grid: Grid;
-};
 
 export const Map = () => {
   const grid = useGrid();

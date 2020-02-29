@@ -8,14 +8,16 @@ import {
 } from "../game/types";
 import { Vector, vector } from "./vector";
 import { produce } from "immer";
-import { blankGrid } from "./grid";
+import { blankGrid, gridActions } from "./grid";
 import { EntitiesProvider } from "./useEntitiesState";
 import { createContext } from "../helpers/createContext";
+import { stats } from "./hasStats";
+import { entitiesActions } from "./useEntityState";
 export const initialState = (): BaseGameState => {
   const grid = { map: blankGrid(100, 100) };
 
   const player = {
-    stats: stats(10, 5, 5, 5, 5, 5),
+    stats: stats(10, 5, 5, 5, 10),
     position: vector(0, 0)
   };
 

@@ -10,12 +10,10 @@ export type EntityState = {};
 export function entity<TState, TProps>(
   WrappedComponent: React.ComponentType<TProps>
 ) {
-  const [state, updateState, id] = useEntitiesState<TState>();
-
-  const context = useMemo<EntityState>((state) => {},[state]);
+  const [state, context, id] = useEntitiesState();
 
   return (props: TProps & TState) => (
-    <EntityProvider value={state}>
+    <EntityProvider value={context}>
       <WrappedComponent {...props} {...state}></WrappedComponent>
     </EntityProvider>
   );
