@@ -1,15 +1,18 @@
-import React, {memo}
+import React, { memo, useContext } from "react";
+import { GridContext } from "../../engine/RogueContext";
+import { Grid } from "../../engine/grid";
 
-type Props = {
-    grid: Grid;
-  };
- 
-const MapRow = ({row}) => {
+type MapRowProps = {
+  row: Row;
+};
 
-}
+const MapRow = memo(({ row }: MapRowProps) => {});
+
+type MapProps = {
+  grid: Grid;
+};
 
 export const Map = () => {
-    ({ grid }) => {
-        grid.map((row,index)=></row.map(cell => ))
-      };
-}
+  const grid = useContext(GridContext);
+  return grid.map((row, index) => <MapRow key={index} row={row} />);
+};

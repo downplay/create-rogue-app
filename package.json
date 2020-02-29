@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@reduxjs/toolkit": "^1.2.5",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -10,12 +11,17 @@
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
+    "@types/redux": "^3.6.0",
     "@types/styled-components": "^5.0.1",
+    "@types/uuid": "^7.0.0",
+    "immer": "^5.3.6",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-scripts": "3.4.0",
+    "redux": "^4.0.5",
     "styled-components": "^5.0.1",
-    "typescript": "~3.7.2"
+    "typescript": "~3.7.2",
+    "uuid": "^7.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -27,7 +33,7 @@
     "extends": "react-app",
     "rules": {
       "react-hooks/rules-of-hooks": 0,
-      "react-hooks/exhaustive-deps": "error"
+      "react-hooks/exhaustive-deps": 0
     }
   },
   "browserslist": {

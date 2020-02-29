@@ -1,5 +1,8 @@
 import React from "react";
 import styled from "styled-components";
+import { Window } from "./Window";
+import { Map } from "../game/dungeon/Map";
+import { Console } from "./Console";
 
 const Screen = styled.div`
   position: relative;
@@ -12,13 +15,13 @@ const Screen = styled.div`
 export const Layout = () => {
   return (
     <Screen>
-      <MapWindow>
-        <Map></Map>
-      </MapWindow>
-      <ConsoleWindow>
-        <Console></Console>
-      </ConsoleWindow>
-      <StatusWindow></StatusWindow>
+      <Window>
+        <Map />
+      </Window>
+      <Window>
+        <Console />
+      </Window>
+      <Window>Status</Window>
     </Screen>
   );
 };
