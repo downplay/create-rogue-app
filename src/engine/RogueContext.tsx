@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   GameState,
   PlayerState,
@@ -7,16 +7,15 @@ import {
   BaseGameState
 } from "../game/types";
 import { Vector, vector } from "./vector";
-import { useMemo } from "react";
+import { produce } from "immer";
 import { blankGrid } from "./grid";
 import { EntitiesProvider } from "./useEntitiesState";
 import { createContext } from "../helpers/createContext";
-
 export const initialState = (): BaseGameState => {
   const grid = { map: blankGrid(100, 100) };
 
   const player = {
-    stats: stats(10,5,5,5,5,5),
+    stats: stats(10, 5, 5, 5, 5, 5),
     position: vector(0, 0)
   };
 
@@ -42,34 +41,43 @@ type Props = {
 const actions = {
   entities: entitiesActions,
   player: playerActions,
-  grid  : gridActions,
-  console: consoleActions,
-}
+  grid: gridActions,
+  console: consoleActions
+};
 
-const SetStateType = {state: React.Dispatch<BaseGameState>}
-const bindActionSlice = (setState, value) => {
+type SetStateType = {
+  state: React.Dispatch<React.SetStateAction<BaseGameState>>;
+};
+const bindActionSlice = (
+  setState: SetStateType,
+  slice: Record<string, (state: BaseGameState) => BaseGameState>
+) => {
+  return Object.entries(slice).reduce((acc, [key, value]) => {
+    acc[key] = (state: BaseGameState) =>
+      produce(state, state => value(state[key]));
+    return acc;
+  }, {});
+};
 
-}
-
-const bindActions =( setState:  ) => {
-   return Object.entries(actions).reduce((acc,[key,value]) => {
-    acc[key] = bindActionSlice(setState, value)
-   },{})
-}
+const bindActions = (setState: SetStateType) => {
+  return Object.entries(actions).reduce((acc, [key, value]) => {
+    acc[key] = bindActionSlice(setState, value);
+    return acc;
+  }, {});
+};
 
 export const RogueProvider = ({ initialState, children }: Props) => {
-  const [state, setState] = useState(initialState)
+  const [state, setState] = useState(initialState);
 
+  const boundActions = useMemo(() => bindActions(setState), [setState]);
 
-  const contextState = useMemo(()=>{
-    return {
-      entities: {
-        ...state.entities,
-
-      }
-    }
-
-  },[state])
+  const contextState = useMemo(() => {
+    const next = { ...state };
+    Object.keys(next).forEach(key => {
+      next[key] = { ...next[key], ...boundActions[key] };
+    });
+    return next;
+  }, [state, boundActions]);
 
   const grid = useMemo(
     () => ({

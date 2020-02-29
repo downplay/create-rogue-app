@@ -1,8 +1,9 @@
+import { Vector } from "./vector";
 type Tile = {
   TileComponent: React.ComponentType;
 };
 
-type Cell = {
+export type Cell = {
   x: number;
   y: number;
   tiles: Tile[];
@@ -11,6 +12,10 @@ type Cell = {
 export type Row = Cell[];
 
 export type Grid = Row[];
+
+export const gridActions = {
+  addTile: (position: Vector, Component: React.ComponentType) => {}
+};
 
 export const blankGrid = (width: number, height: number) => {
   const grid: Grid = [];
