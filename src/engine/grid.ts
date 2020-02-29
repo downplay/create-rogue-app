@@ -1,4 +1,7 @@
 import { Vector } from "./vector";
+import { GridState, GridContext } from "../game/types";
+import { createContext } from "../helpers/createContext";
+
 type Tile = {
   TileComponent: React.ComponentType;
 };
@@ -13,8 +16,14 @@ export type Row = Cell[];
 
 export type Grid = Row[];
 
+export const [useGrid, GridProvider] = createContext<GridContext>();
+
 export const gridActions = {
-  addTile: (position: Vector, Component: React.ComponentType) => {}
+  addTile: (position: Vector, TileComponent: React.ComponentType) => (
+    grid: GridState
+  ) => {
+    grid.map[position.x][position.y].tiles.push({ TileComponent });
+  }
 };
 
 export const blankGrid = (width: number, height: number) => {

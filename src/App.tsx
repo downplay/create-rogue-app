@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { RogueProvider, initializeState } from "./engine/RogueContext";
 import { Layout } from "./ui/Layout";
 
-const App = () => {
-  // TODO: This stuff goes in a useEngine hook
-  const [state, setState] = useState(() => initializeState());
+const initialState = initializeState();
 
+const App = () => {
   return (
-    <RogueProvider state={state}>
+    <RogueProvider initialState={initialState}>
       <Layout />
     </RogueProvider>
   );

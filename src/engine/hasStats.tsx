@@ -1,3 +1,4 @@
+import { useEntityState } from "./useEntityState";
 export type Stats = {
   hp: number;
   str: number;
@@ -19,3 +20,15 @@ export const stats = (
   int,
   spd
 });
+
+const StatsKey = Symbol("stats");
+
+const IDENTITY = stats(1, 1, 1, 1, 1);
+
+export const hasStats = (baseStats: Stats = IDENTITY) => {
+  const [currentStats, setStats] = useEntityState(StatsKey, baseStats);
+
+  const adjustedStats = currentStats;
+
+  return [currentStats, adjustedStats, setBaseStats];
+};

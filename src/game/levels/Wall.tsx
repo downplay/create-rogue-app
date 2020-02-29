@@ -1,3 +1,3 @@
-const Props = 
+import { simpleSpriteEntity } from "../../engine/factories/simpleSpriteEntity";
 
-export const Wall = ()  
+export const Wall = simpleSpriteEntity({ name: "Wall", glyph: "▓" });

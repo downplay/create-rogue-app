@@ -1,12 +1,12 @@
-import { useGame } from "./RogueContext"
+// import { useGame } from "./RogueContext";
 
-// export const fireEvent(game:GameState)
+// // export const fireEvent(game:GameState)
 
-export const useEvent = <T>(key, callback) => {
-    const game = useGame()
+// export const useEvent = <T>(key, callback) => {
+//   /*
+//     const game = useGame()
+//     return useCallback(((event:T) => {
 
-
-    return useCallback(((event:T) => {
-
-    })
-}
+//     })
+//     */
+// };

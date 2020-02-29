@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { Window } from "./Window";
 import { Map } from "../game/dungeon/Map";
-import { Console } from "./Console";
+import { Terminal } from "./Terminal";
 
 const Screen = styled.div`
   position: relative;
@@ -19,7 +19,7 @@ export const Layout = () => {
         <Map />
       </Window>
       <Window>
-        <Console />
+        <Terminal />
       </Window>
       <Window>Status</Window>
     </Screen>

@@ -1,6 +1,5 @@
 import React, { memo } from "react";
-import { Row, Cell } from "../../engine/grid";
-import { useGrid } from "../../engine/RogueContext";
+import { Row, Cell, useGrid } from "../../engine/grid";
 import styled from "styled-components";
 import { Line, Char } from "../../ui/Typography";
 
@@ -42,5 +41,11 @@ const MapRow = memo(({ row }: MapRowProps) => {
 
 export const Map = () => {
   const grid = useGrid();
-  return grid.map.map((row, index) => <MapRow key={index} row={row} />);
+  return (
+    <>
+      {grid.map.map((row, index) => (
+        <MapRow key={index} row={row} />
+      ))}
+    </>
+  );
 };

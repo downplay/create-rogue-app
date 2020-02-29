@@ -5,7 +5,9 @@ export type PositionProps = { position: Vector };
 
 const PositionKey = Symbol("Position");
 
-export const hasPosition = (position: Vector = ORIGIN) => {
+export const hasPosition = (
+  position: Vector = ORIGIN
+): [Vector, (target: Vector) => void] => {
   const [currentPosition, setPosition] = useEntityState(PositionKey, position);
   return [currentPosition, setPosition];
 };

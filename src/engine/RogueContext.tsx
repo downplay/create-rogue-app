@@ -1,19 +1,22 @@
 import React, { useMemo, useState } from "react";
 import {
+  GameContext,
+  PlayerContext,
   GameState,
-  PlayerState,
-  GridState,
-  ConsoleState,
-  BaseGameState
+  GameActions
 } from "../game/types";
-import { Vector, vector } from "./vector";
+
+import { vector } from "./vector";
 import { produce } from "immer";
-import { blankGrid, gridActions } from "./grid";
+import { blankGrid, gridActions, GridProvider } from "./grid";
 import { EntitiesProvider } from "./useEntitiesState";
 import { createContext } from "../helpers/createContext";
 import { stats } from "./hasStats";
-import { entitiesActions } from "./useEntityState";
-export const initialState = (): BaseGameState => {
+import { entitiesActions } from "./useEntitiesState";
+import { playerActions } from "./player";
+import { terminalActions, TerminalProvider } from "./terminal";
+
+export const initializeState = (): GameState => {
   const grid = { map: blankGrid(100, 100) };
 
   const player = {
@@ -23,78 +26,93 @@ export const initialState = (): BaseGameState => {
 
   const entities = { state: {} };
 
-  const console = {
+  const terminal = {
     messages: []
   };
 
-  return { grid, entities, player, console };
+  return { grid, entities, player, terminal };
 };
 
-export const [useGame, GameProvider] = createContext<GameState>();
-export const [usePlayer, PlayerProvider] = createContext<PlayerState>();
-export const [useGrid, GridProvider] = createContext<GridState>();
-export const [useConsole, ConsoleProvider] = createContext<ConsoleState>();
-
-type Props = {
-  initialState: BaseGameState;
-  children: React.ReactChildren;
-};
+export const [useGame, GameProvider] = createContext<GameContext>();
+export const [usePlayer, PlayerProvider] = createContext<PlayerContext>();
 
 const actions = {
   entities: entitiesActions,
   player: playerActions,
   grid: gridActions,
-  console: consoleActions
+  terminal: terminalActions
 };
 
-type SetStateType = {
-  state: React.Dispatch<React.SetStateAction<BaseGameState>>;
-};
+type SetStateType = React.Dispatch<React.SetStateAction<GameState>>;
+
+type ActionProducer = (...args: any) => (state: any) => any;
+
+type ActionKeys = keyof GameState;
+
 const bindActionSlice = (
   setState: SetStateType,
-  slice: Record<string, (state: BaseGameState) => BaseGameState>
+  slice: Record<string, ActionProducer>
 ) => {
-  return Object.entries(slice).reduce((acc, [key, value]) => {
-    acc[key] = (state: BaseGameState) =>
-      produce(state, state => value(state[key]));
-    return acc;
-  }, {});
+  return Object.entries(slice).reduce<Record<string, (state: any) => any>>(
+    (acc, [key, value]) => {
+      acc[key] = (...args: any[]) => {
+        setState(state =>
+          produce(state, state => {
+            state[key as ActionKeys] = value(...args)(state[key as ActionKeys]);
+            return state;
+          })
+        );
+      };
+      return acc;
+    },
+    {}
+  );
 };
 
-const bindActions = (setState: SetStateType) => {
-  return Object.entries(actions).reduce((acc, [key, value]) => {
-    acc[key] = bindActionSlice(setState, value);
-    return acc;
-  }, {});
+const bindActions = (setState: SetStateType): GameActions => {
+  return Object.entries(actions).reduce<Record<ActionKeys, any>>(
+    (acc, [key, value]) => {
+      acc[key as ActionKeys] = bindActionSlice(setState, value);
+      return acc;
+    },
+    {} as Record<ActionKeys, any>
+  );
 };
+
+type Props = React.PropsWithChildren<{
+  initialState: GameState;
+}>;
 
 export const RogueProvider = ({ initialState, children }: Props) => {
   const [state, setState] = useState(initialState);
 
   const boundActions = useMemo(() => bindActions(setState), [setState]);
 
-  const contextState = useMemo(() => {
-    const next = { ...state };
-    Object.keys(next).forEach(key => {
-      next[key] = { ...next[key], ...boundActions[key] };
-    });
-    return next;
+  const context = useMemo<GameContext>(() => {
+    const next = Object.keys(state).reduce<Record<ActionKeys, any>>(
+      (acc, key) => {
+        acc[key as ActionKeys] =
+          context?.[key as ActionKeys] === state[key as ActionKeys]
+            ? state[key as ActionKeys]
+            : {
+                ...state[key as ActionKeys],
+                ...boundActions[key as ActionKeys]
+              };
+        return acc;
+      },
+      {} as Record<ActionKeys, any>
+    );
+    return next as GameContext;
   }, [state, boundActions]);
 
-  const grid = useMemo(
-    () => ({
-      cells: state,
-      addTile: (position: Vector, Component: React.ComponentType) => {}
-    }),
-    []
-  );
-
   return (
-    <GameProvider value={state}>
-      <PlayerProvider value={state.player}>
-        <EntitiesProvider value={state.entities}>
-          <GridProvider value={state.grid}>
-            <ConsoleProvider value={state.console}>{children}</ConsoleProvider>
+    <GameProvider value={context}>
+      <PlayerProvider value={context.player}>
+        <EntitiesProvider value={context.entities}>
+          <GridProvider value={context.grid}>
+            <TerminalProvider value={context.terminal}>
+              {children}
+            </TerminalProvider>
           </GridProvider>
         </EntitiesProvider>
       </PlayerProvider>

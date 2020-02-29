@@ -2,54 +2,79 @@ import { Vector } from "../engine/vector";
 import { Stats } from "../engine/hasStats";
 import { Grid } from "../engine/grid";
 
-type BasePlayerState = {
+export type PlayerState = {
   position: Vector;
   stats: Stats;
 };
 
-export type PlayerState = BasePlayerState & {
+export type PlayerActions = {
   updatePosition: (position: Vector) => void;
   updateStats: (stats: Stats) => void;
 };
 
-type BaseConsoleState = {
+export type PlayerContext = PlayerState & PlayerActions;
+
+export type TerminalState = {
   messages: string[];
 };
 
-export type ConsoleState = BaseConsoleState & {
+export type TerminalActions = {
   write: (message: string) => void;
 };
 
-type EntitiesStateRecord = Record<string, Record<symbol, any>>;
+export type TerminalContext = TerminalState & TerminalActions;
 
-export type BaseEntitiesState = {
+export type EntityStateRecord = Record<symbol, any>;
+
+export type EntityContext = {
+  state: EntityStateRecord;
+  update: <T>(key: symbol, state: T) => void;
+};
+
+export type EntitiesStateRecord = Record<string, EntityStateRecord>;
+
+export type EntitiesState = {
   state: EntitiesStateRecord;
 };
 
-export type EntitiesState = BaseEntitiesState & {
-  update: (id: string, state: EntitiesStateRecord) => EntitiesState;
-  register: (id: string, state: EntitiesStateRecord) => EntitiesState;
-  unregister: (id: string) => EntitiesState;
+export type EntitiesActions = {
+  register: (id: string, state: EntitiesStateRecord) => void;
+  update: (id: string, state: EntitiesStateRecord) => void;
+  unregister: (id: string) => void;
 };
 
-export type BaseGridState = {
+export type EntitiesContext = EntitiesState & EntitiesActions;
+
+export type GridState = {
   map: Grid;
 };
 
-export type GridState = BaseGridState & {
-  addTile: () => void;
+type TileHandle = {};
+
+export type GridActions = {
+  addTile: (position: Vector, TileComponent: React.ComponentType) => TileHandle;
+  removeTile: (handle: TileHandle) => void;
 };
 
-export type BaseGameState = {
-  player: BasePlayerState;
-  grid: BaseGridState;
-  entities: BaseEntitiesState;
-  console: BaseConsoleState;
-};
+export type GridContext = GridState & GridActions;
 
 export type GameState = {
   player: PlayerState;
   grid: GridState;
   entities: EntitiesState;
-  console: ConsoleState;
+  terminal: TerminalState;
+};
+
+export type GameActions = {
+  player: PlayerActions;
+  grid: GridActions;
+  entities: EntitiesActions;
+  terminal: TerminalActions;
+};
+
+export type GameContext = {
+  player: PlayerContext;
+  grid: GridContext;
+  entities: EntitiesContext;
+  terminal: TerminalContext;
 };

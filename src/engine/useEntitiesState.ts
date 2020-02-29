@@ -1,30 +1,60 @@
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useMemo, useEffect, useCallback } from "react";
 import { v4 } from "uuid";
-import { EntitiesState, BaseEntitiesState } from '../game/types';
+import {
+  EntitiesContext,
+  EntityContext,
+  EntityStateRecord,
+  EntitiesStateRecord
+} from "../game/types";
 import { createContext } from "../helpers/createContext";
+import { produce } from "immer";
 
-export const [useEntities, EntitiesProvider] = createContext<EntitiesState>();
+export const [useEntities, EntitiesProvider] = createContext<EntitiesContext>();
 
 export const entitiesActions = {
-  register: (id:string, entities:BaseEntitiesState) => {
-    entities.state[]
+  register: (id: string, entityState: EntityStateRecord) => (
+    entities: EntitiesStateRecord
+  ) => {
+    entities[id] = entityState;
+    return entities;
+  },
+  // TODO: register and update are suspiciously the same, really need two of them?
+  update: (id: string, entityState: EntityStateRecord) => (
+    entities: EntitiesStateRecord
+  ) => {
+    entities[id] = entityState;
+    return entities;
+  },
+  unregister: (id: string, entityState: EntityStateRecord) => (
+    entities: EntitiesStateRecord
+  ) => {
+    delete entities[id];
+    return entities;
   }
-}
+};
 
-export const useEntitiesState = (): [EntitiesState, string] => {
+export const useEntitiesState = (): [EntityContext, string] => {
   const entities = useEntities();
   const id = useMemo(() => v4(), []);
-  const stateRef = useRef<EntitiesState["state"]>();
-  if (!stateRef.current) {
-    stateRef.current = {};
-  }
+  const stateRef = useRef<EntityStateRecord>({});
+  const update = useCallback(
+    <T>(key: symbol, nextState: T) => {
+      stateRef.current = produce<EntityStateRecord>(
+        stateRef.current,
+        (state: Record<symbol, any>) => {
+          state[key] = nextState;
+          return state;
+        }
+      );
+      entities.update(id, stateRef.current);
+    },
+    [entities]
+  );
 
-  const context = useMemo(
+  const context = useMemo<EntityContext>(
     () => ({
       state: stateRef.current,
-      updateState: <T>(key: symbol, nextState: T) => {
-        entities.update(id, { [key]: nextState });
-      }
+      update
     }),
     [entities]
   );
@@ -38,6 +68,5 @@ export const useEntitiesState = (): [EntitiesState, string] => {
     return;
   }, [entities]);
 
-  return [context.state, context.updateState, id];
+  return [context, id];
 };
-

@@ -8,7 +8,7 @@ const RatTile = tile("🐀");
 export const Rat = entity(() => {
   hasTile(RatTile);
 
-  const stats = useStats();
+  const stats = hasStats();
 
   return (
     <Monster>
