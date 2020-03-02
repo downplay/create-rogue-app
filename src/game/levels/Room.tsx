@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Vector, vector } from "../../engine/vector";
 import { Wall } from "./Wall";
+import { Floor } from "./Floor";
 
 type Props = {
   size: Vector;

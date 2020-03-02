@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 import { useEntity } from "./entity";
 
 export const useEntityState = <T>(
-  key: symbol,
+  key: string | symbol,
   initialState: T
 ): [T, (nextState: T) => void] => {
   const entity = useEntity();
@@ -19,5 +19,6 @@ export const useEntityState = <T>(
     },
     [entity]
   );
-  return [entity.state[key], setEntityState];
+
+  return [entity.get(key) || initialState, setEntityState];
 };

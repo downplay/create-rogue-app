@@ -38,11 +38,12 @@ export const useEntitiesState = (): [EntityContext, string] => {
   const id = useMemo(() => v4(), []);
   const stateRef = useRef<EntityStateRecord>({});
   const update = useCallback(
-    <T>(key: symbol, nextState: T) => {
+    <T>(key: string | symbol, nextState: T) => {
       stateRef.current = produce<EntityStateRecord>(
         stateRef.current,
-        (state: Record<symbol, any>) => {
-          state[key] = nextState;
+        (state: Record<string | symbol, any>) => {
+          // Foolish TypeScript, won't let me index by symbol
+          state[(key as unknown) as string] = nextState;
           return state;
         }
       );
@@ -50,10 +51,14 @@ export const useEntitiesState = (): [EntityContext, string] => {
     },
     [entities]
   );
-
+  const get = useCallback(
+    <T>(key: string | symbol): T => stateRef.current[key as string],
+    []
+  );
   const context = useMemo<EntityContext>(
     () => ({
       state: stateRef.current,
+      get,
       update
     }),
     [entities]

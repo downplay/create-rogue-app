@@ -15,6 +15,7 @@ import { stats } from "./hasStats";
 import { entitiesActions } from "./useEntitiesState";
 import { playerActions } from "./player";
 import { terminalActions, TerminalProvider } from "./terminal";
+import { useRef } from "react";
 
 export const initializeState = (): GameState => {
   const grid = { map: blankGrid(100, 100) };
@@ -88,11 +89,12 @@ export const RogueProvider = ({ initialState, children }: Props) => {
 
   const boundActions = useMemo(() => bindActions(setState), [setState]);
 
+  const contextRef = useRef<GameContext>();
   const context = useMemo<GameContext>(() => {
     const next = Object.keys(state).reduce<Record<ActionKeys, any>>(
       (acc, key) => {
         acc[key as ActionKeys] =
-          context?.[key as ActionKeys] === state[key as ActionKeys]
+          contextRef.current?.[key as ActionKeys] === state[key as ActionKeys]
             ? state[key as ActionKeys]
             : {
                 ...state[key as ActionKeys],
@@ -104,6 +106,7 @@ export const RogueProvider = ({ initialState, children }: Props) => {
     );
     return next as GameContext;
   }, [state, boundActions]);
+  contextRef.current = context;
 
   return (
     <GameProvider value={context}>

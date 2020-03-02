@@ -1,17 +1,19 @@
 import React from "react";
 import { useEntitiesState } from "./useEntitiesState";
 import { createContext } from "../helpers/createContext";
+import { EntityContext } from "../game/types";
 
-export const [useEntity, EntityProvider] = createContext<EntityState>();
+export const [useEntity, EntityProvider] = createContext<EntityContext>();
 
-export function entity<TState, TProps>(
+export function entity<TProps>(
   WrappedComponent: React.ComponentType<TProps>
 ): React.ComponentType<TProps> {
-  const [state, context, id] = useEntitiesState();
-
-  return (props: TProps) => (
-    <EntityProvider value={context}>
-      <WrappedComponent {...props} {...state}></WrappedComponent>
-    </EntityProvider>
-  );
+  return (props: TProps) => {
+    const [context, id] = useEntitiesState();
+    return (
+      <EntityProvider value={context}>
+        <WrappedComponent {...props}></WrappedComponent>
+      </EntityProvider>
+    );
+  };
 }

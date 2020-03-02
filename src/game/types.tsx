@@ -24,11 +24,12 @@ export type TerminalActions = {
 
 export type TerminalContext = TerminalState & TerminalActions;
 
-export type EntityStateRecord = Record<symbol, any>;
+export type EntityStateRecord = Record<string | symbol, any>;
 
 export type EntityContext = {
   state: EntityStateRecord;
-  update: <T>(key: symbol, state: T) => void;
+  get: <T>(key: string | symbol) => T;
+  update: <T>(key: string | symbol, state: T) => void;
 };
 
 export type EntitiesStateRecord = Record<string, EntityStateRecord>;

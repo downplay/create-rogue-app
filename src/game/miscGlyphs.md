@@ -1,0 +1,1 @@
+Æ = Speedy something?

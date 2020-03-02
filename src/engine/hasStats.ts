@@ -30,5 +30,5 @@ export const hasStats = (baseStats: Stats = IDENTITY) => {
 
   const adjustedStats = currentStats;
 
-  return [currentStats, adjustedStats, setBaseStats];
+  return [currentStats, adjustedStats, setStats];
 };

@@ -24,7 +24,7 @@
     "uuid": "^7.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cross-env EXTEND_ESLINT=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -32,8 +32,8 @@
   "eslintConfig": {
     "extends": "react-app",
     "rules": {
-      "react-hooks/rules-of-hooks": 0,
-      "react-hooks/exhaustive-deps": 0
+      "react-hooks/rules-of-hooks": "off",
+      "react-hooks/exhaustive-deps": "off"
     }
   },
   "browserslist": {
@@ -47,5 +47,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.0"
   }
 }
