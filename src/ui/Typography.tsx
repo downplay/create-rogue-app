@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import "./fonts/fira/fira_code.css";
 
-export const CHAR_WIDTH = 40;
-export const CHAR_HEIGHT = 60;
+export const CHAR_WIDTH = 16;
+export const CHAR_HEIGHT = 20;
 
 export const Line = styled.p`
   position: relative;

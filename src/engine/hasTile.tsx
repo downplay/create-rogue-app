@@ -3,14 +3,14 @@ import { hasPosition } from "./hasPosition";
 import { useGrid } from "./grid";
 
 export const hasTile = (TileComponent: React.ComponentType) => {
-  const grid = useGrid();
+  const { addTile, removeTile } = useGrid();
 
   const [position] = hasPosition();
 
   useEffect(() => {
-    const tileHandle = grid.addTile(position, TileComponent);
-    return grid.removeTile(tileHandle);
-  }, [position, TileComponent, grid]);
+    const tileHandle = addTile(position, TileComponent);
+    return () => removeTile(tileHandle);
+  }, [position, TileComponent, addTile, removeTile]);
 };
 
 export const tile = (glyph: string) => () => <>{glyph}</>;

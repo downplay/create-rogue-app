@@ -18,7 +18,7 @@ import { terminalActions, TerminalProvider } from "./terminal";
 import { useRef } from "react";
 
 export const initializeState = (): GameState => {
-  const grid = { map: blankGrid(100, 100) };
+  const grid = { map: blankGrid(40, 40) };
 
   const player = {
     stats: stats(10, 5, 5, 5, 10),
@@ -48,21 +48,25 @@ type SetStateType = React.Dispatch<React.SetStateAction<GameState>>;
 
 type ActionProducer = (...args: any) => (state: any) => any;
 
-type ActionKeys = keyof GameState;
+type ContextKeys = keyof GameState;
 
 const bindActionSlice = (
+  contextKey: ContextKeys,
   setState: SetStateType,
-  slice: Record<string, ActionProducer>
+  slice: Record<string, ActionProducer>,
+  contextRef: React.MutableRefObject<GameContext>
 ) => {
   return Object.entries(slice).reduce<Record<string, (state: any) => any>>(
     (acc, [key, value]) => {
       acc[key] = (...args: any[]) => {
-        setState(state =>
-          produce(state, state => {
-            state[key as ActionKeys] = value(...args)(state[key as ActionKeys]);
-            return state;
-          })
-        );
+        let result: any;
+        const state = produce(contextRef.current, state => {
+          result = value(...args)(state[contextKey]);
+          return state;
+        });
+        console.log(state);
+        setState(state);
+        return result;
       };
       return acc;
     },
@@ -70,13 +74,21 @@ const bindActionSlice = (
   );
 };
 
-const bindActions = (setState: SetStateType): GameActions => {
-  return Object.entries(actions).reduce<Record<ActionKeys, any>>(
+const bindActions = (
+  setState: SetStateType,
+  contextRef: React.MutableRefObject<GameContext>
+): GameActions => {
+  return Object.entries(actions).reduce<Record<ContextKeys, any>>(
     (acc, [key, value]) => {
-      acc[key as ActionKeys] = bindActionSlice(setState, value);
+      acc[key as ContextKeys] = bindActionSlice(
+        key as ContextKeys,
+        setState,
+        value,
+        contextRef
+      );
       return acc;
     },
-    {} as Record<ActionKeys, any>
+    {} as Record<ContextKeys, any>
   );
 };
 
@@ -87,22 +99,24 @@ type Props = React.PropsWithChildren<{
 export const RogueProvider = ({ initialState, children }: Props) => {
   const [state, setState] = useState(initialState);
 
-  const boundActions = useMemo(() => bindActions(setState), [setState]);
+  const contextRef = useRef<GameContext>(null!);
+  const boundActions = useMemo(() => bindActions(setState, contextRef), [
+    setState
+  ]);
 
-  const contextRef = useRef<GameContext>();
   const context = useMemo<GameContext>(() => {
-    const next = Object.keys(state).reduce<Record<ActionKeys, any>>(
+    const next = Object.keys(state).reduce<Record<ContextKeys, any>>(
       (acc, key) => {
-        acc[key as ActionKeys] =
-          contextRef.current?.[key as ActionKeys] === state[key as ActionKeys]
-            ? state[key as ActionKeys]
+        acc[key as ContextKeys] =
+          contextRef.current?.[key as ContextKeys] === state[key as ContextKeys]
+            ? state[key as ContextKeys]
             : {
-                ...state[key as ActionKeys],
-                ...boundActions[key as ActionKeys]
+                ...state[key as ContextKeys],
+                ...boundActions[key as ContextKeys]
               };
         return acc;
       },
-      {} as Record<ActionKeys, any>
+      {} as Record<ContextKeys, any>
     );
     return next as GameContext;
   }, [state, boundActions]);

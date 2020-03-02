@@ -3,7 +3,7 @@ import { ORIGIN } from "../engine/vector";
 import { hasTile, tile } from "../engine/hasTile";
 import { entity } from "../engine/entity";
 
-const PlayerTile = tile("😃");
+const PlayerTile = tile("🧙");
 
 export const Player = entity(() => {
   hasPosition(ORIGIN);

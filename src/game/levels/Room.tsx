@@ -23,6 +23,7 @@ export const Room = ({ size }: Props) => {
         );
       }
     }
+    return tiles;
   }, [size]);
 
   return <>{tiles}</>;
