@@ -11,6 +11,7 @@ type Props = {
 
 export const simpleSpriteEntity = ({ name, glyph }: Props) => {
   const component = entity(({ position }: PositionProps) => {
+    console.log(position);
     const TileComponent = useCallback(() => <>{glyph}</>, [name, glyph]);
     hasPosition(position);
     hasTile(TileComponent);

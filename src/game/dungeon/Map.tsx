@@ -7,7 +7,7 @@ type MapCellProps = {
   cell: Cell;
 };
 
-const Layer = styled.div`
+const Layer = styled.span`
   position: absolute;
   top: 0;
   left: 0;
@@ -17,8 +17,9 @@ const MapCell = memo(({ cell }: MapCellProps) => {
   console.log(cell.tiles.length);
   return (
     <Char>
-      {cell.tiles.map(({ TileComponent }) => (
-        <Layer>
+      {cell.tiles.map(({ TileComponent }, index) => (
+        // TODO: Bad key
+        <Layer key={index}>
           <TileComponent />
         </Layer>
       ))}

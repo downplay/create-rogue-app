@@ -8,7 +8,7 @@ export const [useEntity, EntityProvider] = createContext<EntityContext>();
 export function entity<TProps>(
   WrappedComponent: React.ComponentType<TProps>
 ): React.ComponentType<TProps> {
-  return (props: TProps) => {
+  const entityComponent = (props: TProps) => {
     const [context, id] = useEntitiesState();
     return (
       <EntityProvider value={context}>
@@ -16,4 +16,6 @@ export function entity<TProps>(
       </EntityProvider>
     );
   };
+  entityComponent.displayName = WrappedComponent.displayName + "Entity";
+  return entityComponent;
 }

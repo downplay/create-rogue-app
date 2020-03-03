@@ -52,9 +52,9 @@ type ContextKeys = keyof GameState;
 
 const bindActionSlice = (
   contextKey: ContextKeys,
+  contextRef: React.MutableRefObject<GameContext>,
   setState: SetStateType,
-  slice: Record<string, ActionProducer>,
-  contextRef: React.MutableRefObject<GameContext>
+  slice: Record<string, ActionProducer>
 ) => {
   return Object.entries(slice).reduce<Record<string, (state: any) => any>>(
     (acc, [key, value]) => {
@@ -64,8 +64,8 @@ const bindActionSlice = (
           result = value(...args)(state[contextKey]);
           return state;
         });
-        console.log(state);
         setState(state);
+        contextRef.current = state;
         return result;
       };
       return acc;
@@ -75,16 +75,16 @@ const bindActionSlice = (
 };
 
 const bindActions = (
-  setState: SetStateType,
-  contextRef: React.MutableRefObject<GameContext>
+  contextRef: React.MutableRefObject<GameContext>,
+  setState: SetStateType
 ): GameActions => {
   return Object.entries(actions).reduce<Record<ContextKeys, any>>(
     (acc, [key, value]) => {
       acc[key as ContextKeys] = bindActionSlice(
         key as ContextKeys,
+        contextRef,
         setState,
-        value,
-        contextRef
+        value
       );
       return acc;
     },
@@ -100,7 +100,7 @@ export const RogueProvider = ({ initialState, children }: Props) => {
   const [state, setState] = useState(initialState);
 
   const contextRef = useRef<GameContext>(null!);
-  const boundActions = useMemo(() => bindActions(setState, contextRef), [
+  const boundActions = useMemo(() => bindActions(contextRef, setState), [
     setState
   ]);
 

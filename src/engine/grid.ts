@@ -27,7 +27,7 @@ export const gridActions = {
     grid: GridState
   ): TileHandle => {
     const tile = { TileComponent };
-    console.log("adding", TileComponent);
+    console.log("adding", TileComponent, position);
     grid.map[position.x][position.y].tiles.push(tile);
     return { tile, position };
   },

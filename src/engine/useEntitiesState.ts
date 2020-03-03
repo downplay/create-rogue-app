@@ -23,6 +23,7 @@ export const entitiesActions = {
     entities: EntitiesStateRecord
   ) => {
     entities[id] = entityState;
+    console.log(entities);
     return entities;
   },
   unregister: (id: string, entityState: EntityStateRecord) => (

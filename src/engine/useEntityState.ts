@@ -8,7 +8,8 @@ export const useEntityState = <T>(
   const entity = useEntity();
 
   useEffect(() => {
-    if (initialState) {
+    if (initialState && !entity.get(key)) {
+      console.log("setting initialState", initialState);
       entity.update(key, initialState);
     }
   }, [initialState]);

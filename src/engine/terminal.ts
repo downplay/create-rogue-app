@@ -6,6 +6,5 @@ export const [useTerminal, TerminalProvider] = createContext<TerminalContext>();
 export const terminalActions = {
   write: (text: string) => (terminal: TerminalState) => {
     terminal.messages.push(text);
-    return terminal;
   }
 };
