@@ -5,6 +5,7 @@ import { Layout } from "./ui/Layout";
 import { Game } from "./game/Game";
 
 import "modern-css-reset/dist/reset.min.css";
+import { Player } from "./game/Player";
 
 const initialState = initializeState();
 
@@ -14,6 +15,7 @@ const App = () => {
       <Global />
       <Layout />
       <Game />
+      <Player />
     </RogueProvider>
   );
 };

@@ -19,7 +19,7 @@ export const Rat = entity(() => {
         <RatTile />
         Rat
       </Name>
-      <Description>A smelly, </Description>
+      <Description>A smelly, mangy rodent</Description>
     </Monster>
   );
 });

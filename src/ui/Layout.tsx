@@ -3,7 +3,8 @@ import styled from "styled-components";
 import { Window } from "./Window";
 import { Map } from "../game/dungeon/Map";
 import { Terminal } from "./Terminal";
-import { CHAR_WIDTH } from "./Typography";
+import { CHAR_WIDTH, CHAR_HEIGHT } from "./Typography";
+import { Status } from "./Status";
 
 const Screen = styled.div`
   position: relative;
@@ -12,7 +13,7 @@ const Screen = styled.div`
   background-color: 000;
   display: grid;
   grid-template-columns: auto ${CHAR_WIDTH * 12}px;
-  grid-template-rows: auto ${CHAR_WIDTH * 8}px;
+  grid-template-rows: auto ${CHAR_HEIGHT * 8}px;
 `;
 
 export const Layout = () => {
@@ -21,7 +22,9 @@ export const Layout = () => {
       <Window>
         <Map />
       </Window>
-      <Window>Status</Window>
+      <Window>
+        <Status />
+      </Window>
       <Window>
         <Terminal />
       </Window>

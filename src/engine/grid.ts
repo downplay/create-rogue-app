@@ -27,12 +27,10 @@ export const gridActions = {
     grid: GridState
   ): TileHandle => {
     const tile = { TileComponent };
-    console.log("adding", TileComponent, position);
     grid.map[position.x][position.y].tiles.push(tile);
     return { tile, position };
   },
   removeTile: (handle: TileHandle) => (grid: GridState) => {
-    console.log("removing");
     const tiles = grid.map[handle.position.x][handle.position.y].tiles;
     tiles.splice(tiles.indexOf(handle.tile), 1);
   }

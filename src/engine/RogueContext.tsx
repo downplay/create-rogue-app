@@ -16,6 +16,7 @@ import { entitiesActions } from "./useEntitiesState";
 import { playerActions } from "./player";
 import { terminalActions, TerminalProvider } from "./terminal";
 import { useRef } from "react";
+import { ControlsProvider } from "./controls";
 
 export const initializeState = (): GameState => {
   const grid = { map: blankGrid(40, 40) };
@@ -124,15 +125,17 @@ export const RogueProvider = ({ initialState, children }: Props) => {
 
   return (
     <GameProvider value={context}>
-      <PlayerProvider value={context.player}>
-        <EntitiesProvider value={context.entities}>
-          <GridProvider value={context.grid}>
-            <TerminalProvider value={context.terminal}>
-              {children}
-            </TerminalProvider>
-          </GridProvider>
-        </EntitiesProvider>
-      </PlayerProvider>
+      <ControlsProvider>
+        <PlayerProvider value={context.player}>
+          <EntitiesProvider value={context.entities}>
+            <GridProvider value={context.grid}>
+              <TerminalProvider value={context.terminal}>
+                {children}
+              </TerminalProvider>
+            </GridProvider>
+          </EntitiesProvider>
+        </PlayerProvider>
+      </ControlsProvider>
     </GameProvider>
   );
 };

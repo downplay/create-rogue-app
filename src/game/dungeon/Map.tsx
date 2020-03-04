@@ -14,7 +14,6 @@ const Layer = styled.span`
 `;
 
 const MapCell = memo(({ cell }: MapCellProps) => {
-  console.log(cell.tiles.length);
   return (
     <Char>
       {cell.tiles.map(({ TileComponent }, index) => (

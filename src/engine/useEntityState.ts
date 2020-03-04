@@ -9,7 +9,6 @@ export const useEntityState = <T>(
 
   useEffect(() => {
     if (initialState && !entity.get(key)) {
-      console.log("setting initialState", initialState);
       entity.update(key, initialState);
     }
   }, [initialState]);

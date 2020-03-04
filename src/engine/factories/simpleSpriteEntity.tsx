@@ -10,13 +10,12 @@ type Props = {
 };
 
 export const simpleSpriteEntity = ({ name, glyph }: Props) => {
-  const component = entity(({ position }: PositionProps) => {
-    console.log(position);
+  const component = ({ position }: PositionProps) => {
     const TileComponent = useCallback(() => <>{glyph}</>, [name, glyph]);
     hasPosition(position);
     hasTile(TileComponent);
     return null;
-  });
+  };
   component.displayName = name;
-  return component;
+  return entity(component);
 };

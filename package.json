@@ -15,6 +15,7 @@
     "@types/styled-components": "^5.0.1",
     "@types/uuid": "^7.0.0",
     "immer": "^5.3.6",
+    "keycode-js": "^2.0.3",
     "modern-css-reset": "^1.1.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
