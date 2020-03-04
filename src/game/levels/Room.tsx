@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, memo } from "react";
 import { Vector, vector } from "../../engine/vector";
 import { Wall } from "./Wall";
 import { Floor } from "./Floor";
@@ -7,7 +7,7 @@ type Props = {
   size: Vector;
 };
 
-export const Room = ({ size }: Props) => {
+export const Room = memo(({ size }: Props) => {
   const tiles = useMemo(() => {
     const tiles = [];
     for (let x = 0; x < size.x; x++) {
@@ -27,4 +27,4 @@ export const Room = ({ size }: Props) => {
   }, [size]);
 
   return <>{tiles}</>;
-};
+});

@@ -92,10 +92,11 @@ export const ControlsProvider = ({ children }: PropsWithChildren<{}>) => {
   useEffect(() => {
     window.addEventListener("keydown", e => {
       const command = keys[e.keyCode];
-      console.log(command);
-      if (command) {
+      if (command !== undefined) {
+        e.preventDefault();
         for (const handler of handlersRef.current[command]) {
           // TODO: Maybe use actions with additional params
+          // TODO: Also, commands need to go to a queue so they can be process on turn
           handler(command);
         }
       } else {

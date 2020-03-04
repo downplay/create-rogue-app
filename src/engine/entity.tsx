@@ -1,13 +1,11 @@
-import React from "react";
+import React, { memo } from "react";
 import { useEntitiesState } from "./useEntitiesState";
 import { createContext } from "../helpers/createContext";
 import { EntityContext } from "../game/types";
 
 export const [useEntity, EntityProvider] = createContext<EntityContext>();
 
-export function entity<TProps>(
-  WrappedComponent: React.ComponentType<TProps>
-): React.ComponentType<TProps> {
+export function entity<TProps>(WrappedComponent: React.ComponentType<TProps>) {
   const entityComponent = (props: TProps) => {
     const [context, id] = useEntitiesState();
     return (
@@ -17,5 +15,5 @@ export function entity<TProps>(
     );
   };
   entityComponent.displayName = WrappedComponent.displayName + "Entity";
-  return entityComponent;
+  return memo(entityComponent);
 }

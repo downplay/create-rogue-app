@@ -40,7 +40,7 @@ const MapRow = memo(({ row }: MapRowProps) => {
   );
 });
 
-export const Map = () => {
+export const Map = memo(() => {
   const grid = useGrid();
   return (
     <>
@@ -49,4 +49,4 @@ export const Map = () => {
       ))}
     </>
   );
-};
+});
