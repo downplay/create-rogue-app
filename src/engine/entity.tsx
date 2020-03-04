@@ -5,15 +5,16 @@ import { EntityContext } from "../game/types";
 
 export const [useEntity, EntityProvider] = createContext<EntityContext>();
 
-export function entity<TProps>(WrappedComponent: React.ComponentType<TProps>) {
+export function entity<TProps>(Component: React.ComponentType<TProps>) {
+  const MemoComponent: React.ComponentType<TProps> = memo(Component) as any; // silly typescript
   const entityComponent = (props: TProps) => {
     const [context, id] = useEntitiesState();
     return (
       <EntityProvider value={context}>
-        <WrappedComponent {...props}></WrappedComponent>
+        <MemoComponent {...props} />
       </EntityProvider>
     );
   };
-  entityComponent.displayName = WrappedComponent.displayName + "Entity";
-  return memo(entityComponent);
+  entityComponent.displayName = Component.displayName + "Entity";
+  return entityComponent;
 }

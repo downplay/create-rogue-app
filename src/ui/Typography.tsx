@@ -19,3 +19,16 @@ export const Char = styled.span`
   position: relative;
   color: #fff;
 `;
+
+type TwoToneProps = {
+  fore: string;
+  back: string;
+};
+
+// glyph?
+export const Ascii = styled.span<TwoToneProps>`
+  width: 100%;
+  height: 100%;
+  color: ${({ fore }) => fore};
+  background-color: ${({ back }) => back};
+`;

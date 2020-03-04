@@ -1,21 +1,22 @@
-import React from "react";
+import React, { ComponentType, PropsWithChildren } from "react";
 import { hasTile } from "../hasTile";
-import { useCallback } from "react";
 import { entity } from "../entity";
 import { PositionProps, hasPosition } from "../hasPosition";
 
-type Props = {
-  name: string;
-  glyph: string;
-};
-
-export const simpleSpriteEntity = ({ name, glyph }: Props) => {
-  const component = ({ position }: PositionProps) => {
-    const TileComponent = useCallback(() => <>{glyph}</>, [name, glyph]);
+export const simpleTileEntity = (name: string, tile: ComponentType) => {
+  const component = ({
+    position,
+    children
+  }: PropsWithChildren<PositionProps>) => {
     hasPosition(position);
-    hasTile(TileComponent);
-    return null;
+    hasTile(tile);
+    return children;
   };
   component.displayName = name;
-  return entity(component);
+  return entity(component as any);
+};
+
+export const simpleSpriteEntity = (name: string, glyph: string) => {
+  const TileComponent = () => <>{glyph}</>;
+  return simpleTileEntity(name, TileComponent);
 };
