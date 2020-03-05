@@ -53,7 +53,11 @@ export type GridState = {
 type TileHandle = {};
 
 export type GridActions = {
-  addTile: (position: Vector, TileComponent: React.ComponentType) => TileHandle;
+  addTile: (
+    position: Vector,
+    TileComponent: React.ComponentType,
+    z?: number
+  ) => TileHandle;
   removeTile: (handle: TileHandle) => void;
 };
 

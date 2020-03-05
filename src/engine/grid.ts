@@ -4,9 +4,20 @@ import { v4 } from "uuid";
 import { GridState, GridContext } from "../game/types";
 import { createContext } from "../helpers/createContext";
 
-type Tile = {
+// TODO: use this
+export enum GridLayers {
+  Floor,
+  Trash,
+  Item,
+  Actor,
+  Costume,
+  Fx
+}
+
+export type Tile = {
   id: string;
   TileComponent: React.ComponentType;
+  z: number;
 };
 
 type TileHandle = {
@@ -26,19 +37,17 @@ export type Grid = Row[];
 export const [useGrid, GridProvider] = createContext<GridContext>();
 
 export const gridActions = {
-  addTile: (position: Vector, TileComponent: React.ComponentType) => (
+  addTile: (position: Vector, TileComponent: React.ComponentType, z = 0) => (
     grid: GridState
   ): TileHandle => {
-    const tile = { TileComponent, id: v4() };
+    const tile = { TileComponent, id: v4(), z };
     grid.map[position.y][position.x].tiles.push(tile);
     return { tile, position };
   },
   removeTile: (handle: TileHandle) => (grid: GridState) => {
     const tiles = grid.map[handle.position.y][handle.position.x].tiles;
     const index = tiles.findIndex(tile => tile.id === handle.tile.id);
-    console.log("removing");
     if (index >= 0) {
-      console.log("really removing");
       tiles.splice(index, 1);
     }
   }

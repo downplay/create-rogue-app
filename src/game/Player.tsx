@@ -6,7 +6,7 @@ import { useControls, Commands } from "../engine/controls";
 import { useCallback } from "react";
 import { canMove } from "../engine/canMove";
 
-const startPosition = vector(10, 10);
+const startPosition = vector(5, 5);
 
 const PlayerTile = tile("🧙");
 

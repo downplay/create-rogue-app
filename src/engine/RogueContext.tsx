@@ -19,7 +19,7 @@ import { useRef } from "react";
 import { ControlsProvider } from "./controls";
 
 export const initializeState = (): GameState => {
-  const grid = { map: blankGrid(40, 40) };
+  const grid = { map: blankGrid(32, 32) };
 
   const player = {
     stats: stats(10, 5, 5, 5, 10),
