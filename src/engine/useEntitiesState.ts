@@ -8,6 +8,7 @@ import {
 } from "../game/types";
 import { createContext } from "../helpers/createContext";
 import { produce } from "immer";
+import { SetStateAction } from "../game/types";
 
 export const [useEntities, EntitiesProvider] = createContext<EntitiesContext>();
 
@@ -38,12 +39,17 @@ export const useEntitiesState = (): [EntityContext, string] => {
   const id = useMemo(() => v4(), []);
   const stateRef = useRef<EntityStateRecord>({});
   const update = useCallback(
-    <T>(key: string | symbol, nextState: T) => {
+    <T>(key: string | symbol, nextState: SetStateAction<T>) => {
       stateRef.current = produce<EntityStateRecord>(
         stateRef.current,
         (state: Record<string | symbol, any>) => {
           // Foolish TypeScript, won't let me index by symbol
-          state[(key as unknown) as string] = nextState;
+          state[(key as unknown) as string] =
+            typeof nextState === "function"
+              ? (nextState as Function)(
+                  stateRef.current[(key as unknown) as string]
+                )
+              : nextState;
           return state;
         }
       );

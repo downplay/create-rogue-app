@@ -1,10 +1,11 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, Dispatch } from "react";
 import { useEntity } from "./entity";
+import { SetStateAction } from "../game/types";
 
 export const useEntityState = <T>(
   key: string | symbol,
   initialState: T
-): [T, (nextState: T) => void] => {
+): [T, Dispatch<SetStateAction<T>>] => {
   const entity = useEntity();
 
   useEffect(() => {
@@ -13,8 +14,8 @@ export const useEntityState = <T>(
     }
   }, [initialState]);
 
-  const setEntityState = useCallback(
-    (nextState: T) => {
+  const setEntityState: Dispatch<SetStateAction<T>> = useCallback(
+    (nextState: SetStateAction<T>) => {
       entity.update(key, nextState);
     },
     [entity]

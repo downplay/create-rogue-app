@@ -101,6 +101,8 @@ export const RogueProvider = ({ initialState, children }: Props) => {
   const [state, setState] = useState(initialState);
 
   const contextRef = useRef<GameContext>(null!);
+  const stateRef = useRef<GameState>(null!);
+
   const boundActions = useMemo(() => bindActions(contextRef, setState), [
     setState
   ]);
@@ -109,8 +111,8 @@ export const RogueProvider = ({ initialState, children }: Props) => {
     const next = Object.keys(state).reduce<Record<ContextKeys, any>>(
       (acc, key) => {
         acc[key as ContextKeys] =
-          contextRef.current?.[key as ContextKeys] === state[key as ContextKeys]
-            ? state[key as ContextKeys]
+          stateRef.current?.[key as ContextKeys] === state[key as ContextKeys]
+            ? contextRef.current[key as ContextKeys]
             : {
                 ...state[key as ContextKeys],
                 ...boundActions[key as ContextKeys]
@@ -119,6 +121,7 @@ export const RogueProvider = ({ initialState, children }: Props) => {
       },
       {} as Record<ContextKeys, any>
     );
+    stateRef.current = state;
     return next as GameContext;
   }, [state, boundActions]);
   contextRef.current = context;
