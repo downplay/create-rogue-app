@@ -1,4 +1,5 @@
 import { useEntityState } from "./useEntityState";
+import { SetStateAction } from "../game/types";
 export type Stats = {
   hp: number;
   str: number;
@@ -25,10 +26,12 @@ const StatsKey = Symbol("stats");
 
 const IDENTITY = stats(1, 1, 1, 1, 1);
 
-export const hasStats = (baseStats: Stats = IDENTITY) => {
+export const hasStats = (
+  baseStats: Stats = IDENTITY
+): [Stats, Stats, React.Dispatch<SetStateAction<Stats>>] => {
   const [currentStats, setStats] = useEntityState(StatsKey, baseStats);
 
   const adjustedStats = currentStats;
 
-  return [currentStats, adjustedStats, setStats];
+  return [currentStats || IDENTITY, adjustedStats || IDENTITY, setStats];
 };

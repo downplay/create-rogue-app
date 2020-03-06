@@ -87,7 +87,6 @@ export const gridQueries = {
     const found = [];
     for (const row of grid.map) {
       for (const cell of row) {
-        console.log(cell);
         for (const tile of cell.tiles) {
           if (predicate(tile, cell)) {
             found.push(tile);

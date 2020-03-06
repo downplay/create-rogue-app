@@ -1,4 +1,4 @@
-import { useGame } from "./RogueContext";
+import { useGame } from "./game";
 
 // // export const fireEvent(game:GameState)
 

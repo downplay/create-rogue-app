@@ -9,6 +9,7 @@ import { hasStats, stats } from "../engine/hasStats";
 import { GridLayers } from "../engine/grid";
 import { useEntity } from "../engine/useEntitiesState";
 import { usePlayer } from "../engine/player";
+import { useGame } from "../engine/game";
 
 const startPosition = vector(5, 5);
 
@@ -28,16 +29,25 @@ const commands = [
 export const Player = entity(() => {
   hasPosition(startPosition);
   hasTile(PlayerTile, GridLayers.Actor);
-  hasStats(stats(10, 5, 5, 5, 10));
+  const [currentStats] = hasStats(stats(10, 5, 5, 5, 10));
 
   const player = usePlayer();
   const entity = useEntity();
+  const game = useGame();
 
   useEffect(() => {
     player.register(entity);
   }, []);
 
   const [move] = canMove();
+
+  const [nextTurn] = hasTurn(nextTurn => {});
+
+  useEffect(() => {
+    if (nextTurn === undefined) {
+      game.enqueueTurn(10 / currentStats.spd, entity);
+    }
+  }, [nextTurn]);
 
   const handleControls = useCallback(
     (command: Commands) => {

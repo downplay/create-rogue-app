@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { GameContext, GameState, GameActions } from "../game/types";
+import { RogueContext, RogueState, RogueActions } from "../game/types";
 import { produce } from "immer";
 
 import {
@@ -25,8 +25,11 @@ import {
 import { useRef } from "react";
 import { ControlsProvider } from "./controls";
 import { PlayerProvider } from "./player";
+import { gameMutations, gameQueries } from "./game";
 
-export const initializeState = (): GameState => {
+export const initializeState = (): RogueState => {
+  const game = { time: 0 };
+
   const grid = { map: blankGrid(32, 32) };
 
   const entities = { state: {} };
@@ -35,32 +38,34 @@ export const initializeState = (): GameState => {
     messages: []
   };
 
-  return { grid, entities, terminal };
+  return { game, grid, entities, terminal };
 };
 
-export const [useGame, GameProvider] = createContext<GameContext>();
+// export const [useRogue, RogueProvider] = createContext<RogueContext>();
 
 const mutations = {
+  game: gameMutations,
   entities: entitiesMutations,
   grid: gridMutations,
   terminal: terminalMutations
 };
 
 const queries = {
+  game: gameQueries,
   entities: entitiesQueries,
   grid: gridQueries,
   terminal: terminalQueries
 };
 
-type SetStateType = React.Dispatch<React.SetStateAction<GameState>>;
+type SetStateType = React.Dispatch<React.SetStateAction<RogueState>>;
 
 type ActionProducer = (...args: any) => (state: any) => any;
 
-type ContextKeys = keyof GameState;
+type ContextKeys = keyof RogueState;
 
 const bindQuerySlice = (
   contextKey: ContextKeys,
-  stateRef: React.MutableRefObject<GameState>,
+  stateRef: React.MutableRefObject<RogueState>,
   slice: Record<string, ActionProducer>
 ) => {
   return Object.entries(slice).reduce<Record<string, (state: any) => any>>(
@@ -76,7 +81,7 @@ const bindQuerySlice = (
 
 const bindMutationSlice = (
   contextKey: ContextKeys,
-  stateRef: React.MutableRefObject<GameState>,
+  stateRef: React.MutableRefObject<RogueState>,
   setState: SetStateType,
   slice: Record<string, ActionProducer>
 ) => {
@@ -99,9 +104,9 @@ const bindMutationSlice = (
 };
 
 const bindActions = (
-  stateRef: React.MutableRefObject<GameState>,
+  stateRef: React.MutableRefObject<RogueState>,
   setState: SetStateType
-): GameActions => {
+): RogueActions => {
   return Object.entries(mutations).reduce<Record<ContextKeys, any>>(
     (acc, [key, value]) => {
       acc[key as ContextKeys] = {
@@ -120,20 +125,20 @@ const bindActions = (
 };
 
 type Props = React.PropsWithChildren<{
-  initialState: GameState;
+  initialState: RogueState;
 }>;
 
 export const RogueProvider = ({ initialState, children }: Props) => {
   const [state, setState] = useState(initialState);
 
-  const contextRef = useRef<GameContext>(null!);
-  const stateRef = useRef<GameState>(null!);
+  const contextRef = useRef<RogueContext>(null!);
+  const stateRef = useRef<RogueState>(null!);
 
   const boundActions = useMemo(() => bindActions(stateRef, setState), [
     setState
   ]);
 
-  const context = useMemo<GameContext>(() => {
+  const context = useMemo<RogueContext>(() => {
     const next = Object.keys(state).reduce<Record<ContextKeys, any>>(
       (acc, key) => {
         acc[key as ContextKeys] =
@@ -148,29 +153,29 @@ export const RogueProvider = ({ initialState, children }: Props) => {
       {} as Record<ContextKeys, any>
     );
     stateRef.current = state;
-    return next as GameContext;
+    return next as RogueContext;
   }, [state, boundActions]);
 
   contextRef.current = context;
   return (
-    <GameProvider value={context}>
-      <ControlsProvider>
-        <PlayerProvider>
-          <EntitiesProvider value={boundActions.entities}>
-            <EntitiesStateProvider value={state.entities}>
-              <GridProvider value={boundActions.grid}>
-                <GridStateProvider value={state.grid}>
-                  <TerminalProvider value={boundActions.terminal}>
-                    <TerminalStateProvider value={state.terminal}>
-                      {children}
-                    </TerminalStateProvider>
-                  </TerminalProvider>
-                </GridStateProvider>
-              </GridProvider>
-            </EntitiesStateProvider>
-          </EntitiesProvider>
-        </PlayerProvider>
-      </ControlsProvider>
-    </GameProvider>
+    // <RogueProvider value={context}>
+    <ControlsProvider>
+      <PlayerProvider>
+        <EntitiesProvider value={boundActions.entities}>
+          <EntitiesStateProvider value={state.entities}>
+            <GridProvider value={boundActions.grid}>
+              <GridStateProvider value={state.grid}>
+                <TerminalProvider value={boundActions.terminal}>
+                  <TerminalStateProvider value={state.terminal}>
+                    {children}
+                  </TerminalStateProvider>
+                </TerminalProvider>
+              </GridStateProvider>
+            </GridProvider>
+          </EntitiesStateProvider>
+        </EntitiesProvider>
+      </PlayerProvider>
+    </ControlsProvider>
+    // </RogueProvider>
   );
 };

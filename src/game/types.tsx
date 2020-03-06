@@ -1,5 +1,6 @@
 import { GridContext, GridActions, GridState } from "../engine/grid";
 import { EntityStateRecord } from "../engine/useEntitiesState";
+import { GameState, GameActions, GameContext } from "../engine/game";
 
 export type TerminalState = {
   messages: string[];
@@ -27,19 +28,22 @@ export type EntitiesActions = {
 
 export type EntitiesContext = EntitiesState & EntitiesActions;
 
-export type GameState = {
+export type RogueState = {
+  game: GameState;
   grid: GridState;
   entities: EntitiesState;
   terminal: TerminalState;
 };
 
-export type GameActions = {
+export type RogueActions = {
+  game: GameActions;
   grid: GridActions;
   entities: EntitiesActions;
   terminal: TerminalActions;
 };
 
-export type GameContext = {
+export type RogueContext = {
+  game: GameContext;
   grid: GridContext;
   entities: EntitiesContext;
   terminal: TerminalContext;
