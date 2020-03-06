@@ -133,8 +133,6 @@ export const RogueProvider = ({ initialState, children }: Props) => {
     setState
   ]);
 
-  console.log(boundActions);
-
   const context = useMemo<GameContext>(() => {
     const next = Object.keys(state).reduce<Record<ContextKeys, any>>(
       (acc, key) => {

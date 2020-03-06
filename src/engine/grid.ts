@@ -54,6 +54,7 @@ export type GridActions = {
   ) => TileHandle;
   removeTile: (handle: TileHandle) => void;
   findTiles: (predicate: TileFilterPredicate) => Tile[];
+  getCell: (at: Vector) => Cell;
 };
 
 export type GridContext = GridState & GridActions;
@@ -95,7 +96,8 @@ export const gridQueries = {
       }
     }
     return found;
-  }
+  },
+  getCell: (at: Vector) => (grid: GridState): Cell => grid.map[at.y][at.x]
 };
 
 export const blankGrid = (width: number, height: number) => {
