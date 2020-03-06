@@ -1,16 +1,18 @@
 import { useRef, useMemo, useEffect, useCallback } from "react";
 import { v4 } from "uuid";
 import {
-  EntitiesContext,
   EntityContext,
   EntityStateRecord,
   EntitiesStateRecord
 } from "../game/types";
 import { createContext } from "../helpers/createContext";
 import { produce } from "immer";
-import { SetStateAction } from "../game/types";
+import { EntitiesState, EntitiesActions, SetStateAction } from "../game/types";
 
-export const [useEntities, EntitiesProvider] = createContext<EntitiesContext>();
+export const [useEntities, EntitiesProvider] = createContext<EntitiesActions>();
+export const [useEntitiesState, EntitiesStateProvider] = createContext<
+  EntitiesState
+>();
 
 export const entitiesActions = {
   register: (id: string, entityState: EntityStateRecord) => (
@@ -34,21 +36,23 @@ export const entitiesActions = {
   }
 };
 
-export const useEntitiesState = (): [EntityContext, string] => {
+export const useEntityLocalState = (): [EntityContext, string] => {
   const entities = useEntities();
+  // Note: it looks unused but without this, the component won't update and therefore new state
+  // also can't be passed to the children.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const entitiesState = useEntitiesState();
   const id = useMemo(() => v4(), []);
   const stateRef = useRef<EntityStateRecord>({});
   const update = useCallback(
     <T>(key: string | symbol, nextState: SetStateAction<T>) => {
       stateRef.current = produce<EntityStateRecord>(
         stateRef.current,
-        (state: Record<string | symbol, any>) => {
-          // Foolish TypeScript, won't let me index by symbol
-          state[(key as unknown) as string] =
+        (state: EntityStateRecord) => {
+          // Foolish TypeScript, won't let me index by symbol, hence `key as string` everywhere
+          state[key as string] =
             typeof nextState === "function"
-              ? (nextState as Function)(
-                  stateRef.current[(key as unknown) as string]
-                )
+              ? (nextState as Function)(stateRef.current[key as string])
               : nextState;
           return state;
         }
@@ -61,14 +65,14 @@ export const useEntitiesState = (): [EntityContext, string] => {
     <T>(key: string | symbol): T => stateRef.current[key as string],
     []
   );
-  const context = useMemo<EntityContext>(
-    () => ({
+
+  const context = useMemo<EntityContext>(() => {
+    return {
       state: stateRef.current,
       get,
       update
-    }),
-    [entities]
-  );
+    };
+  }, [entities, stateRef.current]);
 
   useEffect(() => {
     entities.register(id, stateRef.current);

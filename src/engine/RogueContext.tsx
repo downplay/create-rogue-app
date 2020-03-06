@@ -1,22 +1,30 @@
 import React, { useMemo, useState } from "react";
-import {
-  GameContext,
-  PlayerContext,
-  GameState,
-  GameActions
-} from "../game/types";
+import { GameContext, GameState, GameActions } from "../game/types";
 
 import { vector } from "./vector";
 import { produce } from "immer";
-import { blankGrid, gridActions, GridProvider } from "./grid";
-import { EntitiesProvider } from "./useEntitiesState";
+import {
+  blankGrid,
+  gridActions,
+  GridProvider,
+  GridStateProvider
+} from "./grid";
+import {
+  EntitiesProvider,
+  EntitiesStateProvider,
+  entitiesActions
+} from "./useEntitiesState";
 import { createContext } from "../helpers/createContext";
 import { stats } from "./hasStats";
-import { entitiesActions } from "./useEntitiesState";
 import { playerActions } from "./player";
-import { terminalActions, TerminalProvider } from "./terminal";
+import {
+  terminalActions,
+  TerminalProvider,
+  TerminalStateProvider
+} from "./terminal";
 import { useRef } from "react";
 import { ControlsProvider } from "./controls";
+import { PlayerState, PlayerActions } from "../game/types";
 
 export const initializeState = (): GameState => {
   const grid = { map: blankGrid(32, 32) };
@@ -36,7 +44,10 @@ export const initializeState = (): GameState => {
 };
 
 export const [useGame, GameProvider] = createContext<GameContext>();
-export const [usePlayer, PlayerProvider] = createContext<PlayerContext>();
+export const [usePlayer, PlayerProvider] = createContext<PlayerActions>();
+export const [usePlayerState, PlayerStateProvider] = createContext<
+  PlayerState
+>();
 
 const actions = {
   entities: entitiesActions,
@@ -53,7 +64,7 @@ type ContextKeys = keyof GameState;
 
 const bindActionSlice = (
   contextKey: ContextKeys,
-  contextRef: React.MutableRefObject<GameContext>,
+  stateRef: React.MutableRefObject<GameState>,
   setState: SetStateType,
   slice: Record<string, ActionProducer>
 ) => {
@@ -61,12 +72,13 @@ const bindActionSlice = (
     (acc, [key, value]) => {
       acc[key] = (...args: any[]) => {
         let result: any;
-        const state = produce(contextRef.current, state => {
+        const state = produce(stateRef.current, state => {
           result = value(...args)(state[contextKey]);
           return state;
         });
+        console.log("updating state: " + key);
+        stateRef.current = state;
         setState(state);
-        contextRef.current = state;
         return result;
       };
       return acc;
@@ -76,14 +88,14 @@ const bindActionSlice = (
 };
 
 const bindActions = (
-  contextRef: React.MutableRefObject<GameContext>,
+  stateRef: React.MutableRefObject<GameState>,
   setState: SetStateType
 ): GameActions => {
   return Object.entries(actions).reduce<Record<ContextKeys, any>>(
     (acc, [key, value]) => {
       acc[key as ContextKeys] = bindActionSlice(
         key as ContextKeys,
-        contextRef,
+        stateRef,
         setState,
         value
       );
@@ -103,7 +115,7 @@ export const RogueProvider = ({ initialState, children }: Props) => {
   const contextRef = useRef<GameContext>(null!);
   const stateRef = useRef<GameState>(null!);
 
-  const boundActions = useMemo(() => bindActions(contextRef, setState), [
+  const boundActions = useMemo(() => bindActions(stateRef, setState), [
     setState
   ]);
 
@@ -124,19 +136,29 @@ export const RogueProvider = ({ initialState, children }: Props) => {
     stateRef.current = state;
     return next as GameContext;
   }, [state, boundActions]);
+
   contextRef.current = context;
 
+  console.log(state);
   return (
     <GameProvider value={context}>
       <ControlsProvider>
-        <PlayerProvider value={context.player}>
-          <EntitiesProvider value={context.entities}>
-            <GridProvider value={context.grid}>
-              <TerminalProvider value={context.terminal}>
-                {children}
-              </TerminalProvider>
-            </GridProvider>
-          </EntitiesProvider>
+        <PlayerProvider value={boundActions.player}>
+          <PlayerStateProvider value={state.player}>
+            <EntitiesProvider value={boundActions.entities}>
+              <EntitiesStateProvider value={state.entities}>
+                <GridProvider value={boundActions.grid}>
+                  <GridStateProvider value={state.grid}>
+                    <TerminalProvider value={boundActions.terminal}>
+                      <TerminalStateProvider value={state.terminal}>
+                        {children}
+                      </TerminalStateProvider>
+                    </TerminalProvider>
+                  </GridStateProvider>
+                </GridProvider>
+              </EntitiesStateProvider>
+            </EntitiesProvider>
+          </PlayerStateProvider>
         </PlayerProvider>
       </ControlsProvider>
     </GameProvider>

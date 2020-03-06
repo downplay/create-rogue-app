@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Row, Cell, useGrid } from "../../engine/grid";
+import { Row, Cell, useGridState } from "../../engine/grid";
 import styled from "styled-components";
 import { Line, Char, CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
 import { Tile } from "../../engine/grid";
@@ -47,7 +47,7 @@ const MapRow = memo(({ row }: MapRowProps) => {
 });
 
 export const Map = memo(() => {
-  const grid = useGrid();
+  const grid = useGridState();
   return (
     <>
       {grid.map.map((row, index) => (

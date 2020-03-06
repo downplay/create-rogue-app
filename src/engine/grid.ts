@@ -1,7 +1,7 @@
 import { Vector, vector } from "./vector";
 import { v4 } from "uuid";
 
-import { GridState, GridContext } from "../game/types";
+import { GridState, GridActions } from "../game/types";
 import { createContext } from "../helpers/createContext";
 
 // TODO: use this
@@ -34,7 +34,8 @@ export type Row = Cell[];
 
 export type Grid = Row[];
 
-export const [useGrid, GridProvider] = createContext<GridContext>();
+export const [useGrid, GridProvider] = createContext<GridActions>();
+export const [useGridState, GridStateProvider] = createContext<GridState>();
 
 export const gridActions = {
   addTile: (position: Vector, TileComponent: React.ComponentType, z = 0) => (

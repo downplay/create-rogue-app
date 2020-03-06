@@ -1,6 +1,6 @@
 import React from "react";
 import { Line } from "./Typography";
-import { useTerminal } from "../engine/terminal";
+import { useTerminalState } from "../engine/terminal";
 import styled from "styled-components";
 
 const Scroller = styled.div`
@@ -10,7 +10,7 @@ const Scroller = styled.div`
 `;
 
 export const Terminal = () => {
-  const terminal = useTerminal();
+  const terminal = useTerminalState();
   return (
     <Scroller>
       {terminal.messages.map((text, index) => (
