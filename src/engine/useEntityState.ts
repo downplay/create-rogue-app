@@ -1,11 +1,11 @@
 import { useCallback, useEffect, Dispatch } from "react";
-import { useEntity } from "./entity";
 import { SetStateAction } from "../game/types";
+import { useEntity } from "./useEntitiesState";
 
 export const useEntityState = <T>(
   key: string | symbol,
-  initialState: T
-): [T, Dispatch<SetStateAction<T>>] => {
+  initialState?: T
+): [T | undefined, Dispatch<SetStateAction<T>>] => {
   const entity = useEntity();
 
   useEffect(() => {

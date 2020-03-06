@@ -6,8 +6,10 @@ export const [useTerminalState, TerminalStateProvider] = createContext<
   TerminalState
 >();
 
-export const terminalActions = {
+export const terminalMutations = {
   write: (text: string) => (terminal: TerminalState) => {
     terminal.messages.push(text);
   }
 };
+
+export const terminalQueries = {};

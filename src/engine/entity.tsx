@@ -1,9 +1,5 @@
 import React, { memo } from "react";
-import { useEntityLocalState } from "./useEntitiesState";
-import { createContext } from "../helpers/createContext";
-import { EntityContext } from "../game/types";
-
-export const [useEntity, EntityProvider] = createContext<EntityContext>();
+import { useEntityContext, EntityProvider } from "./useEntitiesState";
 
 // Note on memoisation here. The inner component (the entity definition) is memoised; we don't want
 // all entities and all their hooks re-running every time another entity is updated. Only this
@@ -12,7 +8,7 @@ export const [useEntity, EntityProvider] = createContext<EntityContext>();
 export function entity<TProps>(Component: React.ComponentType<TProps>) {
   const MemoComponent: React.ComponentType<TProps> = memo(Component) as any; // silly typescript
   const entityComponent = (props: TProps) => {
-    const [context, id] = useEntityLocalState();
+    const [context, id] = useEntityContext();
     return (
       <EntityProvider value={context}>
         <MemoComponent {...props} />

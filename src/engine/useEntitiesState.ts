@@ -1,20 +1,22 @@
 import { useRef, useMemo, useEffect, useCallback } from "react";
 import { v4 } from "uuid";
-import {
-  EntityContext,
-  EntityStateRecord,
-  EntitiesStateRecord
-} from "../game/types";
+import { EntitiesStateRecord } from "../game/types";
 import { createContext } from "../helpers/createContext";
 import { produce } from "immer";
 import { EntitiesState, EntitiesActions, SetStateAction } from "../game/types";
 
-export const [useEntities, EntitiesProvider] = createContext<EntitiesActions>();
-export const [useEntitiesState, EntitiesStateProvider] = createContext<
-  EntitiesState
->();
+export type EntityContext = {
+  state: EntityStateRecord;
+  get: <T>(key: string | symbol) => T;
+  update: <T>(key: string | symbol, state: SetStateAction<T>) => void;
+  getFlag: (key: string | symbol) => boolean;
+  setFlag: (key: string | symbol, value?: boolean) => void;
+};
 
-export const entitiesActions = {
+export type EntityStateRecord = Record<string | symbol, any>;
+export type EntityFlagsRecord = Record<string | symbol, boolean | undefined>;
+
+export const entitiesMutations = {
   register: (id: string, entityState: EntityStateRecord) => (
     entities: EntitiesStateRecord
   ) => {
@@ -36,7 +38,9 @@ export const entitiesActions = {
   }
 };
 
-export const useEntityLocalState = (): [EntityContext, string] => {
+export const entitiesQueries = {};
+
+export const useEntityContext = (): [EntityContext, string] => {
   const entities = useEntities();
   // Note: it looks unused but without this, the component won't update and therefore new state
   // also can't be passed to the children.
@@ -44,6 +48,7 @@ export const useEntityLocalState = (): [EntityContext, string] => {
   const entitiesState = useEntitiesState();
   const id = useMemo(() => v4(), []);
   const stateRef = useRef<EntityStateRecord>({});
+  const flagsRef = useRef<EntityFlagsRecord>({});
   const update = useCallback(
     <T>(key: string | symbol, nextState: SetStateAction<T>) => {
       stateRef.current = produce<EntityStateRecord>(
@@ -65,12 +70,25 @@ export const useEntityLocalState = (): [EntityContext, string] => {
     <T>(key: string | symbol): T => stateRef.current[key as string],
     []
   );
+  const getFlag = useCallback(
+    (key: string | symbol): boolean => !!flagsRef.current[key as string],
+    []
+  );
+  const setFlag = useCallback(
+    (key: string | symbol, value: boolean = true): void => {
+      flagsRef.current[key as string] = value;
+    },
+    []
+  );
 
   const context = useMemo<EntityContext>(() => {
     return {
+      flags: flagsRef.current,
       state: stateRef.current,
       get,
-      update
+      update,
+      getFlag,
+      setFlag
     };
   }, [entities, stateRef.current]);
 
@@ -85,3 +103,9 @@ export const useEntityLocalState = (): [EntityContext, string] => {
 
   return [context, id];
 };
+
+export const [useEntities, EntitiesProvider] = createContext<EntitiesActions>();
+export const [useEntitiesState, EntitiesStateProvider] = createContext<
+  EntitiesState
+>();
+export const [useEntity, EntityProvider] = createContext<EntityContext>();

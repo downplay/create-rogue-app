@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Row, Cell, useGridState } from "../../engine/grid";
+import { Row, Cell, useGridState, GridLayers } from "../../engine/grid";
 import styled from "styled-components";
 import { Line, Char, CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
 import { Tile } from "../../engine/grid";
@@ -8,7 +8,11 @@ type MapCellProps = {
   cell: Cell;
 };
 
-const Layer = styled.span<Pick<Tile, "z">>`
+const zIndexFromLayer = (layer: GridLayers) => {
+  return Number(layer) * 10;
+};
+
+const Layer = styled.span<Pick<Tile, "layer">>`
   position: absolute;
   top: 0;
   left: 0;
@@ -17,14 +21,14 @@ const Layer = styled.span<Pick<Tile, "z">>`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: ${({ z }) => z};
+  z-index: ${({ layer }) => zIndexFromLayer(layer)};
 `;
 
 const MapCell = memo(({ cell }: MapCellProps) => {
   return (
     <Char>
-      {cell.tiles.map(({ TileComponent, z, id }, index) => (
-        <Layer key={id} z={z}>
+      {cell.tiles.map(({ TileComponent, layer, id }) => (
+        <Layer key={id} layer={layer}>
           <TileComponent />
         </Layer>
       ))}

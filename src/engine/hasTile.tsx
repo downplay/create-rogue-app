@@ -1,17 +1,22 @@
 import React, { useEffect } from "react";
 import { hasPosition } from "./hasPosition";
-import { useGrid } from "./grid";
+import { useGrid, GridLayers } from "./grid";
+import { useEntity } from "./useEntitiesState";
 
-export const hasTile = (TileComponent: React.ComponentType, z?: number) => {
+export const hasTile = (
+  TileComponent: React.ComponentType,
+  layer?: GridLayers
+) => {
+  const entity = useEntity();
   const { addTile, removeTile } = useGrid();
 
   const [position] = hasPosition();
 
-  // TODO: z to be inferred from entity layer
-
   useEffect(() => {
-    const tileHandle = addTile(position, TileComponent, z);
-    return () => removeTile(tileHandle);
+    if (position) {
+      const tileHandle = addTile(position, TileComponent, layer, entity);
+      return () => removeTile(tileHandle);
+    }
   }, [position, TileComponent, addTile, removeTile]);
 };
 

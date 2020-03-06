@@ -3,8 +3,12 @@ import { vector } from "../engine/vector";
 import { hasTile, tile } from "../engine/hasTile";
 import { entity } from "../engine/entity";
 import { useControls, Commands } from "../engine/controls";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { canMove } from "../engine/canMove";
+import { hasStats, stats } from "../engine/hasStats";
+import { GridLayers } from "../engine/grid";
+import { useEntity } from "../engine/useEntitiesState";
+import { usePlayer } from "../engine/player";
 
 const startPosition = vector(5, 5);
 
@@ -23,7 +27,15 @@ const commands = [
 
 export const Player = entity(() => {
   hasPosition(startPosition);
-  hasTile(PlayerTile);
+  hasTile(PlayerTile, GridLayers.Actor);
+  hasStats(stats(10, 5, 5, 5, 10));
+
+  const player = usePlayer();
+  const entity = useEntity();
+
+  useEffect(() => {
+    player.register(entity);
+  }, []);
 
   const [move] = canMove();
 
@@ -61,7 +73,7 @@ export const Player = entity(() => {
 
   useControls(commands, handleControls);
 
-  // TODO: Consider options for inputs (prob. should move to player anyway)
+  // TODO: Consider options for inputs
   // const [name, done] = useInput("What is your name, mortal?");
   // // or
   // useInput("What is your name, mortal?", name => {
