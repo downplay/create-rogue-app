@@ -46,8 +46,11 @@ export const Player = entity(() => {
   const gameState = useGameState();
 
   useEffect(() => {
-    player.register(entity);
     nextTurn();
+  }, []);
+
+  useEffect(() => {
+    player.register(entity);
   }, [entity]);
 
   const [move] = canMove();

@@ -17,10 +17,15 @@ export const hasMonsterTurn = (handleTurn: (event: TurnEvent) => void) => {
     );
   };
 
-  const nextTime = onTurn(event => {
-    handleTurn(event);
-    nextTurn();
-  });
+  const nextTime = onTurn(
+    useCallbacK(
+      event => {
+        handleTurn(event);
+        nextTurn();
+      },
+      [stats]
+    )
+  );
 
   useEffect(() => {
     if (nextTime === undefined) {
