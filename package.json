@@ -27,7 +27,7 @@
   },
   "scripts": {
     "start": "cross-env EXTEND_ESLINT=true react-scripts start",
-    "build": "react-scripts build",
+    "build": "cross-env EXTEND_ESLINT=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

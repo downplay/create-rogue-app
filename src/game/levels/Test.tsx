@@ -5,6 +5,7 @@ import { Rat } from "../monsters/Rat";
 import { useRng } from "../../engine/useRng";
 import { Gold } from "../items/Gold";
 import { Loot } from "../Loot";
+import { Bat } from "../monsters/Bat";
 
 const ROOM_SIZE = vector(20, 20);
 
@@ -36,6 +37,9 @@ export const Test = () => {
       <Rat />
       <Rat />
       <Rat />
+      <Bat />
+      <Bat />
+      <Bat />
       {golds.map((amount, index) => (
         <Loot key={index}>
           <Gold amount={amount} />

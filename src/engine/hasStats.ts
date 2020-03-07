@@ -1,5 +1,6 @@
 import { useEntityState } from "./useEntityState";
 import { SetStateAction } from "../game/types";
+import { EntityContext } from "./useEntitiesState";
 export type Stats = {
   hp: number;
   str: number;
@@ -35,3 +36,6 @@ export const hasStats = (
 
   return [currentStats || IDENTITY, adjustedStats || IDENTITY, setStats];
 };
+
+export const getStats = (entity: EntityContext) =>
+  entity.state[(StatsKey as unknown) as string] as Stats;

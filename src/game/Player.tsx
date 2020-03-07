@@ -48,7 +48,7 @@ export const Player = entity(() => {
   useEffect(() => {
     player.register(entity);
     nextTurn();
-  }, []);
+  }, [entity]);
 
   const [move] = canMove();
 

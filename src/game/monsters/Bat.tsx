@@ -6,25 +6,26 @@ import { hasStats, stats } from "../../engine/hasStats";
 import { GridLayers } from "../../engine/grid";
 import { hasRandomMovement } from "../behaviours/hasRandomMovement";
 
-const ratStats = stats(2, 1, 3, 0, 12);
+const batStats = stats(2, 1, 5, 1, 24);
 
-const RatTile = tile("🐀");
+const BatTile = tile("🦇");
 
-export const Rat = entity(() => {
-  hasTile(RatTile, GridLayers.Actor);
+export const Bat = entity(() => {
+  hasTile(BatTile, GridLayers.Actor);
 
-  const stats = hasStats(ratStats);
+  const stats = hasStats(batStats);
 
   hasRandomMovement();
+  //isFlying()
 
   return (
     <Monster>
       <Card>
         <Name>
-          <RatTile />
-          Rat
+          <BatTile />
+          Bat
         </Name>
-        <Description>A smelly, mangy rodent</Description>
+        <Description>Goddamned bats</Description>
       </Card>
     </Monster>
   );
