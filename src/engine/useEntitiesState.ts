@@ -16,7 +16,7 @@ export type EntityContext = {
     eventKey: string | symbol,
     handler: (event: T) => void
   ) => () => void;
-  fireEvent: <T>(eventKey: string | symbol, event: T) => void;
+  fireEvent: <T extends any>(eventKey: string | symbol, event?: T) => void;
 };
 
 export type EntityStateRecord = Record<string | symbol, any>;

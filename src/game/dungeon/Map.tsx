@@ -1,8 +1,15 @@
-import React, { memo } from "react";
-import { Row, Cell, useGridState, GridLayers } from "../../engine/grid";
+import React, { memo, useCallback } from "react";
+import {
+  Row,
+  Cell,
+  Tile,
+  useGridState,
+  GridLayers,
+  ShowCardEventKey,
+  HideCardEventKey
+} from "../../engine/grid";
 import styled from "styled-components";
 import { Line, Char, CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
-import { Tile } from "../../engine/grid";
 
 type MapCellProps = {
   cell: Cell;
@@ -25,8 +32,19 @@ const Layer = styled.span<Pick<Tile, "layer">>`
 `;
 
 const MapCell = memo(({ cell }: MapCellProps) => {
+  const handleMouseOver = useCallback(() => {
+    for (const tile of cell.tiles) {
+      tile.entity?.fireEvent(ShowCardEventKey);
+    }
+  }, [cell]);
+  const handleMouseOut = useCallback(() => {
+    for (const tile of cell.tiles) {
+      tile.entity?.fireEvent(HideCardEventKey);
+    }
+  }, [cell]);
+
   return (
-    <Char>
+    <Char onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
       {cell.tiles.map(({ TileComponent, layer, id }) => (
         <Layer key={id} layer={layer}>
           <TileComponent />

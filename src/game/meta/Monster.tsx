@@ -10,11 +10,3 @@ export const Monster = ({ children }: React.PropsWithChildren<{}>) => {
 
   return <>{children}</>;
 };
-
-export const Card = ({ children }: React.PropsWithChildren<{}>) => {
-  if (false) {
-    // todo: render children to portal for rollover
-    return <>children</>;
-  }
-  return null;
-};

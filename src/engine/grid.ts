@@ -2,7 +2,7 @@ import { Vector, vector } from "./vector";
 import { v4 } from "uuid";
 
 import { createContext } from "../helpers/createContext";
-import { EntityContext } from "./useEntitiesState";
+import { EntityContext, useEvent } from "./useEntitiesState";
 
 // TODO: use this
 export enum GridLayers {
@@ -109,4 +109,12 @@ export const blankGrid = (width: number, height: number) => {
     }
   }
   return grid;
+};
+
+export const ShowCardEventKey = Symbol("ShowCard");
+export const HideCardEventKey = Symbol("HideCard");
+
+export const onCard = (show: () => void, hide: () => void) => {
+  useEvent(ShowCardEventKey, show);
+  useEvent(HideCardEventKey, hide);
 };
