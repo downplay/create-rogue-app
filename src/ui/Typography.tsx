@@ -6,11 +6,13 @@ import "./fonts/fira/fira_code.css";
 export const CHAR_WIDTH = 32;
 export const CHAR_HEIGHT = 32;
 
+export const FONT_SIZE = 26;
+
 export const Line = styled.p`
   position: relative;
   display: flex;
   width: 100%;
-  font-size: 26px;
+  font-size: ${FONT_SIZE}px;
   font-family: "Fira Code VF", fixed-width;
   height: ${CHAR_HEIGHT}px;
 `;

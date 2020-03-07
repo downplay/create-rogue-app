@@ -3,8 +3,7 @@ import { tile, hasTile } from "../../engine/hasTile";
 import { GridLayers } from "../../engine/grid";
 import { onTake } from "../../engine/hasInventory";
 import { Item } from "../meta/Item";
-import { Name, Description } from "../meta/Monster";
-import { Card } from "../../ui/Card";
+import { Card, Name, Description } from "../../ui/Card";
 
 type GoldProps = { amount: number };
 
