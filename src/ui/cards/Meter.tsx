@@ -27,7 +27,6 @@ const Bar = ({ length, color }: BarProps) => (
 export const Meter = ({ total, value, fore, back, size = 10 }: MeterProps) => {
   const length =
     total === undefined ? size : Math.floor((value / total) * size);
-  console.log(total);
   return (
     <>
       <Bar length={length} color={fore} />

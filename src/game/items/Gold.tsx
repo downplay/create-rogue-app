@@ -13,7 +13,7 @@ export const GoldTile = tile("💰");
 export const Gold = ({ amount }: GoldProps) => {
   hasTile(GoldTile, GridLayers.Item);
   const terminal = useTerminal();
-  onTake(inventory => {
+  onTake(({ inventory }) => {
     inventory.gold += amount;
     terminal.write(`Picked up 💰${amount}GP`);
   });

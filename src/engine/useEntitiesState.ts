@@ -65,18 +65,25 @@ export const useEntityContext = (): [EntityContext, string, boolean] => {
 
   const update = useCallback(
     <T>(key: string | symbol, nextState: SetStateAction<T>) => {
-      stateRef.current = produce<EntityStateRecord>(
+      // TODO: Appears to fail when more than one update applies in the same tick;
+      // clearly something funky is going on and stateRef.current is stale
+      const newState = produce<EntityStateRecord>(
         stateRef.current,
         (state: EntityStateRecord) => {
           // Foolish TypeScript, won't let me index by symbol, hence `key as string` everywhere
-          state[key as string] =
+          const newLocalState =
             typeof nextState === "function"
               ? (nextState as Function)(stateRef.current[key as string])
               : nextState;
-          return state;
+          if (newLocalState !== stateRef.current[key as string]) {
+            state[key as string] = newLocalState;
+          }
         }
       );
-      entities.update(id, stateRef.current);
+      if (newState !== stateRef.current) {
+        stateRef.current = newState;
+        entities.update(id, stateRef.current);
+      }
     },
     [entities]
   );

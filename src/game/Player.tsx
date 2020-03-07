@@ -13,14 +13,14 @@ import { entity } from "../engine/entity";
 import { useControls, Commands } from "../engine/controls";
 import { canMove } from "../engine/canMove";
 import { hasStats, stats } from "../engine/hasStats";
-import { GridLayers } from "../engine/grid";
+import { GridLayers, useGrid } from "../engine/grid";
 import { useEntity } from "../engine/useEntitiesState";
 import { usePlayer } from "../engine/player";
 import { useGame, useGameState, TurnEvent, TurnEventKey } from "../engine/game";
 import { VECTOR_NW, VECTOR_NE, VECTOR_SE, VECTOR_SW } from "../engine/vector";
 import { REAL_TIME_SPEED } from "../engine/game";
 import { canLiveAndDie } from "../engine/hasLife";
-import { hasInventory } from "../engine/hasInventory";
+import { hasInventory, fireTake } from "../engine/hasInventory";
 
 const startPosition = vector(1, 1);
 
@@ -46,6 +46,7 @@ export const Player = entity(() => {
   const player = usePlayer();
   const entity = useEntity();
   const game = useGame();
+  const grid = useGrid();
   const gameState = useGameState();
 
   canLiveAndDie();
@@ -83,7 +84,19 @@ export const Player = entity(() => {
    *   - command determines time to next turn
    */
   useEffect(() => {
-    // Check floor
+    // Check floor and collect item
+    if (!position) {
+      return;
+    }
+    const cell = grid.getCell(position);
+    for (const tile of cell.tiles) {
+      // TODO: if same entity rendered multiple times we'd interact multiple times;
+      // should instead store a unique list of entities to only do this once. Also we wouldn't
+      // have to check if entity exists on next line
+      if (tile.entity) {
+        fireTake(entity, tile.entity);
+      }
+    }
     // Pickup automatically (for now)
   }, [position]);
 
@@ -140,7 +153,6 @@ export const Player = entity(() => {
   // MAIN GAME LOOP
   // That's right, it's down here ↓
   useEffect(() => {
-    console.log("Tick: " + gameState.time);
     if (game.isPlayerTurn()) {
       return;
     }
