@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useGame, onTurn, TurnEvent } from "../../engine/game";
 import { hasStats } from "../../engine/hasStats";
 import { useRng } from "../../engine/useRng";
@@ -18,7 +18,7 @@ export const hasMonsterTurn = (handleTurn: (event: TurnEvent) => void) => {
   };
 
   const nextTime = onTurn(
-    useCallbacK(
+    useCallback(
       event => {
         handleTurn(event);
         nextTurn();
