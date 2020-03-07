@@ -19,6 +19,8 @@ import { usePlayer } from "../engine/player";
 import { useGame, useGameState, TurnEvent, TurnEventKey } from "../engine/game";
 import { VECTOR_NW, VECTOR_NE, VECTOR_SE, VECTOR_SW } from "../engine/vector";
 import { REAL_TIME_SPEED } from "../engine/game";
+import { canLiveAndDie } from "../engine/hasLife";
+import { hasInventory } from "../engine/hasInventory";
 
 const startPosition = vector(5, 5);
 
@@ -38,12 +40,15 @@ const commands = [
 export const Player = entity(() => {
   hasPosition(startPosition);
   hasTile(PlayerTile, GridLayers.Actor);
+  hasInventory({ gold: 0 });
   const [currentStats] = hasStats(stats(10, 5, 5, 5, 10));
 
   const player = usePlayer();
   const entity = useEntity();
   const game = useGame();
   const gameState = useGameState();
+
+  canLiveAndDie();
 
   useEffect(() => {
     nextTurn();

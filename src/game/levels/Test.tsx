@@ -6,16 +6,9 @@ import { useRng } from "../../engine/useRng";
 import { Gold } from "../items/Gold";
 import { Loot } from "../Loot";
 import { Bat } from "../monsters/Bat";
+import { elements } from "../../engine/helpers";
 
 const ROOM_SIZE = vector(20, 20);
-
-function elements<T>(count: number, factory: (n: number) => T): T[] {
-  var output = [];
-  for (var n = 0; n < count; n++) {
-    output.push(factory(n));
-  }
-  return output;
-}
 
 export const Test = () => {
   const random = useRng();

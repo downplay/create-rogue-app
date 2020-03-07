@@ -13,9 +13,7 @@ const RatTile = tile("🐀");
 
 export const Rat = entity(() => {
   hasTile(RatTile, GridLayers.Actor);
-
-  const stats = hasStats(ratStats);
-
+  hasStats(ratStats);
   hasRandomMovement();
 
   return (

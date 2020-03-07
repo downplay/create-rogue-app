@@ -1,4 +1,4 @@
-import { useEntityState } from "./useEntityState";
+import { useEntityState, stateGetter } from "./useEntityState";
 export type Inventory = {
   gold: number;
 };
@@ -9,3 +9,5 @@ export const hasInventory = (inventory?: Inventory) =>
   useEntityState<Inventory>(InventoryKey, inventory);
 
 export const onTake = (handler: (inv: Inventory) => void) => {};
+
+export const getInventory = stateGetter<Inventory>(InventoryKey);
