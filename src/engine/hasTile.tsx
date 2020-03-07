@@ -11,7 +11,7 @@ export const hasTile = (
   const entity = useEntity();
   const { addTile, removeTile } = useGrid();
 
-  const [position] = hasPosition();
+  const [position] = hasPosition(null);
 
   useEffect(() => {
     if (position) {

@@ -21,7 +21,7 @@ const ColorChar = styled(Char)<Pick<BarProps, "color">>`
 `;
 
 const Bar = ({ length, color }: BarProps) => (
-  <ColorChar color={color}>{elements(length, () => "=")}</ColorChar>
+  <ColorChar color={color}>{elements(length, () => "\u2550")}</ColorChar>
 );
 
 export const Meter = ({ total, value, fore, back, size = 10 }: MeterProps) => {

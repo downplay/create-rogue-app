@@ -8,9 +8,9 @@ export type PositionProps = { position: Vector };
 const PositionKey = Symbol("Position");
 
 export const hasPosition = (
-  position?: Vector
-): [Vector | undefined, Dispatch<SetStateAction<Vector>>] => {
-  const [currentPosition, setPosition] = useEntityState<Vector>(
+  position?: Vector | null
+): [Vector | null, Dispatch<SetStateAction<Vector | null>>] => {
+  const [currentPosition, setPosition] = useEntityState<Vector | null>(
     PositionKey,
     position
   );

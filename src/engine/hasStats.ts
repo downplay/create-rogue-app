@@ -28,7 +28,7 @@ const StatsKey = Symbol("stats");
 const IDENTITY = stats(1, 1, 1, 1, 1);
 
 export const hasStats = (
-  baseStats: Stats = IDENTITY
+  baseStats?: Stats
 ): [Stats, Stats, React.Dispatch<SetStateAction<Stats>>] => {
   const [currentStats, setStats] = useEntityState(StatsKey, baseStats);
 

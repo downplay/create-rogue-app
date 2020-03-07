@@ -12,9 +12,10 @@ export const Line = styled.p`
   position: relative;
   display: flex;
   width: 100%;
+  height: ${CHAR_HEIGHT}px;
   font-size: ${FONT_SIZE}px;
   font-family: "Fira Code VF", fixed-width;
-  height: ${CHAR_HEIGHT}px;
+  font-variant-ligatures: contextual; // For the fun stuff
 `;
 
 export const Char = styled.span`

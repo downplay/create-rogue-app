@@ -22,7 +22,7 @@ import { REAL_TIME_SPEED } from "../engine/game";
 import { canLiveAndDie } from "../engine/hasLife";
 import { hasInventory } from "../engine/hasInventory";
 
-const startPosition = vector(5, 5);
+const startPosition = vector(1, 1);
 
 const PlayerTile = tile("🧙");
 
@@ -59,6 +59,33 @@ export const Player = entity(() => {
   }, [entity]);
 
   const [move] = canMove();
+  const [position] = hasPosition();
+
+  /**
+   * Will become canTake behaviour?
+   * And will be optional:
+   *  - Player presses a key
+   *  - Monster sometimes takes depending on AI / greed / need
+   * Quick thoughts on this.
+   * Either way we're describing a command (move/take/etc) that will be performed on the turn.
+   * Generalising this increases the symmetry between player and monster taking a turn.
+   * For monster:
+   *   - on turn, ai processes list of possible commands, assigns each a score
+   *   - pick best command, with some fuzzing
+   *   - enqueue command
+   *   - execute command and advance turn
+   *   - command determines time to next turn
+   * For player:
+   *   - player inputs command via keys and/or UI elements
+   *   - command is enqueued
+   *   - on turn, check command queue or wait
+   *   - execute command and advance turn
+   *   - command determines time to next turn
+   */
+  useEffect(() => {
+    // Check floor
+    // Pickup automatically (for now)
+  }, [position]);
 
   const nextTurn = () => {
     game.setPlayerTurn(false);
@@ -113,6 +140,7 @@ export const Player = entity(() => {
   // MAIN GAME LOOP
   // That's right, it's down here ↓
   useEffect(() => {
+    console.log("Tick: " + gameState.time);
     if (game.isPlayerTurn()) {
       return;
     }

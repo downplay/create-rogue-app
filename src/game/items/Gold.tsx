@@ -4,6 +4,7 @@ import { GridLayers } from "../../engine/grid";
 import { onTake } from "../../engine/hasInventory";
 import { Item } from "../meta/Item";
 import { Card, Name, Description } from "../../ui/Card";
+import { useTerminal } from "../../engine/terminal";
 
 type GoldProps = { amount: number };
 
@@ -11,7 +12,11 @@ export const GoldTile = tile("💰");
 
 export const Gold = ({ amount }: GoldProps) => {
   hasTile(GoldTile, GridLayers.Item);
-  onTake(inventory => (inventory.gold += amount));
+  const terminal = useTerminal();
+  onTake(inventory => {
+    inventory.gold += amount;
+    terminal.write(`Picked up 💰${amount}GP`);
+  });
   return (
     <Item>
       <Card>

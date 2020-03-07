@@ -8,8 +8,8 @@ import { useEntityContext, EntityProvider } from "./useEntitiesState";
 export function entity<TProps>(Component: React.ComponentType<TProps>) {
   const MemoComponent: React.ComponentType<TProps> = memo(Component) as any; // silly typescript
   const entityComponent = (props: TProps) => {
-    const [context, id] = useEntityContext();
-    return (
+    const [context, id, destroyed] = useEntityContext();
+    return destroyed ? null : (
       <EntityProvider value={context}>
         <MemoComponent {...props} />
       </EntityProvider>

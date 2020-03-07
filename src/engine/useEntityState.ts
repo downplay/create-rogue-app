@@ -1,18 +1,28 @@
-import { useCallback, useEffect, Dispatch } from "react";
+import { useCallback, Dispatch, useEffect } from "react";
 import { SetStateAction } from "../game/types";
 import { useEntity, EntityContext } from "./useEntitiesState";
 
 export const useEntityState = <T>(
   key: string | symbol,
   initialState?: T
-): [T | undefined, Dispatch<SetStateAction<T>>] => {
+): [T, Dispatch<SetStateAction<T>>] => {
   const entity = useEntity();
+  let currentState = entity.get<T>(key);
 
-  useEffect(() => {
-    if (initialState && !entity.get(key)) {
-      entity.update(key, initialState);
-    }
-  }, [initialState]);
+  if (currentState === undefined && initialState === undefined) {
+    throw new Error("State not initialised: " + key.toString());
+  }
+
+  if (currentState === undefined) {
+    currentState = initialState;
+    entity.update(key, initialState);
+  }
+
+  // useEffect(() => {
+  //   if (initialState && !entity.get(key)) {
+  //     entity.update(key, initialState);
+  //   }
+  // }, [initialState]);
 
   const setEntityState: Dispatch<SetStateAction<T>> = useCallback(
     (nextState: SetStateAction<T>) => {
@@ -21,7 +31,7 @@ export const useEntityState = <T>(
     [entity]
   );
 
-  return [entity.get(key) || initialState, setEntityState];
+  return [currentState as T, setEntityState];
 };
 
 /**

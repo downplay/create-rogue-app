@@ -5,10 +5,12 @@ import { createContext } from "../helpers/createContext";
 import { produce } from "immer";
 import { EntitiesState, EntitiesActions, SetStateAction } from "../game/types";
 
+const DestroyedKey = Symbol("Destroyed");
+
 export type EntityContext = {
   id: string;
   state: EntityStateRecord;
-  get: <T>(key: string | symbol) => T;
+  get: <T>(key: string | symbol) => T | undefined;
   update: <T>(key: string | symbol, state: SetStateAction<T>) => void;
   getFlag: (key: string | symbol) => boolean;
   setFlag: (key: string | symbol, value?: boolean) => void;
@@ -17,6 +19,7 @@ export type EntityContext = {
     handler: (event: T) => void
   ) => () => void;
   fireEvent: <T extends any>(eventKey: string | symbol, event?: T) => void;
+  destroy: () => void;
 };
 
 export type EntityStateRecord = Record<string | symbol, any>;
@@ -50,7 +53,7 @@ export const entitiesMutations = {
 
 export const entitiesQueries = {};
 
-export const useEntityContext = (): [EntityContext, string] => {
+export const useEntityContext = (): [EntityContext, string, boolean] => {
   const entities = useEntities();
   // Note: it looks unused but without this, the component won't update and therefore new state
   // also can't be passed to the children. TODO: Maybe figure out that we don't need the refs and
@@ -59,6 +62,7 @@ export const useEntityContext = (): [EntityContext, string] => {
   const entitiesState = useEntitiesState();
   const id = useMemo(() => v4(), []);
   const stateRef = useRef<EntityStateRecord>({});
+
   const update = useCallback(
     <T>(key: string | symbol, nextState: SetStateAction<T>) => {
       stateRef.current = produce<EntityStateRecord>(
@@ -77,7 +81,7 @@ export const useEntityContext = (): [EntityContext, string] => {
     [entities]
   );
   const get = useCallback(
-    <T>(key: string | symbol): T => stateRef.current[key as string],
+    <T>(key: string | symbol): T | undefined => stateRef.current[key as string],
     []
   );
   const flagsRef = useRef<EntityFlagsRecord>({});
@@ -87,7 +91,9 @@ export const useEntityContext = (): [EntityContext, string] => {
   );
   const setFlag = useCallback(
     (key: string | symbol, value: boolean = true): void => {
-      flagsRef.current[key as string] = value;
+      if (flagsRef.current[key as string] !== value) {
+        flagsRef.current[key as string] = value;
+      }
     },
     []
   );
@@ -117,6 +123,10 @@ export const useEntityContext = (): [EntityContext, string] => {
     }
   }, []);
 
+  const destroy = useCallback(() => {
+    update(DestroyedKey, true);
+  }, []);
+
   // TODO: There's an awful lot of stuff here but technically it is only getting rebound when
   // our state changes (because `entities` is actions and never changes). Should it rebind if flags change?
   const context = useMemo<EntityContext>(() => {
@@ -129,7 +139,8 @@ export const useEntityContext = (): [EntityContext, string] => {
       getFlag,
       setFlag,
       bindEvent,
-      fireEvent
+      fireEvent,
+      destroy
     };
   }, [entities, stateRef.current]);
 
@@ -138,7 +149,7 @@ export const useEntityContext = (): [EntityContext, string] => {
     return () => entities.unregister(id);
   }, [id]);
 
-  return [context, id];
+  return [context, id, !!stateRef.current[(DestroyedKey as unknown) as string]];
 };
 
 export const [useEntities, EntitiesProvider] = createContext<EntitiesActions>();

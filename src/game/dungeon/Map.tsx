@@ -68,13 +68,17 @@ const MapRow = memo(({ row }: MapRowProps) => {
   );
 });
 
+const PanZoom = styled.div`
+  position: absolute;
+`;
+
 export const Map = memo(() => {
   const grid = useGridState();
   return (
-    <>
+    <PanZoom>
       {grid.map.map((row, index) => (
         <MapRow key={index} row={row} />
       ))}
-    </>
+    </PanZoom>
   );
 });

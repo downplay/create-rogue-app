@@ -8,6 +8,7 @@ import { Loot } from "../Loot";
 import { Bat } from "../monsters/Bat";
 import { elements } from "../../engine/helpers";
 
+// const ROOM_SIZE = vector(4, 4);
 const ROOM_SIZE = vector(20, 20);
 
 export const Test = () => {
@@ -25,19 +26,27 @@ export const Test = () => {
   return (
     <Room size={ROOM_SIZE}>
       <Rat />
-      <Rat />
-      <Rat />
-      <Rat />
-      <Rat />
-      <Rat />
-      <Bat />
-      <Bat />
-      <Bat />
-      {golds.map((amount, index) => (
-        <Loot key={index}>
-          <Gold amount={amount} />
-        </Loot>
-      ))}
+      <Loot>
+        <Gold amount={3} />
+      </Loot>
     </Room>
   );
 };
+/*
+<Room size={ROOM_SIZE}>
+<Rat />
+<Rat />
+<Rat />
+<Rat />
+<Rat />
+<Rat />
+<Bat />
+<Bat />
+<Bat />
+{golds.map((amount, index) => (
+  <Loot key={index}>
+    <Gold amount={amount} />
+  </Loot>
+))}
+</Room>
+*/

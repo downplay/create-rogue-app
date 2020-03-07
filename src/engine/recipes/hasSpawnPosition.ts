@@ -5,7 +5,7 @@ import { useRng } from "../../engine/useRng";
 import { SOLID_FLAG, SPAWN_POSITION_FLAG } from "../../engine/flags";
 
 export const hasSpawnPosition = () => {
-  const [position, setPosition] = hasPosition();
+  const [position, setPosition] = hasPosition(null);
   const grid = useGrid();
   // TODO: Very very bad for performance, should register for an event, maybe use turn 0
   //       to do the spawn?

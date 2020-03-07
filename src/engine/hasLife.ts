@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Vector } from "./vector";
 import { useEntityState, stateGetter } from "./useEntityState";
-import { useEntity, EntityContext } from "./useEntitiesState";
 import { hasStats } from "./hasStats";
 
 export type PositionProps = { position: Vector };
@@ -21,11 +20,13 @@ export const hasDeath = () => useEntityState<boolean>(DeathKey, false);
 // to spot this pattern, etc. etc. ...
 // Also not happy with the name, this is not an ability pattern, it's a kind of controller.
 export const canLiveAndDie = () => {
-  const entity = useEntity();
   const [stats] = hasStats();
   const oldHpRef = useRef<number>(0);
 
   const [life, setLife] = hasLife(stats.hp);
+
+  // TODO: Probably we don't want to check isDead literally everywhere ... think of a way to completely
+  // shut down the entity after death. Maybe similar to isDestroyed, but do it in an `actor()` HoC?
   const [isDead, setDeath] = hasDeath();
 
   const updateLife = (newLife: number) => {
@@ -39,9 +40,9 @@ export const canLiveAndDie = () => {
     setDeath(true);
   };
 
-  // Manage initializtion and stat adjusted
+  // Manage initialization and stat adjusted
   useEffect(() => {
-    if (stats === undefined) {
+    if (stats === undefined || isDead) {
       return;
     }
     if (life === undefined) {
@@ -55,7 +56,7 @@ export const canLiveAndDie = () => {
   }, [stats.hp]);
 
   useEffect(() => {
-    if (life !== undefined && life <= 0) {
+    if (!isDead && life !== undefined && life <= 0) {
       die();
     }
   }, [life]);

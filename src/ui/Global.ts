@@ -9,7 +9,7 @@ export const Global = createGlobalStyle`
   }
   body {
     font-size: ${CHAR_WIDTH}px;
-    font-family: "Fira Code VF", monospace;
+    font-family: "Fira Code", monospace;
     background-color: #000;
     color: #fff;
   }
