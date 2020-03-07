@@ -5,7 +5,8 @@ import { entity } from "../../engine/entity";
 import { hasStats, stats } from "../../engine/hasStats";
 import { GridLayers } from "../../engine/grid";
 import { hasRandomMovement } from "../behaviours/hasRandomMovement";
-import { Card, Name, Description } from "../../ui/Card";
+import { Card, Description } from "../../ui/Card";
+import { Name } from "../meta/Name";
 
 const ratStats = stats(2, 1, 3, 0, 12);
 
@@ -19,11 +20,10 @@ export const Rat = entity(() => {
   return (
     <Monster>
       <Card>
-        <Name>
-          <RatTile />
-          Rat
-        </Name>
-        <Description>A smelly, mangy rodent</Description>
+        <Name>Rat</Name>
+        <Description>
+          <RatTile /> A smelly, mangy rodent
+        </Description>
       </Card>
     </Monster>
   );

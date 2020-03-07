@@ -65,3 +65,4 @@ export const canLiveAndDie = () => {
 };
 
 export const getLife = stateGetter<number>(LifeKey);
+export const getDeath = stateGetter<boolean>(DeathKey);

@@ -2,7 +2,7 @@ import React from "react";
 import { Line, Emoji } from "./Typography";
 import { usePlayer } from "../engine/player";
 import { getStats } from "../engine/hasStats";
-import { Meter } from "./cards/Meter";
+import { Meter } from "./controls/Meter";
 import { getLife } from "../engine/hasLife";
 import { getInventory } from "../engine/hasInventory";
 

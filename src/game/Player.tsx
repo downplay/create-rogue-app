@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect } from "react";
 
 import { hasPosition } from "../engine/hasPosition";
 import {
@@ -21,6 +21,8 @@ import { VECTOR_NW, VECTOR_NE, VECTOR_SE, VECTOR_SW } from "../engine/vector";
 import { REAL_TIME_SPEED } from "../engine/game";
 import { canLiveAndDie } from "../engine/hasLife";
 import { hasInventory, fireTake } from "../engine/hasInventory";
+import { Card, Description } from "../ui/Card";
+import { Name } from "./meta/Name";
 
 const startPosition = vector(1, 1);
 
@@ -179,5 +181,12 @@ export const Player = entity(() => {
     }
   }, [gameState.time, gameState.playerTurn]);
 
-  return null;
+  return (
+    <Card>
+      <Name>You</Name>
+      <Description>
+        <PlayerTile /> A mighty wizard! With a pointy hat.
+      </Description>
+    </Card>
+  );
 });

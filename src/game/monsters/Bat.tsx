@@ -5,7 +5,8 @@ import { entity } from "../../engine/entity";
 import { hasStats, stats } from "../../engine/hasStats";
 import { GridLayers } from "../../engine/grid";
 import { hasRandomMovement } from "../behaviours/hasRandomMovement";
-import { Card, Name, Description } from "../../ui/Card";
+import { Card, Description } from "../../ui/Card";
+import { Name } from "../meta/Name";
 
 const batStats = stats(2, 1, 5, 1, 24);
 
@@ -13,8 +14,7 @@ const BatTile = tile("🦇");
 
 export const Bat = entity(() => {
   hasTile(BatTile, GridLayers.Actor);
-
-  const stats = hasStats(batStats);
+  hasStats(batStats);
 
   hasRandomMovement();
   //isFlying()
@@ -22,11 +22,10 @@ export const Bat = entity(() => {
   return (
     <Monster>
       <Card>
-        <Name>
-          <BatTile />
-          Bat
-        </Name>
-        <Description>Goddamned bats</Description>
+        <Name>Bat</Name>
+        <Description>
+          <BatTile /> "God Damned Bats"
+        </Description>
       </Card>
     </Monster>
   );

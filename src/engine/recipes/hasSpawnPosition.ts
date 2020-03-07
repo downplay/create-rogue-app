@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { hasPosition } from "../../engine/hasPosition";
 import { useGrid, useGridState } from "../../engine/grid";
 import { useRng } from "../../engine/useRng";
-import { SOLID_FLAG, SPAWN_POSITION_FLAG } from "../../engine/flags";
+import { FLAG_SOLID, FLAG_SPAWN_POSITION } from "../../engine/flags";
 
 export const hasSpawnPosition = () => {
   const [position, setPosition] = hasPosition(null);
@@ -18,8 +18,8 @@ export const hasSpawnPosition = () => {
     }
     const tiles = grid.findTiles((tile, cell) => {
       return (
-        tile.entity?.getFlag(SPAWN_POSITION_FLAG) &&
-        !cell.tiles.find(otherTile => otherTile.entity?.getFlag(SOLID_FLAG))
+        tile.entity?.getFlag(FLAG_SPAWN_POSITION) &&
+        !cell.tiles.find(otherTile => otherTile.entity?.getFlag(FLAG_SOLID))
       );
     });
     if (tiles.length) {

@@ -13,11 +13,6 @@ const CardWrapper = styled.div`
   border: solid 2px white;
 `;
 
-export const Name = styled.h1`
-  font-size: ${FONT_SIZE}px;
-  line-height: ${CHAR_HEIGHT}px;
-`;
-
 export const Description = styled.p`
   font-size: ${FONT_SIZE}px;
   line-height: ${CHAR_HEIGHT}px;

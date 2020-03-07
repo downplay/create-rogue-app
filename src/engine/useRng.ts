@@ -1,10 +1,12 @@
 import { useMemo } from "react";
+import { elements, sum } from "./helpers";
 
 type RNG = {
   raw: () => number;
   range: (min: number, max: number) => number;
   integer: (min: number, max: number) => number;
   pick: <T>(items: T[]) => T;
+  dice: (count: number, sides: number) => number;
 };
 
 export const useRng = (): RNG => {
@@ -22,7 +24,9 @@ export const useRng = (): RNG => {
       raw: () => Math.random(),
       range: (min, max) => Math.random() * (max - min) + min,
       integer,
-      pick: <T>(items: T[]) => items[integer(0, items.length)]
+      pick: <T>(items: T[]) => items[integer(0, items.length)],
+      dice: (count: number, sides: number) =>
+        sum(elements(count, () => integer(1, sides)))
     };
   }, []);
 };
