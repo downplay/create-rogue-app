@@ -6,15 +6,25 @@ import { produce } from "immer";
 import { EntitiesState, EntitiesActions, SetStateAction } from "../game/types";
 
 export type EntityContext = {
+  id: string;
   state: EntityStateRecord;
   get: <T>(key: string | symbol) => T;
   update: <T>(key: string | symbol, state: SetStateAction<T>) => void;
   getFlag: (key: string | symbol) => boolean;
   setFlag: (key: string | symbol, value?: boolean) => void;
+  bindEvent: <T>(
+    eventKey: string | symbol,
+    handler: (event: T) => void
+  ) => () => void;
+  fireEvent: <T>(eventKey: string | symbol, event: T) => void;
 };
 
 export type EntityStateRecord = Record<string | symbol, any>;
 export type EntityFlagsRecord = Record<string | symbol, boolean | undefined>;
+export type EntityEventsRecord = Record<
+  string | symbol,
+  ((event: any) => void)[]
+>;
 
 export const entitiesMutations = {
   register: (id: string, entityState: EntityStateRecord) => (
@@ -43,12 +53,12 @@ export const entitiesQueries = {};
 export const useEntityContext = (): [EntityContext, string] => {
   const entities = useEntities();
   // Note: it looks unused but without this, the component won't update and therefore new state
-  // also can't be passed to the children.
+  // also can't be passed to the children. TODO: Maybe figure out that we don't need the refs and
+  // can use purely state from the context.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const entitiesState = useEntitiesState();
   const id = useMemo(() => v4(), []);
   const stateRef = useRef<EntityStateRecord>({});
-  const flagsRef = useRef<EntityFlagsRecord>({});
   const update = useCallback(
     <T>(key: string | symbol, nextState: SetStateAction<T>) => {
       stateRef.current = produce<EntityStateRecord>(
@@ -70,6 +80,7 @@ export const useEntityContext = (): [EntityContext, string] => {
     <T>(key: string | symbol): T => stateRef.current[key as string],
     []
   );
+  const flagsRef = useRef<EntityFlagsRecord>({});
   const getFlag = useCallback(
     (key: string | symbol): boolean => !!flagsRef.current[key as string],
     []
@@ -81,14 +92,44 @@ export const useEntityContext = (): [EntityContext, string] => {
     []
   );
 
+  const eventsRef = useRef<EntityEventsRecord>({});
+  const bindEvent = useCallback(
+    <T>(eventKey: string | symbol, handler: (event: T) => void) => {
+      if (!eventsRef.current[eventKey as string]) {
+        eventsRef.current[eventKey as string] = [];
+      }
+      eventsRef.current[eventKey as string].push(handler);
+      return () => {
+        eventsRef.current[eventKey as string].splice(
+          eventsRef.current[eventKey as string].indexOf(handler),
+          1
+        );
+      };
+    },
+    []
+  );
+
+  const fireEvent = useCallback(<T>(eventKey: string | symbol, event: T) => {
+    if (eventsRef.current[eventKey as string]) {
+      for (const handler of eventsRef.current[eventKey as string]) {
+        handler(event);
+      }
+    }
+  }, []);
+
+  // TODO: There's an awful lot of stuff here but technically it is only getting rebound when
+  // our state changes (because `entities` is actions and never changes). Should it rebind if flags change?
   const context = useMemo<EntityContext>(() => {
     return {
+      id,
       flags: flagsRef.current,
       state: stateRef.current,
       get,
       update,
       getFlag,
-      setFlag
+      setFlag,
+      bindEvent,
+      fireEvent
     };
   }, [entities, stateRef.current]);
 
@@ -96,10 +137,6 @@ export const useEntityContext = (): [EntityContext, string] => {
     entities.register(id, stateRef.current);
     return () => entities.unregister(id);
   }, [id]);
-
-  useEffect(() => {
-    return;
-  }, [entities]);
 
   return [context, id];
 };
@@ -109,3 +146,11 @@ export const [useEntitiesState, EntitiesStateProvider] = createContext<
   EntitiesState
 >();
 export const [useEntity, EntityProvider] = createContext<EntityContext>();
+
+export const useEvent = <T>(
+  key: string | symbol,
+  handler: (event: T) => void
+) => {
+  const entity = useEntity();
+  useEffect(() => entity.bindEvent<T>(key, handler), [handler]);
+};

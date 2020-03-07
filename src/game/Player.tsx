@@ -1,5 +1,11 @@
 import { hasPosition } from "../engine/hasPosition";
-import { vector } from "../engine/vector";
+import {
+  vector,
+  VECTOR_N,
+  VECTOR_S,
+  VECTOR_W,
+  VECTOR_E
+} from "../engine/vector";
 import { hasTile, tile } from "../engine/hasTile";
 import { entity } from "../engine/entity";
 import { useControls, Commands } from "../engine/controls";
@@ -9,7 +15,8 @@ import { hasStats, stats } from "../engine/hasStats";
 import { GridLayers } from "../engine/grid";
 import { useEntity } from "../engine/useEntitiesState";
 import { usePlayer } from "../engine/player";
-import { useGame } from "../engine/game";
+import { useGame, onTurn } from "../engine/game";
+import { VECTOR_NW, VECTOR_NE, VECTOR_SE, VECTOR_SW } from "../engine/vector";
 
 const startPosition = vector(5, 5);
 
@@ -41,40 +48,46 @@ export const Player = entity(() => {
 
   const [move] = canMove();
 
-  const [nextTurn] = hasTurn(nextTurn => {});
+  const nextTurn = () => {
+    game.enqueueTurn(10 / currentStats.spd, entity);
+  };
+
+  const nextTime = onTurn(() => {
+    nextTurn();
+  });
 
   useEffect(() => {
-    if (nextTurn === undefined) {
-      game.enqueueTurn(10 / currentStats.spd, entity);
+    if (nextTime === undefined) {
+      nextTurn();
     }
-  }, [nextTurn]);
+  }, [nextTime]);
 
   const handleControls = useCallback(
     (command: Commands) => {
       switch (command) {
         case Commands.MoveUp:
-          move(vector(0, -1));
+          move(VECTOR_N);
           break;
         case Commands.MoveDown:
-          move(vector(0, 1));
+          move(VECTOR_S);
           break;
         case Commands.MoveLeft:
-          move(vector(-1, 0));
+          move(VECTOR_W);
           break;
         case Commands.MoveRight:
-          move(vector(1, 0));
+          move(VECTOR_E);
           break;
         case Commands.MoveNW:
-          move(vector(-1, -1));
+          move(VECTOR_NW);
           break;
         case Commands.MoveNE:
-          move(vector(1, -1));
+          move(VECTOR_NE);
           break;
         case Commands.MoveSE:
-          move(vector(1, 1));
+          move(VECTOR_SE);
           break;
         case Commands.MoveSW:
-          move(vector(-1, 1));
+          move(VECTOR_SW);
           break;
       }
     },

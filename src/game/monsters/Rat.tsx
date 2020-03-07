@@ -4,7 +4,7 @@ import { Monster, Name, Description, Card } from "../meta/Monster";
 import { entity } from "../../engine/entity";
 import { hasStats, stats } from "../../engine/hasStats";
 import { GridLayers } from "../../engine/grid";
-import { useGame } from "../../engine/game";
+import { useGame, onTurn } from "../../engine/game";
 import { usePlayer } from "../../engine/player";
 import { canMove } from "../../engine/canMove";
 import { useRng } from "../../engine/useRng";
@@ -20,6 +20,7 @@ import {
   VECTOR_W,
   VECTOR_NW
 } from "../../engine/vector";
+import { useEntity } from "../../engine/useEntitiesState";
 
 const ratStats = stats(2, 1, 3, 0, 10);
 
@@ -42,23 +43,27 @@ export const Rat = entity(() => {
 
   const stats = hasStats(ratStats);
 
+  const entity = useEntity();
   const game = useGame();
-  const player = usePlayer();
 
   const [move] = canMove();
 
   const random = useRng();
 
-  const [nextTurn] = hasTurn(nextTurn => {
+  const nextTurn = () => {
+    game.enqueueTurn(1 + random.range(-0.1, 0.1), entity);
+  };
+
+  const nextTime = onTurn(() => {
     move(random.pick(moves));
-    nextTurn(1 + random.range(-0.1, 0.1));
+    nextTurn();
   });
 
   useEffect(() => {
-    if (nextTurn === undefined) {
-      game.enqueueTurn(1 + random.range(-0.1, 0.1));
+    if (nextTime === undefined) {
+      nextTurn();
     }
-  }, [nextTurn]);
+  }, [nextTime]);
 
   return (
     <Monster>

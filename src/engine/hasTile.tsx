@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { hasPosition } from "./hasPosition";
 import { useGrid, GridLayers } from "./grid";
 import { useEntity } from "./useEntitiesState";
+import { Emoji } from "../ui/Typography";
 
 export const hasTile = (
   TileComponent: React.ComponentType,
@@ -20,4 +21,4 @@ export const hasTile = (
   }, [position, TileComponent, addTile, removeTile]);
 };
 
-export const tile = (glyph: string) => () => <>{glyph}</>;
+export const tile = (glyph: string) => () => <Emoji>{glyph}</Emoji>;

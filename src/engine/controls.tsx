@@ -45,14 +45,6 @@ export const useControls = (
 
 type Handlers = Record<Commands, Array<(command: Commands) => void>>;
 
-/*
-type Binding = {
-  command: Commands;
-};
-
-type KeyBindings = Record<string, Binding>;
-*/
-
 const keys: Record<number, Commands> = {
   [KEY_LEFT]: Commands.MoveLeft,
   [KEY_NUMPAD4]: Commands.MoveLeft,

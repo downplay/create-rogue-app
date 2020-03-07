@@ -15,7 +15,6 @@ import {
   entitiesMutations,
   entitiesQueries
 } from "./useEntitiesState";
-import { createContext } from "../helpers/createContext";
 import {
   terminalMutations,
   terminalQueries,
@@ -25,10 +24,15 @@ import {
 import { useRef } from "react";
 import { ControlsProvider } from "./controls";
 import { PlayerProvider } from "./player";
-import { gameMutations, gameQueries } from "./game";
+import {
+  gameMutations,
+  gameQueries,
+  GameProvider,
+  GameStateProvider
+} from "./game";
 
 export const initializeState = (): RogueState => {
-  const game = { time: 0 };
+  const game = { time: 0, turnQueue: [] };
 
   const grid = { map: blankGrid(32, 32) };
 
@@ -161,19 +165,23 @@ export const RogueProvider = ({ initialState, children }: Props) => {
     // <RogueProvider value={context}>
     <ControlsProvider>
       <PlayerProvider>
-        <EntitiesProvider value={boundActions.entities}>
-          <EntitiesStateProvider value={state.entities}>
-            <GridProvider value={boundActions.grid}>
-              <GridStateProvider value={state.grid}>
-                <TerminalProvider value={boundActions.terminal}>
-                  <TerminalStateProvider value={state.terminal}>
-                    {children}
-                  </TerminalStateProvider>
-                </TerminalProvider>
-              </GridStateProvider>
-            </GridProvider>
-          </EntitiesStateProvider>
-        </EntitiesProvider>
+        <GameProvider value={boundActions.game}>
+          <GameStateProvider value={state.game}>
+            <EntitiesProvider value={boundActions.entities}>
+              <EntitiesStateProvider value={state.entities}>
+                <GridProvider value={boundActions.grid}>
+                  <GridStateProvider value={state.grid}>
+                    <TerminalProvider value={boundActions.terminal}>
+                      <TerminalStateProvider value={state.terminal}>
+                        {children}
+                      </TerminalStateProvider>
+                    </TerminalProvider>
+                  </GridStateProvider>
+                </GridProvider>
+              </EntitiesStateProvider>
+            </EntitiesProvider>
+          </GameStateProvider>
+        </GameProvider>
       </PlayerProvider>
     </ControlsProvider>
     // </RogueProvider>
