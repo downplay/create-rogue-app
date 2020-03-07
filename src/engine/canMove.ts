@@ -13,7 +13,6 @@ export const canMove = () => {
       setPosition(position => {
         const next = add(position, delta);
         const cell = grid.getCell(next);
-        console.log(cell);
         if (cell.tiles.find(tile => tile.entity?.getFlag(SOLID_FLAG))) {
           return position;
         }

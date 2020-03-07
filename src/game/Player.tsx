@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef } from "react";
+
 import { hasPosition } from "../engine/hasPosition";
 import {
   vector,
@@ -9,14 +11,14 @@ import {
 import { hasTile, tile } from "../engine/hasTile";
 import { entity } from "../engine/entity";
 import { useControls, Commands } from "../engine/controls";
-import { useCallback, useEffect } from "react";
 import { canMove } from "../engine/canMove";
 import { hasStats, stats } from "../engine/hasStats";
 import { GridLayers } from "../engine/grid";
 import { useEntity } from "../engine/useEntitiesState";
 import { usePlayer } from "../engine/player";
-import { useGame, onTurn } from "../engine/game";
+import { useGame, useGameState, TurnEvent, TurnEventKey } from "../engine/game";
 import { VECTOR_NW, VECTOR_NE, VECTOR_SE, VECTOR_SW } from "../engine/vector";
+import { REAL_TIME_SPEED } from "../engine/game";
 
 const startPosition = vector(5, 5);
 
@@ -41,29 +43,25 @@ export const Player = entity(() => {
   const player = usePlayer();
   const entity = useEntity();
   const game = useGame();
+  const gameState = useGameState();
 
   useEffect(() => {
     player.register(entity);
+    nextTurn();
   }, []);
 
   const [move] = canMove();
 
   const nextTurn = () => {
+    game.setPlayerTurn(false);
     game.enqueueTurn(10 / currentStats.spd, entity);
   };
 
-  const nextTime = onTurn(() => {
-    nextTurn();
-  });
-
-  useEffect(() => {
-    if (nextTime === undefined) {
-      nextTurn();
-    }
-  }, [nextTime]);
-
   const handleControls = useCallback(
     (command: Commands) => {
+      if (!game.isPlayerTurn()) {
+        return;
+      }
       switch (command) {
         case Commands.MoveUp:
           move(VECTOR_N);
@@ -90,6 +88,7 @@ export const Player = entity(() => {
           move(VECTOR_SW);
           break;
       }
+      nextTurn();
     },
     [move]
   );
@@ -102,6 +101,35 @@ export const Player = entity(() => {
   // useInput("What is your name, mortal?", name => {
   //   player.setName(name);
   // });
+
+  // MAIN GAME LOOP
+  // That's right, it's down here ↓
+  useEffect(() => {
+    if (game.isPlayerTurn()) {
+      return;
+    }
+    let doneTick = false;
+    while (!doneTick) {
+      const turn = game.nextTurn();
+      if (turn.time <= gameState.time) {
+        game.shiftTurn();
+        if (turn.entity.id === entity.id) {
+          game.setPlayerTurn(true);
+          doneTick = true;
+        } else {
+          turn.entity.fireEvent<TurnEvent>(TurnEventKey, {
+            time: gameState.time
+          });
+        }
+      } else {
+        doneTick = true;
+        const delta = turn.time - gameState.time;
+        setTimeout(() => {
+          game.advanceTime(delta);
+        }, delta * REAL_TIME_SPEED);
+      }
+    }
+  }, [gameState.time, gameState.playerTurn]);
 
   return null;
 });

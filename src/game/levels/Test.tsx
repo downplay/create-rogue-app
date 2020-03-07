@@ -6,7 +6,7 @@ import { useRng } from "../../engine/useRng";
 import { Gold } from "../items/Gold";
 import { Loot } from "../Loot";
 
-const ROOM_SIZE = vector(10, 10);
+const ROOM_SIZE = vector(20, 20);
 
 function elements<T>(count: number, factory: (n: number) => T): T[] {
   var output = [];

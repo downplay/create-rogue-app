@@ -32,7 +32,7 @@ import {
 } from "./game";
 
 export const initializeState = (): RogueState => {
-  const game = { time: 0, turnQueue: [] };
+  const game = { time: 0, turnQueue: [], playerTurn: false };
 
   const grid = { map: blankGrid(32, 32) };
 
@@ -162,7 +162,6 @@ export const RogueProvider = ({ initialState, children }: Props) => {
 
   contextRef.current = context;
   return (
-    // <RogueProvider value={context}>
     <ControlsProvider>
       <PlayerProvider>
         <GameProvider value={boundActions.game}>
@@ -184,6 +183,5 @@ export const RogueProvider = ({ initialState, children }: Props) => {
         </GameProvider>
       </PlayerProvider>
     </ControlsProvider>
-    // </RogueProvider>
   );
 };
