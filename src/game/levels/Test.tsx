@@ -26,27 +26,19 @@ export const Test = () => {
   return (
     <Room size={ROOM_SIZE}>
       <Rat />
-      <Loot>
-        <Gold amount={3} />
-      </Loot>
+      <Rat />
+      <Rat />
+      <Rat />
+      <Rat />
+      <Rat />
+      <Bat />
+      <Bat />
+      <Bat />
+      {golds.map((amount, index) => (
+        <Loot key={index}>
+          <Gold amount={amount} />
+        </Loot>
+      ))}
     </Room>
   );
 };
-/*
-<Room size={ROOM_SIZE}>
-<Rat />
-<Rat />
-<Rat />
-<Rat />
-<Rat />
-<Rat />
-<Bat />
-<Bat />
-<Bat />
-{golds.map((amount, index) => (
-  <Loot key={index}>
-    <Gold amount={amount} />
-  </Loot>
-))}
-</Room>
-*/
