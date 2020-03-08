@@ -23,6 +23,7 @@ import { canLiveAndDie } from "../engine/hasLife";
 import { hasInventory, fireTake } from "../engine/hasInventory";
 import { Card, Description } from "../ui/Card";
 import { Name } from "./meta/Name";
+import { isPlayer } from "../engine/flags";
 
 const startPosition = vector(1, 1);
 
@@ -40,6 +41,7 @@ const commands = [
 ];
 
 export const Player = entity(() => {
+  isPlayer();
   hasPosition(startPosition);
   hasTile(PlayerTile, GridLayers.Actor);
   hasInventory({ gold: 0 });

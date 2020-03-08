@@ -13,6 +13,10 @@ const CardWrapper = styled.div`
   border: solid 2px white;
 `;
 
+const Invisible = styled.div`
+  display: none;
+`;
+
 export const Description = styled.p`
   font-size: ${FONT_SIZE}px;
   line-height: ${CHAR_HEIGHT}px;
@@ -58,5 +62,9 @@ export const Card = ({ children }: React.PropsWithChildren<{}>) => {
       </CardPortal>
     );
   }
-  return null;
+  // Another stupid hack; we always want to render the children so any hooks get run
+  // The only problem is, react considers them entirely new components so hooks and effects get
+  // re-run every time we roll over. As long as it's harmless stuff like metadata it's probably ok,
+  // very risky if anything more significant goes on in here.
+  return <Invisible>{children}</Invisible>;
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { hasName } from "../../engine/hasName";
 import { FONT_SIZE, CHAR_HEIGHT } from "../../ui/Typography";

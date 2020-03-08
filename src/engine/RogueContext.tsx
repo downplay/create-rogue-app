@@ -100,14 +100,13 @@ const bindMutationSlice = (
         stateRef.current = state;
         // Internals hack: to populate initial state and allow subsequent calls to get safe values,
         // we must be able to call these methods safely during render phase
-        // TODO: Find a better way of detecting render phase
-        try {
-          setState(stateRef.current);
-          // Very very bad
-        } catch {
+        const testStack = new Error().stack;
+        if (testStack?.includes(" at renderWithHooks")) {
           setTimeout(() => {
             setState(stateRef.current);
           }, 0);
+        } else {
+          setState(stateRef.current);
         }
         return result;
       };

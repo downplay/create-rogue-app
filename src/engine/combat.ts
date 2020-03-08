@@ -12,6 +12,7 @@ export const useCombat = () => {
   // TODO: All kinds of extra stuff needs to come into play such as what terrain do they
   // fight on
   return (defender: EntityContext) => {
+    console.log(attacker, defender);
     const attackerStats = getStats(attacker);
     if (!attackerStats) {
       console.error(attacker);
