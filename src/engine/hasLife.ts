@@ -1,7 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Vector } from "./vector";
-import { useEntityState, stateGetter } from "./useEntityState";
+import { useEntityState, stateGetter, stateSetter } from "./useEntityState";
 import { hasStats } from "./hasStats";
+import { useEntity } from "./useEntitiesState";
+import { getName } from "./hasName";
+import { useTerminal } from "./terminal";
+import { conjugate } from "./helpers";
 
 export type PositionProps = { position: Vector };
 
@@ -22,6 +26,8 @@ export const hasDeath = () => useEntityState<boolean>(DeathKey, false);
 export const canLiveAndDie = () => {
   const [stats] = hasStats();
   const oldHpRef = useRef<number>(0);
+  const actor = useEntity();
+  const terminal = useTerminal();
 
   const [life, setLife] = hasLife(stats.hp);
 
@@ -37,6 +43,7 @@ export const canLiveAndDie = () => {
   };
 
   const die = () => {
+    terminal.write(`${getName(actor)} ${conjugate(actor, "die", "dies")}!`);
     setDeath(true);
   };
 
@@ -65,4 +72,5 @@ export const canLiveAndDie = () => {
 };
 
 export const getLife = stateGetter<number>(LifeKey);
+export const setLife = stateSetter<number>(LifeKey);
 export const getDeath = stateGetter<boolean>(DeathKey);

@@ -41,4 +41,19 @@ export const useEntityState = <T>(
  */
 export const stateGetter = <T>(key: string | symbol, defaultValue?: T) => (
   entity: EntityContext
-) => (entity?.state?.[(key as unknown) as string] as T) || defaultValue; // TODO: probable issues with falsy values
+) => {
+  // Extra cautious here because during init phase the entity doesn't even have methods...
+  const get = entity?.get;
+  if (!get) {
+    return defaultValue;
+  }
+  const value = entity?.get<T>(key);
+  return value === undefined ? defaultValue : value;
+};
+
+export const stateSetter = <T>(key: string | symbol) => (
+  entity: EntityContext,
+  nextState: SetStateAction<T>
+) => {
+  entity.update(key, nextState);
+};

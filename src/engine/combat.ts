@@ -4,6 +4,7 @@ import { getStats } from "./hasStats";
 import { useTerminal } from "./terminal";
 import { conjugate } from "./helpers";
 import { getName } from "./hasName";
+import { setLife, getLife } from "./hasLife";
 
 export const useCombat = () => {
   const random = useRng();
@@ -12,7 +13,6 @@ export const useCombat = () => {
   // TODO: All kinds of extra stuff needs to come into play such as what terrain do they
   // fight on
   return (defender: EntityContext) => {
-    console.log(attacker, defender);
     const attackerStats = getStats(attacker);
     if (!attackerStats) {
       console.error(attacker);
@@ -35,6 +35,7 @@ export const useCombat = () => {
       terminal.write(
         `${attackerName} ${attackVerb} ${defenderName} for ${damage} damage!`
       );
+      setLife(defender, (getLife(defender) || 0) - damage);
     } else {
       const missVerb = conjugate(attacker, "miss", "misses");
       terminal.write(
