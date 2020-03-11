@@ -2,11 +2,14 @@ import React, { useCallback, useEffect } from "react";
 
 import { hasPosition } from "../engine/hasPosition";
 import {
-  vector,
   VECTOR_N,
   VECTOR_S,
   VECTOR_W,
-  VECTOR_E
+  VECTOR_E,
+  VECTOR_NW,
+  VECTOR_NE,
+  VECTOR_SE,
+  VECTOR_SW
 } from "../engine/vector";
 import { hasTile, tile } from "../engine/hasTile";
 import { entity } from "../engine/entity";
@@ -17,15 +20,13 @@ import { GridLayers, useGrid } from "../engine/grid";
 import { useEntity } from "../engine/useEntitiesState";
 import { usePlayer } from "../engine/player";
 import { useGame, useGameState, TurnEvent, TurnEventKey } from "../engine/game";
-import { VECTOR_NW, VECTOR_NE, VECTOR_SE, VECTOR_SW } from "../engine/vector";
 import { REAL_TIME_SPEED } from "../engine/game";
 import { canLiveAndDie } from "../engine/hasLife";
 import { hasInventory, fireTake } from "../engine/hasInventory";
 import { Card, Description } from "../ui/Card";
 import { Name } from "./meta/Name";
 import { isPlayer } from "../engine/flags";
-
-const startPosition = vector(1, 1);
+import { hasSpawnPosition } from "../engine/recipes/hasSpawnPosition";
 
 const PlayerTile = tile("🧙");
 
@@ -42,9 +43,9 @@ const commands = [
 
 export const Player = entity(() => {
   isPlayer();
-  hasPosition(startPosition);
   hasTile(PlayerTile, GridLayers.Actor);
   hasInventory({ gold: 0 });
+  hasSpawnPosition();
   const [currentStats] = hasStats(stats(10, 5, 5, 5, 10));
 
   const player = usePlayer();

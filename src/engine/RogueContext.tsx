@@ -34,7 +34,7 @@ import {
 export const initializeState = (): RogueState => {
   const game = { time: 0, turnQueue: [], playerTurn: false };
 
-  const grid = { map: blankGrid(32, 32) };
+  const grid = { map: blankGrid(80, 80) };
 
   const entities = { state: {} };
 
@@ -44,8 +44,6 @@ export const initializeState = (): RogueState => {
 
   return { game, grid, entities, terminal };
 };
-
-// export const [useRogue, RogueProvider] = createContext<RogueContext>();
 
 const mutations = {
   game: gameMutations,

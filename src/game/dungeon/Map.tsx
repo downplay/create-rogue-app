@@ -1,4 +1,11 @@
-import React, { memo, useCallback } from "react";
+import React, {
+  memo,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect
+} from "react";
 import {
   Row,
   Cell,
@@ -10,6 +17,15 @@ import {
 } from "../../engine/grid";
 import styled from "styled-components";
 import { Line, Char, CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
+import { usePlayer } from "../../engine/player";
+import {
+  vector,
+  Vector,
+  VECTOR_ORIGIN,
+  multiply,
+  add
+} from "../../engine/vector";
+import { getPosition } from "../../engine/hasPosition";
 
 type MapCellProps = {
   cell: Cell;
@@ -68,17 +84,58 @@ const MapRow = memo(({ row }: MapRowProps) => {
   );
 });
 
-const PanZoom = styled.div`
-  position: absolute;
+type PanZoomProps = {
+  pan: Vector;
+};
+
+const ViewPort = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 `;
+
+const PanZoom = styled.div<PanZoomProps>(
+  ({ pan: { x, y } }) => `
+position: absolute;
+transform: translate(${x}px,${y}px);
+`
+);
 
 export const Map = memo(() => {
   const grid = useGridState();
+  // Alternately could trigger focus from an entity in the grid or a cell, but, more
+  // straightforward to do it like this really
+  const player = usePlayer();
+  const viewRef = useRef<HTMLDivElement>(null!);
+  const [viewSize, setViewSize] = useState<Vector>();
+  const focus = getPosition(player.current);
+  const pan = useMemo(() => {
+    if (!viewSize || !focus) {
+      return VECTOR_ORIGIN;
+    }
+    return add(multiply(focus, -CHAR_WIDTH), multiply(viewSize, 0.5));
+  }, [viewSize, focus]);
+
+  useLayoutEffect(() => {
+    const updateViewSize = () => {
+      const rect = viewRef.current.getBoundingClientRect();
+      setViewSize(vector(rect.width, rect.height));
+    };
+    updateViewSize();
+    window.addEventListener("resize", updateViewSize);
+    return () => {
+      window.removeEventListener("resize", updateViewSize);
+    };
+  }, []);
+
   return (
-    <PanZoom>
-      {grid.map.map((row, index) => (
-        <MapRow key={index} row={row} />
-      ))}
-    </PanZoom>
+    <ViewPort ref={viewRef}>
+      <PanZoom pan={pan}>
+        {grid.map.map((row, index) => (
+          <MapRow key={index} row={row} />
+        ))}
+      </PanZoom>
+    </ViewPort>
   );
 });

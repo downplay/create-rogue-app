@@ -1,6 +1,6 @@
 import { Dispatch } from "react";
 import { Vector } from "./vector";
-import { useEntityState } from "./useEntityState";
+import { useEntityState, stateGetter } from "./useEntityState";
 import { SetStateAction } from "../game/types";
 
 export type PositionProps = { position: Vector };
@@ -16,3 +16,5 @@ export const hasPosition = (
   );
   return [currentPosition, setPosition];
 };
+
+export const getPosition = stateGetter<Vector>(PositionKey);

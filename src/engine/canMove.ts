@@ -1,5 +1,5 @@
 import { Vector, add } from "./vector";
-import { hasPosition } from "./hasPosition";
+import { hasPosition, getPosition } from "./hasPosition";
 import { useCallback } from "react";
 import { useGrid } from "./grid";
 import { FLAG_SOLID, FLAG_MONSTER, FLAG_PLAYER } from "./flags";
@@ -8,7 +8,7 @@ import { useCombat } from "./combat";
 import { useEntity, EntityContext } from "./useEntitiesState";
 
 export const canMove = () => {
-  const [position, setPosition] = hasPosition();
+  const [, setPosition] = hasPosition();
   const grid = useGrid();
   const actor = useEntity();
   const [isDead] = hasDeath();
@@ -16,6 +16,7 @@ export const canMove = () => {
 
   const move = useCallback(
     (delta: Vector) => {
+      const position = getPosition(actor);
       if (isDead || position === null) {
         return;
       }

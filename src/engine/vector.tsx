@@ -16,4 +16,10 @@ export const VECTOR_SW = vector(-1, 1);
 export const VECTOR_W = vector(-1, 0);
 export const VECTOR_NW = vector(-1, -1);
 
-export const add = (a: Vector, b: Vector) => vector(a.x + b.x, a.y + b.y);
+export const add = (a: Vector, b: Vector): Vector =>
+  vector(a.x + b.x, a.y + b.y);
+
+export const multiply = (a: Vector, b: Vector | number): Vector =>
+  typeof b === "number"
+    ? vector(a.x * b, a.y * b)
+    : vector(a.x * b.x, a.y * b.y);
