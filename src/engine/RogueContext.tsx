@@ -34,7 +34,7 @@ import {
 export const initializeState = (): RogueState => {
   const game = { time: 0, turnQueue: [], playerTurn: false };
 
-  const grid = { map: blankGrid(80, 80) };
+  const grid = { map: blankGrid(100, 100) };
 
   const entities = { state: {} };
 
@@ -61,14 +61,15 @@ const queries = {
 
 type SetStateType = React.Dispatch<React.SetStateAction<RogueState>>;
 
-type ActionProducer = (...args: any) => (state: any) => any;
+type QueryProducer = (...args: any) => (state: any) => any;
+type MutationProducer = (...args: any) => (state: any, original: any) => any;
 
 type ContextKeys = keyof RogueState;
 
 const bindQuerySlice = (
   contextKey: ContextKeys,
   stateRef: React.MutableRefObject<RogueState>,
-  slice: Record<string, ActionProducer>
+  slice: Record<string, QueryProducer>
 ) => {
   return Object.entries(slice).reduce<Record<string, (state: any) => any>>(
     (acc, [key, value]) => {
@@ -85,26 +86,30 @@ const bindMutationSlice = (
   contextKey: ContextKeys,
   stateRef: React.MutableRefObject<RogueState>,
   setState: SetStateType,
-  slice: Record<string, ActionProducer>
+  slice: Record<string, MutationProducer>
 ) => {
   return Object.entries(slice).reduce<Record<string, (state: any) => any>>(
     (acc, [key, value]) => {
       acc[key] = (...args: any[]) => {
         let result: any;
-        const state = produce(stateRef.current, state => {
-          result = value(...args)(state[contextKey]);
+        // TODO: Managing the entire objcet is fairly pointless; we can just have 4 totally separate
+        // bound contexts and create them all with a useBoundContext hook
+        const state = produce(stateRef.current[contextKey], state => {
+          result = value(...args)(state, stateRef.current[contextKey]);
           return state;
         });
-        stateRef.current = state;
-        // Internals hack: to populate initial state and allow subsequent calls to get safe values,
-        // we must be able to call these methods safely during render phase
-        const testStack = new Error().stack;
-        if (testStack?.includes(" at renderWithHooks")) {
-          setTimeout(() => {
+        if (stateRef.current[contextKey] !== state) {
+          stateRef.current = { ...stateRef.current, [contextKey]: state };
+          // Internals hack: to populate initial state and allow subsequent calls to get safe values,
+          // we must be able to call these methods safely during render phase
+          const testStack = new Error().stack;
+          if (testStack?.includes(" at renderWithHooks")) {
+            setTimeout(() => {
+              setState(stateRef.current);
+            }, 0);
+          } else {
             setState(stateRef.current);
-          }, 0);
-        } else {
-          setState(stateRef.current);
+          }
         }
         return result;
       };

@@ -34,20 +34,17 @@ export const entitiesMutations = {
     entities: EntitiesStateRecord
   ) => {
     entities[id] = entityState;
-    return entities;
   },
   // TODO: register and update are suspiciously the same, really need two of them?
   update: (id: string, entityState: EntityStateRecord) => (
     entities: EntitiesStateRecord
   ) => {
     entities[id] = entityState;
-    return entities;
   },
   unregister: (id: string, entityState: EntityStateRecord) => (
     entities: EntitiesStateRecord
   ) => {
     delete entities[id];
-    return entities;
   }
 };
 

@@ -68,15 +68,29 @@ export const gridMutations = {
     TileComponent: React.ComponentType,
     layer: GridLayers = GridLayers.Floor,
     entity?: EntityContext
-  ) => (grid: GridState): Tile => {
+  ) => (grid: GridState, original: GridState): Tile => {
     const tile: Tile = { TileComponent, id: v4(), layer, position, entity };
+    // TODO: Following grid expansion code didn't work (because of immer proxy)
+    // Need to refactor the mutations to not use proxy.
+    // if (!original.map[position.y]) {
+    //   grid.map[position.y] = [];
+    // }
+    // if (!original.map[position.y]?.[position.x]) {
+    //   grid.map[position.y][position.x] = {
+    //     position: { ...position },
+    //     tiles: []
+    //   };
+    // }
+    if (!grid.map[position.y]?.[position.x]) {
+      throw new Error("No cell at " + position.x + ", " + position.y);
+    }
     grid.map[position.y][position.x].tiles.push(tile);
     return tile;
   },
   removeTile: (handle: Tile) => (grid: GridState) => {
-    const tiles = grid.map[handle.position.y][handle.position.x].tiles;
-    const index = tiles.findIndex(tile => tile.id === handle.id);
-    if (index >= 0) {
+    const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
+    const index = tiles?.findIndex(tile => tile.id === handle.id);
+    if (index !== undefined && index >= 0) {
       tiles.splice(index, 1);
     }
   }

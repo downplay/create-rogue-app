@@ -9,6 +9,9 @@ export const elements = <T>(count: number, factory: (n: number) => T): T[] => {
   return output;
 };
 
+export const omitUndefined = <T>(input: (T | undefined)[]): T[] =>
+  input.filter(value => value !== undefined) as T[];
+
 export const sum = (values: number[]) =>
   values.reduce((total, n) => total + n, 0);
 
