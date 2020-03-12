@@ -21,8 +21,8 @@ export type EntitiesState = {
 };
 
 export type EntitiesActions = {
-  register: (id: string, state: EntitiesStateRecord) => void;
-  update: (id: string, state: EntitiesStateRecord) => void;
+  register: (id: string, state: EntityStateRecord) => void;
+  update: (id: string, state: EntityStateRecord) => void;
   unregister: (id: string) => void;
 };
 

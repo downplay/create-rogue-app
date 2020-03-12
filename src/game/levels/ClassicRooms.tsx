@@ -13,6 +13,7 @@ import {
 import { CorridorOrientation, CorridorProps, Corridor } from "./Corridor";
 import { omitUndefined } from "../../engine/helpers";
 import { VECTOR_N } from "../../engine/vector";
+import { EntityGroup } from "../../engine/EntityGroup";
 
 const MAX_SIZE = 20;
 const ROOM_COUNTS = vector(4, 4);
@@ -148,5 +149,5 @@ export const ClassicRooms = () => {
     );
   }, []);
 
-  return <>{generated}</>;
+  return <EntityGroup>{generated}</EntityGroup>;
 };

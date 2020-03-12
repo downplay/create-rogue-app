@@ -41,9 +41,7 @@ export const entitiesMutations = {
   ) => {
     entities[id] = entityState;
   },
-  unregister: (id: string, entityState: EntityStateRecord) => (
-    entities: EntitiesStateRecord
-  ) => {
+  unregister: (id: string) => (entities: EntitiesStateRecord) => {
     delete entities[id];
   }
 };

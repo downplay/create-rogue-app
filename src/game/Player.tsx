@@ -161,6 +161,7 @@ export const Player = entity(() => {
     if (game.isPlayerTurn()) {
       return;
     }
+    const timeStart = new Date().getTime();
     let doneTick = false;
     while (!doneTick) {
       const turn = game.nextTurn();
@@ -177,9 +178,12 @@ export const Player = entity(() => {
       } else {
         doneTick = true;
         const delta = turn.time - gameState.time;
+        // Offset the next tick by however long it took to render this update
+        // TODO: Turned out to be pointless optimisation
+        const timeTaken = new Date().getTime() - timeStart;
         setTimeout(() => {
           game.advanceTime(delta);
-        }, delta * REAL_TIME_SPEED);
+        }, Math.max(0, delta * REAL_TIME_SPEED - timeTaken));
       }
     }
   }, [gameState.time, gameState.playerTurn]);

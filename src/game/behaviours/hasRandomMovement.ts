@@ -29,7 +29,6 @@ export const hasRandomMovement = () => {
   const random = useRng();
   const [move] = canMove();
   hasMonsterTurn(() => {
-    console.log("turn");
     move(random.pick(moves));
   });
 };

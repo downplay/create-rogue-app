@@ -174,7 +174,6 @@ export const RogueProvider = ({ initialState, children }: Props) => {
   }, [state, boundActions]);
 
   contextRef.current = context;
-  console.log(Object.values(state.entities));
   return (
     <ControlsProvider>
       <PlayerProvider>
