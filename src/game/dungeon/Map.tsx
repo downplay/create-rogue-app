@@ -4,16 +4,17 @@ import React, {
   useState,
   useCallback,
   useRef,
+  useEffect,
   useLayoutEffect
 } from "react";
 import {
-  Row,
-  Cell,
+  SeenCell,
   Tile,
   useGridState,
   GridLayers,
   ShowCardEventKey,
-  HideCardEventKey
+  HideCardEventKey,
+  useGrid
 } from "../../engine/grid";
 import styled from "styled-components";
 import { Line, Char, CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
@@ -26,9 +27,13 @@ import {
   add
 } from "../../engine/vector";
 import { getPosition } from "../../engine/hasPosition";
+import { SeenGrid } from "../../engine/grid";
+
+// TODO: Get this from combination
+const LOS_DISTANCE = 5;
 
 type MapCellProps = {
-  cell: Cell;
+  cell: SeenCell;
 };
 
 const zIndexFromLayer = (layer: GridLayers) => {
@@ -71,7 +76,7 @@ const MapCell = memo(({ cell }: MapCellProps) => {
 });
 
 type MapRowProps = {
-  row: Row;
+  row: SeenCell[];
 };
 
 const MapRow = memo(({ row }: MapRowProps) => {
@@ -103,7 +108,8 @@ transform: translate(${x}px,${y}px);
 );
 
 export const Map = memo(() => {
-  const grid = useGridState();
+  const grid = useGrid();
+  const gridState = useGridState();
   // Alternately could trigger focus from an entity in the grid or a cell, but, more
   // straightforward to do it like this really
   const player = usePlayer();
@@ -116,6 +122,38 @@ export const Map = memo(() => {
     }
     return add(multiply(focus, -CHAR_WIDTH), multiply(viewSize, 0.5));
   }, [viewSize, focus]);
+
+  // Every time map updates, we need to update the "seen" grid which is what will
+  // actually be rendered
+  // TODO: The map is getting fairly overloaded with functionality now, somehow
+  // move this elsewhere / subcomponents?
+  // TODO: Also this effect as well as many others could run a potentially silly number
+  // of times when not much has changed
+  useEffect(() => {
+    // Important: seen and map must already be the same size
+    let newGrid = gridState.seen;
+    for (const row of gridState.seen) {
+      let newRow = row;
+      for (const cell of row) {
+        const mapCell = gridState.map[cell.position.y][cell.position.x];
+        if (cell.fromCell !== mapCell) {
+          // TODO: Could optimise if multiple cells are being changed
+          newRow = newRow.map(oldCell =>
+            oldCell === cell
+              ? { ...oldCell, tiles: mapCell.tiles, fromCell: mapCell }
+              : oldCell
+          );
+        }
+      }
+      if (row !== newRow) {
+        // TODO: Could optimise if multiple rows are being changed
+        newGrid = newGrid.map(oldRow => (oldRow === row ? newRow : oldRow));
+      }
+    }
+    if (newGrid !== gridState.seen) {
+      grid.updateSeen(newGrid);
+    }
+  }, [gridState.map]);
 
   useLayoutEffect(() => {
     const updateViewSize = () => {
@@ -132,7 +170,7 @@ export const Map = memo(() => {
   return (
     <ViewPort ref={viewRef}>
       <PanZoom pan={pan}>
-        {grid.map.map((row, index) => (
+        {gridState.seen.map((row, index) => (
           <MapRow key={index} row={row} />
         ))}
       </PanZoom>

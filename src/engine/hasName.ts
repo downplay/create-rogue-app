@@ -1,4 +1,3 @@
-import { Dispatch } from "react";
 import { useEntityState, stateGetter } from "./useEntityState";
 
 const NameKey = Symbol("Name");

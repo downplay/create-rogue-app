@@ -1,4 +1,4 @@
-import { useCallback, Dispatch, useEffect } from "react";
+import { useCallback, Dispatch } from "react";
 import { SetStateAction } from "../game/types";
 import { useEntity, EntityContext } from "./useEntitiesState";
 

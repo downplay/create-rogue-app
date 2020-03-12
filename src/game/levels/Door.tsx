@@ -1,5 +1,4 @@
 import React from "react";
-import { isSpawnPosition } from "../../engine/flags";
 import { hasTile } from "../../engine/hasTile";
 import { entity } from "../../engine/entity";
 import { PositionProps, hasPosition } from "../../engine/hasPosition";

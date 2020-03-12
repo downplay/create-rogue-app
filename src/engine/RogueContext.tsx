@@ -4,6 +4,7 @@ import { produce } from "immer";
 
 import {
   blankGrid,
+  blankSeenGrid,
   gridMutations,
   gridQueries,
   GridProvider,
@@ -34,7 +35,7 @@ import {
 export const initializeState = (): RogueState => {
   const game = { time: 0, turnQueue: [], playerTurn: false };
 
-  const grid = { map: blankGrid(100, 100) };
+  const grid = { map: blankGrid(100, 100), seen: blankSeenGrid(100, 100) };
 
   const entities = { state: {} };
 
@@ -173,6 +174,7 @@ export const RogueProvider = ({ initialState, children }: Props) => {
   }, [state, boundActions]);
 
   contextRef.current = context;
+  console.log(Object.values(state.entities));
   return (
     <ControlsProvider>
       <PlayerProvider>

@@ -41,8 +41,28 @@ export type TileFilterPredicate = (
   cell: Cell
 ) => boolean | undefined;
 
+export type SeenCell = Cell & {
+  /**
+   * Whether cell is currently in view and in LOS
+   * (will be darkened if not, even if some knowledge of what was there)
+   */
+  inView: boolean;
+
+  /**
+   * Link to the Cell this was derived from. Used for equality checks to know if the cell
+   * needs regenerating now.
+   */
+  fromCell: Cell;
+
+  // TODO: Maybe no point having position here since it's also in the map cell
+};
+
+// TODO: Not so keen on "Seen" prefix ... "Known"? "Los"? "View"?
+export type SeenGrid = SeenCell[][];
+
 export type GridState = {
   map: Grid;
+  seen: SeenGrid;
 };
 
 export type GridActions = {
@@ -55,6 +75,7 @@ export type GridActions = {
   removeTile: (handle: TileHandle) => void;
   findTiles: (predicate: TileFilterPredicate) => Tile[];
   getCell: (at: Vector) => Cell;
+  updateSeen: (seen: SeenGrid) => void;
 };
 
 export type GridContext = GridState & GridActions;
@@ -93,6 +114,9 @@ export const gridMutations = {
     if (index !== undefined && index >= 0) {
       tiles.splice(index, 1);
     }
+  },
+  updateSeen: (seen: SeenGrid) => (grid: GridState) => {
+    grid.seen = seen;
   }
 };
 
@@ -113,13 +137,30 @@ export const gridQueries = {
   getCell: (at: Vector) => (grid: GridState): Cell => grid.map[at.y][at.x]
 };
 
-export const blankGrid = (width: number, height: number) => {
-  const grid: Grid = [];
+export const blankGrid = (width: number, height: number): Grid => {
+  const grid = [];
   for (let y: number = 0; y < height; y++) {
     const row: Row = [];
     grid.push(row);
     for (let x: number = 0; x < width; x++) {
       row.push({ position: vector(x, y), tiles: [] });
+    }
+  }
+  return grid;
+};
+
+export const blankSeenGrid = (width: number, height: number): SeenGrid => {
+  const grid = [];
+  for (let y: number = 0; y < height; y++) {
+    const row: SeenCell[] = [];
+    grid.push(row);
+    for (let x: number = 0; x < width; x++) {
+      row.push({
+        position: vector(x, y),
+        tiles: [],
+        inView: false,
+        fromCell: { position: vector(x, y), tiles: [] }
+      });
     }
   }
   return grid;
