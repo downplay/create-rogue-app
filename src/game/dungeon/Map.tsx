@@ -17,7 +17,7 @@ import {
   useGrid
 } from "../../engine/grid";
 import styled from "styled-components";
-import { Line, Char, CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
+import { CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
 import { usePlayer } from "../../engine/player";
 import {
   vector,
@@ -26,8 +26,7 @@ import {
   multiply,
   add
 } from "../../engine/vector";
-import { getPosition } from "../../engine/hasPosition";
-import { SeenGrid } from "../../engine/grid";
+import { getPosition, PositionProps } from "../../engine/hasPosition";
 
 // TODO: Get this from combination
 const LOS_DISTANCE = 5;
@@ -40,19 +39,42 @@ const zIndexFromLayer = (layer: GridLayers) => {
   return Number(layer) * 10;
 };
 
-const Layer = styled.span<Pick<Tile, "layer">>`
+const mapBetween = <T extends any>(
+  items: T[],
+  start: number,
+  end: number,
+  callback: (item: T, index: number) => JSX.Element
+) => {
+  const output = [];
+  const endMin = Math.min(end, items.length - 1);
+  for (let n = Math.max(0, start); n <= endMin; n++) {
+    output.push(callback(items[n], n));
+  }
+  return output;
+};
+
+const Layer = styled.div<Pick<Tile, "layer">>`
   position: absolute;
-  top: 0;
-  left: 0;
   width: ${CHAR_WIDTH}px;
   height: ${CHAR_HEIGHT}px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   z-index: ${({ layer }) => zIndexFromLayer(layer)};
 `;
 
+const CellOuter = styled.div<PositionProps>`
+  position: absolute;
+  transform: translate(
+    ${({ position }) =>
+      `${position.x * CHAR_WIDTH}px, ${position.y * CHAR_HEIGHT}px`}
+  );
+  overflow: "visible";
+`;
+
 const MapCell = memo(({ cell }: MapCellProps) => {
+  console.log(cell);
   const handleMouseOver = useCallback(() => {
     for (const tile of cell.tiles) {
       tile.entity?.fireEvent(ShowCardEventKey);
@@ -65,27 +87,33 @@ const MapCell = memo(({ cell }: MapCellProps) => {
   }, [cell]);
 
   return (
-    <Char onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+    <CellOuter
+      position={cell.position}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
+    >
       {cell.tiles.map(({ TileComponent, layer, id }) => (
         <Layer key={id} layer={layer}>
           <TileComponent />
         </Layer>
       ))}
-    </Char>
+    </CellOuter>
   );
 });
 
 type MapRowProps = {
   row: SeenCell[];
+  min: number;
+  max: number;
 };
 
-const MapRow = memo(({ row }: MapRowProps) => {
+const MapRow = memo(({ row, min, max }: MapRowProps) => {
   return (
-    <Line>
-      {row.map((cell, index) => (
+    <>
+      {mapBetween(row, min, max, (cell, index) => (
         <MapCell key={index} cell={cell}></MapCell>
       ))}
-    </Line>
+    </>
   );
 });
 
@@ -100,12 +128,10 @@ const ViewPort = styled.div`
   overflow: hidden;
 `;
 
-const PanZoom = styled.div<PanZoomProps>(
-  ({ pan: { x, y } }) => `
-position: absolute;
-transform: translate(${x}px,${y}px);
-`
-);
+const PanZoom = styled.div<PanZoomProps>`
+  position: absolute;
+  transform: translate(${({ pan: { x, y } }) => `${x}px,${y}px`});
+`;
 
 export const Map = memo(() => {
   const grid = useGrid();
@@ -167,11 +193,16 @@ export const Map = memo(() => {
     };
   }, []);
 
+  const minRow = (focus?.y || 0) - 5;
+  const maxRow = (focus?.y || 0) + 5;
+  const minCell = (focus?.x || 0) - 5;
+  const maxCell = (focus?.x || 0) + 5;
+
   return (
     <ViewPort ref={viewRef}>
       <PanZoom pan={pan}>
-        {gridState.seen.map((row, index) => (
-          <MapRow key={index} row={row} />
+        {mapBetween(gridState.seen, minRow, maxRow, (row, index) => (
+          <MapRow key={index} row={row} min={minCell} max={maxCell} />
         ))}
       </PanZoom>
     </ViewPort>

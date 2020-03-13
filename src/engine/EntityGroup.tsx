@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, memo } from "react";
 import { EntityStateRecord } from "./useEntitiesState";
 import {
   EntitiesProvider,
@@ -20,7 +20,7 @@ import {
  * TODO: How to group things? Need to measure performance. Group the whole map and keep doors separate?
  * Or put a group around just rooms, corridors?
  */
-export const EntityGroup = ({ children }: React.PropsWithChildren<{}>) => {
+export const EntityGroup = memo(({ children }: React.PropsWithChildren<{}>) => {
   const entities = useEntities();
   const entitiesState = useEntitiesState();
 
@@ -50,7 +50,6 @@ export const EntityGroup = ({ children }: React.PropsWithChildren<{}>) => {
     };
   }, [entities]);
 
-  console.time("one");
   for (const [id, state] of Object.entries(groupRef.current.state)) {
     if (entitiesState.state[id] !== state) {
       // At least one state has changed, create a new state
@@ -62,7 +61,6 @@ export const EntityGroup = ({ children }: React.PropsWithChildren<{}>) => {
       break;
     }
   }
-  console.timeEnd("one");
 
   return (
     <EntitiesProvider value={actions}>
@@ -71,4 +69,4 @@ export const EntityGroup = ({ children }: React.PropsWithChildren<{}>) => {
       </EntitiesStateProvider>
     </EntitiesProvider>
   );
-};
+});

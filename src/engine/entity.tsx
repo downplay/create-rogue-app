@@ -10,7 +10,6 @@ export function entity<TProps>(Component: React.ComponentType<TProps>) {
   const entityComponent = (props: TProps) => {
     // TODO: derive initial state values automatically from props
     const [context, id, destroyed] = useEntityContext();
-    console.log("entity");
     return destroyed ? null : (
       <EntityProvider value={context}>
         <MemoComponent {...props} />
