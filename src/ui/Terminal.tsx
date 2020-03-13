@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useLayoutEffect } from "react";
 import { Line } from "./Typography";
 import { useTerminalState } from "../engine/terminal";
 import styled from "styled-components";
@@ -10,9 +10,14 @@ const Scroller = styled.div`
 `;
 
 export const Terminal = () => {
+  const scrollRef = useRef<HTMLDivElement>(null!);
   const terminal = useTerminalState();
+  // Scroll to bottom on new message
+  useLayoutEffect(() => {
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [terminal.messages]);
   return (
-    <Scroller>
+    <Scroller ref={scrollRef}>
       {terminal.messages.map((text, index) => (
         <Line key={index}>{text}</Line>
       ))}

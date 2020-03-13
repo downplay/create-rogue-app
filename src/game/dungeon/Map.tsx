@@ -28,7 +28,7 @@ import {
 } from "../../engine/vector";
 import { getPosition, PositionProps } from "../../engine/hasPosition";
 
-// TODO: Get this from combination
+// TODO: Get this from combination of; global setting, biome (high outdoors (infinite?)), player effects, current tile (shade)
 const LOS_DISTANCE = 5;
 
 type MapCellProps = {
@@ -38,6 +38,8 @@ type MapCellProps = {
 const zIndexFromLayer = (layer: GridLayers) => {
   return Number(layer) * 10;
 };
+
+const MAX_DRAW_DISTANCE = 10;
 
 const mapBetween = <T extends any>(
   items: T[],
@@ -53,6 +55,15 @@ const mapBetween = <T extends any>(
   return output;
 };
 
+// const mapBetween = <T extends any>(
+//   items: T[],
+//   start: number,
+//   end: number,
+//   callback: (item: T, index: number) => JSX.Element
+// ) => {
+//   return items.map(callback);
+// };
+
 const Layer = styled.div<Pick<Tile, "layer">>`
   position: absolute;
   width: ${CHAR_WIDTH}px;
@@ -66,11 +77,8 @@ const Layer = styled.div<Pick<Tile, "layer">>`
 
 const CellOuter = styled.div<PositionProps>`
   position: absolute;
-  transform: translate(
-    ${({ position }) =>
-      `${position.x * CHAR_WIDTH}px, ${position.y * CHAR_HEIGHT}px`}
-  );
-  overflow: "visible";
+  left: ${({ position }) => position.x * CHAR_WIDTH}px;
+  top: ${({ position }) => position.y * CHAR_HEIGHT}px;
 `;
 
 const MapCell = memo(({ cell }: MapCellProps) => {
@@ -132,6 +140,8 @@ const PanZoom = styled.div<PanZoomProps>`
   position: absolute;
   transform: translate(${({ pan: { x, y } }) => `${x}px,${y}px`});
 `;
+/* left: ${({ pan }) => pan.x}px;
+  top: ${({ pan }) => pan.y}px; */
 
 export const Map = memo(() => {
   const grid = useGrid();
@@ -193,10 +203,10 @@ export const Map = memo(() => {
     };
   }, []);
 
-  const minRow = (focus?.y || 0) - 5;
-  const maxRow = (focus?.y || 0) + 5;
-  const minCell = (focus?.x || 0) - 5;
-  const maxCell = (focus?.x || 0) + 5;
+  const minRow = (focus?.y || 0) - MAX_DRAW_DISTANCE;
+  const maxRow = (focus?.y || 0) + MAX_DRAW_DISTANCE;
+  const minCell = (focus?.x || 0) - MAX_DRAW_DISTANCE;
+  const maxCell = (focus?.x || 0) + MAX_DRAW_DISTANCE;
 
   return (
     <ViewPort ref={viewRef}>

@@ -33,9 +33,9 @@ type TwoToneProps = {
 const AsciiChar = styled.span<Omit<TwoToneProps, "back">>`
   position: absolute;
   display: block;
-  transform: scaleX(2.1);
+  /* transform: scaleX(2.1);
   transform-origin: 0 0;
-  top: -3px;
+  top: -3px; */
   color: ${({ fore }) => fore};
 `;
 

@@ -7,10 +7,11 @@ import { GridLayers } from "../../engine/grid";
 import { hasRandomMovement } from "../behaviours/hasRandomMovement";
 import { Card, Description } from "../../ui/Card";
 import { Name } from "../meta/Name";
+import { Emoji } from "../../ui/Typography";
 
 const ratStats = stats(2, 1, 3, 0, 12);
 
-const RatTile = tile("🐀");
+const RatTile = () => <Emoji>🐀</Emoji>;
 
 export const Rat = entity(() => {
   hasTile(RatTile, GridLayers.Actor);

@@ -2,7 +2,7 @@ import { createContext } from "../helpers/createContext";
 import { EntityContext, useEvent, useEntity } from "./useEntitiesState";
 import { produce } from "immer";
 
-export const REAL_TIME_SPEED = 100;
+export const REAL_TIME_SPEED = 50;
 export const wait = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms));
 
