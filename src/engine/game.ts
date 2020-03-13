@@ -1,5 +1,6 @@
 import { createContext } from "../helpers/createContext";
 import { EntityContext, useEvent, useEntity } from "./useEntitiesState";
+import { produce } from "immer";
 
 export const REAL_TIME_SPEED = 100;
 export const wait = (ms: number) =>
@@ -38,28 +39,52 @@ export const [useGame, GameProvider] = createContext<GameActions>();
 export const [useGameState, GameStateProvider] = createContext<GameState>();
 
 export const gameMutations = {
-  enqueueTurn: (delta: number, entity: EntityContext) => (game: GameState) => {
+  enqueueTurn: (delta: number, entity: EntityContext) => (
+    game: GameState
+  ): [GameState, any] => {
     const time = game.time + delta;
     const newTurn = { time, entity };
 
     const insertIndex = game.turnQueue.findIndex(turn => turn.time > time);
-    if (insertIndex === -1) {
-      game.turnQueue.push(newTurn);
-    } else {
-      game.turnQueue.splice(insertIndex, 0, newTurn);
-    }
+    return [
+      produce(game, game => {
+        if (insertIndex === -1) {
+          game.turnQueue.push(newTurn);
+        } else {
+          game.turnQueue.splice(insertIndex, 0, newTurn);
+        }
+      }),
+      undefined
+    ];
   },
-  shiftTurn: () => (game: GameState) => {
-    const turn = game.turnQueue.shift();
-    if (!turn) {
+  shiftTurn: () => (game: GameState): [GameState, any] => {
+    if (!game.turnQueue.length) {
       throw new Error("Out of turns!");
     }
+    return [
+      produce(game, game => {
+        game.turnQueue.shift();
+      }),
+      undefined
+    ];
   },
-  advanceTime: (delta: number) => (game: GameState) => {
-    game.time += delta;
+  advanceTime: (delta: number) => (game: GameState): [GameState, any] => {
+    return [
+      produce(game, game => {
+        game.time += delta;
+      }),
+      undefined
+    ];
   },
-  setPlayerTurn: (playerTurn: boolean) => (game: GameState) => {
-    game.playerTurn = playerTurn;
+  setPlayerTurn: (playerTurn: boolean) => (
+    game: GameState
+  ): [GameState, any] => {
+    return [
+      produce(game, game => {
+        game.playerTurn = playerTurn;
+      }),
+      undefined
+    ];
   }
 };
 

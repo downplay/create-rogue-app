@@ -32,17 +32,37 @@ export type EntityEventsRecord = Record<
 export const entitiesMutations = {
   register: (id: string, entityState: EntityStateRecord) => (
     entities: EntitiesStateRecord
-  ) => {
-    entities[id] = entityState;
+  ): [EntitiesStateRecord, any] => {
+    return [
+      {
+        ...entities,
+        [id]: entityState
+      },
+      undefined
+    ];
   },
   // TODO: register and update are suspiciously the same, really need two of them?
   update: (id: string, entityState: EntityStateRecord) => (
     entities: EntitiesStateRecord
-  ) => {
-    entities[id] = entityState;
+  ): [EntitiesStateRecord, any] => {
+    return [
+      {
+        ...entities,
+        [id]: entityState
+      },
+      undefined
+    ];
   },
-  unregister: (id: string) => (entities: EntitiesStateRecord) => {
-    delete entities[id];
+  unregister: (id: string) => (
+    entities: EntitiesStateRecord
+  ): [EntitiesStateRecord, any] => {
+    return [
+      {
+        ...entities,
+        [id]: undefined
+      } as EntitiesStateRecord,
+      undefined
+    ];
   }
 };
 

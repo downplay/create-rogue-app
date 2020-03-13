@@ -3,6 +3,7 @@ import { v4 } from "uuid";
 
 import { createContext } from "../helpers/createContext";
 import { EntityContext, useEvent } from "./useEntitiesState";
+import { produce } from "immer";
 
 // TODO: use this
 export enum GridLayers {
@@ -89,10 +90,10 @@ export const gridMutations = {
     TileComponent: React.ComponentType,
     layer: GridLayers = GridLayers.Floor,
     entity?: EntityContext
-  ) => (grid: GridState, original: GridState): Tile => {
+  ) => (grid: GridState): [GridState, Tile] => {
     const tile: Tile = { TileComponent, id: v4(), layer, position, entity };
     // TODO: Following grid expansion code didn't work (because of immer proxy)
-    // Need to refactor the mutations to not use proxy.
+    // can be reinstated now but need to handle seen grid too
     // if (!original.map[position.y]) {
     //   grid.map[position.y] = [];
     // }
@@ -105,18 +106,34 @@ export const gridMutations = {
     if (!grid.map[position.y]?.[position.x]) {
       throw new Error("No cell at " + position.x + ", " + position.y);
     }
-    grid.map[position.y][position.x].tiles.push(tile);
-    return tile;
+    return [
+      produce(grid, grid => {
+        grid.map[position.y][position.x].tiles.push(tile);
+      }),
+      tile
+    ];
   },
-  removeTile: (handle: Tile) => (grid: GridState) => {
+  removeTile: (handle: Tile) => (grid: GridState): [GridState, undefined] => {
     const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
     const index = tiles?.findIndex(tile => tile.id === handle.id);
     if (index !== undefined && index >= 0) {
-      tiles.splice(index, 1);
+      return [
+        produce(grid, grid => {
+          grid.map[handle.position.y][handle.position.x].tiles.splice(index, 1);
+        }),
+        undefined
+      ];
     }
+    return [grid, undefined];
   },
-  updateSeen: (seen: SeenGrid) => (grid: GridState) => {
-    grid.seen = seen;
+  updateSeen: (seen: SeenGrid) => (grid: GridState): [GridState, undefined] => {
+    return [
+      {
+        ...grid,
+        seen
+      },
+      undefined
+    ];
   }
 };
 

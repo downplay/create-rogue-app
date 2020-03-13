@@ -63,7 +63,7 @@ const queries = {
 type SetStateType = React.Dispatch<React.SetStateAction<RogueState>>;
 
 type QueryProducer = (...args: any) => (state: any) => any;
-type MutationProducer = (...args: any) => (state: any, original: any) => any;
+type MutationProducer = (...args: any) => (state: any) => [any, any];
 
 type ContextKeys = keyof RogueState;
 
@@ -92,13 +92,9 @@ const bindMutationSlice = (
   return Object.entries(slice).reduce<Record<string, (state: any) => any>>(
     (acc, [key, value]) => {
       acc[key] = (...args: any[]) => {
-        let result: any;
         // TODO: Managing the entire objcet is fairly pointless; we can just have 4 totally separate
         // bound contexts and create them all with a useBoundContext hook
-        const state = produce(stateRef.current[contextKey], state => {
-          result = value(...args)(state, stateRef.current[contextKey]);
-          return state;
-        });
+        const [state, result] = value(...args)(stateRef.current[contextKey]);
         if (stateRef.current[contextKey] !== state) {
           stateRef.current = { ...stateRef.current, [contextKey]: state };
           // Internals hack: to populate initial state and allow subsequent calls to get safe values,

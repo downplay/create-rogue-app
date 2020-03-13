@@ -1,5 +1,6 @@
 import { TerminalState, TerminalActions } from "../game/types";
 import { createContext } from "../helpers/createContext";
+import { produce } from "immer";
 
 export const [useTerminal, TerminalProvider] = createContext<TerminalActions>();
 export const [useTerminalState, TerminalStateProvider] = createContext<
@@ -7,8 +8,15 @@ export const [useTerminalState, TerminalStateProvider] = createContext<
 >();
 
 export const terminalMutations = {
-  write: (text: string) => (terminal: TerminalState) => {
-    terminal.messages.push(text);
+  write: (text: string) => (
+    terminal: TerminalState
+  ): [TerminalState, undefined] => {
+    return [
+      produce(terminal, terminal => {
+        terminal.messages.push(text);
+      }),
+      undefined
+    ];
   }
 };
 
