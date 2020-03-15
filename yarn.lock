@@ -1411,6 +1411,11 @@
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
 
+"@types/nearley@^2.11.1":
+  version "2.11.1"
+  resolved "https://registry.yarnpkg.com/@types/nearley/-/nearley-2.11.1.tgz#6ac3f57c00ca28071a1774ec72d2e45750f21420"
+  integrity sha512-oaAg5gn74VFpPYs6Ou2pjDao3WJxnlnH29q9rLOxSGb0PTw2QtBQcTAN9xs1OAHrtI9En5kIXKM96stf7//c9w==
+
 "@types/node@*":
   version "13.7.1"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-13.7.1.tgz#238eb34a66431b71d2aaddeaa7db166f25971a0d"
@@ -6705,7 +6710,7 @@ modern-css-reset@^1.1.0:
   resolved "https://registry.yarnpkg.com/modern-css-reset/-/modern-css-reset-1.1.0.tgz#91be70bcf6b2aefed0d16e8a439ef174a5f7459a"
   integrity sha512-JOsOWxyDiZJWhvvx0LVtY9l4MT/1tlDevBkmPbGFEvxTLGVwCOJ/f0ZoT9moTdMsrqZeShJOX/bTaUfI4WfFQw==
 
-moo@^0.5.0:
+moo@^0.5.0, moo@^0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/moo/-/moo-0.5.1.tgz#7aae7f384b9b09f620b6abf6f74ebbcd1b65dbc4"
   integrity sha512-I1mnb5xn4fO80BH9BLcF0yLypy2UKl+Cb01Fu0hJRkJjlCRtxZMWkTdAtDd5ZqCOxtCkhmRwyI57vWT+1iZ67w==

@@ -1,93 +1,85 @@
-@builtin "whitespace.ne" # `_` means arbitrary amount of whitespace
-@builtin "number.ne"     # `int`, `decimal`, and `percentage` number primitives
-
 @{%
-var appendItem = function (a, b) { return function (d) { return d[a].concat([d[b]]); } };
-var appendItemChar = function (a, b) { return function (d) { return d[a].concat(d[b]); } };
-var empty = function (d) { return []; };
-var emptyStr = function (d) { return ""; };
 
-const buildPhrase = (nphrase, nnext) => d => {
+const moo = require('moo')
 
-	const phrase = d[nphrase]
-	const next = d[nnext]
+let lexer = moo.compile({
+    number: /-?(?:[0-9]|[1-9][0-9]+)(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?\b/,
+	sub: /\$[a-zA-Z0-9]+/,
+	label: /^[a-zA-Z0-9]+:$/,
+    string: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|])+/,
+	newline: {match:/(?:\r\n|\r|\n)/, lineBreaks:true},
+    space: {match: /[.\t]+/, lineBreaks: false},
+    '$': '$',
+    '(': '(',
+	')': ')',
+    '|': '|',
+    ':': ':',
+    true: 'true',
+    false: 'false',
+    null: 'null',
+})
 
-	if (typeof next === "string") {
-		if (!phrase) {
-            return { type: "text", text: next };
-		}
-		
-		if (phrase.type === "text") {
-			return {...phrase, text: phrase.text + next}
-		}
-		
-		if (Array.isArray(phrase)) {
-			const last = phrase[phrase.length - 1];
-			if (last.type === "text") {
-				return [...phrase.slice(0, phrase.length - 1), {...last, text: last.text + next}];
-			}
-			return [...phrase, {type: "text", text: next}];
-		}
-		
-		return [phrase, { type: "text", text: next }]
-	}
-	
-	if (typeof phrase === "string") {
-		if (next.type === "text") {
-			return { ...next, text: phrase + next.text }
-		}
-		return [{ type: "text", text: phrase }, next]
-	}
+const empty = () => null
 
-	
-	return phrase ? [phrase,next]: next
-}
-	  	  
+const textContent = (text) => ({type:"text", text})
+
+const subContent = (label) => ({type:"substitution", label})
+
+const choice = (content) => ({type:"choice", content, weight: 10})
+
+const main = (choices, labels) => ({type: "main", choices, labels})
+
+const label = (name, choices) => ({type: "label", name, choices})
+
 %}
 
-main              -> _ content _ labelSections _   {% d => ({type: "main", choices:d[1], labels:d[3]}) %}
-                   | _ content _                   {% d => ({type: "main", choices:d[1]}) %}
+@lexer lexer
 
-content           -> bulletList                      {% id %}
-                   | line							{% id %}
+main             -> _ content _                         {% d => main(d[1]) %}
+                  | _ content labels _                {% d => main(d[1], d[2]) %}
+				  
+content          -> line                               {% d => [d[0]] %}
+                  | content line                       {% d => [...d[0], d[1]] %}
 
-bulletList        -> bulletLine                 {% d => [d[0]] %}
-                   | bulletList newline bulletLine      {% appendItem(0,2) %}
+labels           -> labelledContent                      {% d => [d[0]] %}
+                  | labels labelledContent              {% d => [...d[0], d[1]] %}
+				  
+labelledContent  -> _ label _ content                  {% d => label(d[1], d[3]) %}
 
-bulletLine        -> "-" __ phrase                {% d => d[2] %}
+label            -> newline %label newline             {% d => d[1].value.slice(0, d[1].value.length - 1) %}
 
-line              -> nonBulletChar phrase _ newline       {% buildPhrase(0,1) %}
-					
-phrase            -> phraseChar                         {% buildPhrase(1,0) %}
-                   | phrase phraseChar                  {% buildPhrase(0,1) %}
-                   | phrase substitution                {% buildPhrase(0,1) %}
-                   | phrase choice                      {% buildPhrase(0,1) %}
-				   
+line              -> parts newline                     {% d => choice(d[0]) %}
 
-newline           -> "\r" "\n"                                {% empty %}
-                   | "\r" | "\n"                              {% empty %}
+parts             -> null                              {% d => [] %}
+                   | parts part                        {% d => [...d[0], d[1]] %}
 
-nonBulletChar        -> [^\-\n\r]                            {% id %}
+part              -> string                           {% d => textContent(d[0]) %}
+                   | complexPart                      {% id %}
 
-phraseChar        -> [^\n\r\(\)\$|]                            {% id %}
-
-labelSections     -> labelSection                   {% d => [d[0]] %}
-                   | labelSections labelSection         {% appendItem(0,1) %}
-
-labelSection      -> label content                     {% d => ({type: "label", name: d[0].name, choices: d[1]}) %}
-
-label             -> _ newline word ":" newline _    {% d => ({type: "label", name: d[2]}) %}
-
-word              -> wordChar                            {% id %}
-                   | word wordChar             {% appendItemChar(0,1) %}
-
-wordChar          -> [a-zA-Z0-9]                                {% id %}
-
-substitution      -> "$" word                        {% d => ({ type: "substitution", label: d[1] }) %}
+complexPart       -> choice                           {% id %}
+                   | substitution                     {% id %}
 
 choice            -> "(" choiceItems ")"             {% d=> ({ type: "choices", choices: d[1] }) %}
 
-choiceItems       -> choiceItem                      {% d => [d[0]] %}      
-                   | choiceItems "|" choiceItem      {% d => ([...d[0],d[2]]) %}
+choiceItems       -> choiceItem                      {% d => [choice(d[0])] %}      
+                   | choiceItems "|" choiceItem      {% d => ([...d[0],choice(d[2])]) %}
 
-choiceItem        -> phrase
+choiceItem        -> choicePart                      {% id %}
+                   | choiceItem choicePart           {% d => [...d[0], d[1]]  %}
+				   
+choicePart        -> multiline                       {% d => textContent(d[0]) %}
+                   | complexPart                       {% id %}
+
+multiline         -> string                        {% id %}
+                   | string newline multiline      {% d => d[0] + "\n" + d[2] %}
+
+substitution      -> %sub                          {% d => subContent(d[0].value.slice(1)) %}
+                   | "$" "(" string ")"             {% d => subContent(d[2]) %}
+
+string            -> %string                       {% d => d[0].value %}
+
+newline           -> %newline                                {% empty %}
+
+_                 -> %space                                   {% empty %} 
+                   | %newline                                 {% empty %}
+                   | null                                     {% empty %}

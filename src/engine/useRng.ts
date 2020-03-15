@@ -1,15 +1,14 @@
 import { useMemo } from "react";
 import { elements, sum } from "./helpers";
-import { resolveTxt } from "dns";
-import { parse } from "path";
+import { parse } from "./text/parse";
 
-type RNG = {
+export type RNG = {
   raw: () => number;
   range: (min: number, max: number) => number;
   integer: (min: number, max: number) => number;
   pick: <T>(items: T[]) => T;
   dice: (count: number, sides: number) => number;
-  text: (input: string) => string;
+  text: (input: TemplateStringsArray) => string;
 };
 
 export const useRng = (): RNG => {
@@ -23,16 +22,23 @@ export const useRng = (): RNG => {
     const integer = (min: number, max: number) =>
       Math.floor(Math.random() * (max - min) + min);
 
-    return {
+    const rng = {
       raw: () => Math.random(),
-      range: (min, max) => Math.random() * (max - min) + min,
+      range: (min: number, max: number) => Math.random() * (max - min) + min,
       integer,
       pick: <T>(items: T[]) => items[integer(0, items.length)],
       dice: (count: number, sides: number) =>
         sum(elements(count, () => integer(1, sides))),
-      text: (input: string) => {
-        const parsed = parse(input);
+      text: (input: TemplateStringsArray) => {
+        const flattened = input
+          .map(value => {
+            return value;
+          })
+          .join("");
+        const parsed = parse(flattened);
+        return parsed(rng);
       }
     };
+    return rng;
   }, []);
 };

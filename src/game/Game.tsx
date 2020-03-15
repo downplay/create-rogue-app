@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useTerminal } from "../engine/terminal";
-import { ClassicRooms } from "./levels/ClassicRooms";
 import { TestLint } from "./levels/TestLint";
+import { TavernEncounter } from "./scenes/TavernEncounter";
 
 export const Game = () => {
   const terminal = useTerminal();
@@ -10,7 +10,7 @@ export const Game = () => {
   }, []);
   return (
     <>
-      <ClassicRooms />
+      <TavernEncounter />
       <TestLint />
     </>
   );
