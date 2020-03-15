@@ -1,5 +1,5 @@
 import React from "react";
-import { hasTile, tile } from "../../engine/hasTile";
+import { hasTile } from "../../engine/hasTile";
 import { Monster } from "../meta/Monster";
 import { entity } from "../../engine/entity";
 import { hasStats, stats } from "../../engine/hasStats";
@@ -29,3 +29,5 @@ export const Rat = entity(() => {
     </Monster>
   );
 });
+
+/* react-custom-renderer */

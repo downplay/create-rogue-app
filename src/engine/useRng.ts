@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { elements, sum } from "./helpers";
+import { resolveTxt } from "dns";
+import { parse } from "path";
 
 type RNG = {
   raw: () => number;
@@ -7,6 +9,7 @@ type RNG = {
   integer: (min: number, max: number) => number;
   pick: <T>(items: T[]) => T;
   dice: (count: number, sides: number) => number;
+  text: (input: string) => string;
 };
 
 export const useRng = (): RNG => {
@@ -26,7 +29,10 @@ export const useRng = (): RNG => {
       integer,
       pick: <T>(items: T[]) => items[integer(0, items.length)],
       dice: (count: number, sides: number) =>
-        sum(elements(count, () => integer(1, sides)))
+        sum(elements(count, () => integer(1, sides))),
+      text: (input: string) => {
+        const parsed = parse(input);
+      }
     };
   }, []);
 };
