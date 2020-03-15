@@ -1,10 +1,11 @@
 @{%
 
-const moo = require('moo')
+// const moo = require('moo')
 
 let lexer = moo.compile({
     number: /-?(?:[0-9]|[1-9][0-9]+)(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?\b/,
 	sub: /\$[a-zA-Z0-9]+/,
+	bang: /^!/,
 	label: /^[a-zA-Z0-9]+:$/,
     string: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|])+/,
 	newline: {match:/(?:\r\n|\r|\n)/, lineBreaks:true},
@@ -14,6 +15,7 @@ let lexer = moo.compile({
 	')': ')',
     '|': '|',
     ':': ':',
+    '!': '!',
     true: 'true',
     false: 'false',
     null: 'null',
@@ -35,13 +37,14 @@ const label = (name, choices) => ({type: "label", name, choices})
 
 @lexer lexer
 
-main             -> _ content _                         {% d => main(d[1]) %}
-                  | _ content labels _                {% d => main(d[1], d[2]) %}
+main             -> _ content _                               {% d => main(d[1]) %}
+                  | _ content _ labels _                {% d => main(d[1], d[3]) %}
 				  
 content          -> line                               {% d => [d[0]] %}
                   | content line                       {% d => [...d[0], d[1]] %}
-
-labels           -> labelledContent                      {% d => [d[0]] %}
+				  | content bangLine                       {% d => [...d[0], d[1]] %}
+				  
+labels           -> labelledContent                      {% d => [d[0]] %}	
                   | labels labelledContent              {% d => [...d[0], d[1]] %}
 				  
 labelledContent  -> _ label _ content                  {% d => label(d[1], d[3]) %}
@@ -50,7 +53,9 @@ label            -> newline %label newline             {% d => d[1].value.slice(
 
 line              -> parts newline                     {% d => choice(d[0]) %}
 
-parts             -> null                              {% d => [] %}
+bangLine          -> "!" parts:? newline                 {% d => choice(d[1] || []) %}
+
+parts             -> part                              {% d => [d[0]] %}
                    | parts part                        {% d => [...d[0], d[1]] %}
 
 part              -> string                           {% d => textContent(d[0]) %}
