@@ -1,7 +1,7 @@
 import React from "react";
 import { Ascii } from "../../ui/Typography";
-import { isSpawnPosition } from "../../engine/flags";
-import { hasTile } from "../../engine/hasTile";
+import { isSpawn } from "../../engine/flags";
+import { hasTile, TileProps } from "../../engine/hasTile";
 import { entity } from "../../engine/entity";
 import { PositionProps, hasPosition } from "../../engine/hasPosition";
 
@@ -14,9 +14,15 @@ export const FloorTile = () => (
   </Ascii>
 );
 
-export const Floor = entity(({ position }: PositionProps) => {
-  hasPosition(position);
-  hasTile(FloorTile);
-  isSpawnPosition();
-  return null;
-});
+export const Floor = entity(
+  ({
+    position,
+    TileComponent = FloorTile,
+    children
+  }: React.PropsWithChildren<PositionProps & TileProps>) => {
+    hasPosition(position);
+    isSpawn();
+    hasTile(TileComponent);
+    return <>{children}</>;
+  }
+);

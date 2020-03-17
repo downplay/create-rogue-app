@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { elements, sum } from "./helpers";
-import { parse } from "./text/parse";
+import { parse, ParsedText } from "./text/parse";
 
 export type RNG = {
   raw: () => number;
@@ -29,14 +29,17 @@ export const useRng = (): RNG => {
       pick: <T>(items: T[]) => items[integer(0, items.length)],
       dice: (count: number, sides: number) =>
         sum(elements(count, () => integer(1, sides))),
-      text: (input: TemplateStringsArray) => {
-        const flattened = input
-          .map(value => {
-            return value;
-          })
-          .join("");
-        const parsed = parse(flattened);
-        return parsed(rng);
+      text: (input: TemplateStringsArray | ParsedText) => {
+        if (Array.isArray(input)) {
+          const flattened = input
+            .map(value => {
+              return value;
+            })
+            .join("");
+          const parsed = parse(flattened);
+          return parsed(rng);
+        }
+        return (input as ParsedText)(rng);
       }
     };
     return rng;

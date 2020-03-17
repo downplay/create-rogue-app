@@ -1,19 +1,18 @@
 import React, { useMemo, memo, PropsWithChildren } from "react";
-import {
-  Vector,
-  vector,
-  VECTOR_ORIGIN,
-  add,
-  equals
-} from "../../engine/vector";
+import { Vector, VECTOR_ORIGIN, add, equals } from "../../engine/vector";
 import { Wall } from "./Wall";
 import { Floor } from "./Floor";
-import { Door } from "./Door";
+import { Door, DoorProps } from "./Door";
+import { reduceQuad } from "../../engine/vector";
+import { PositionProps } from "../../engine/hasPosition";
 
 export type RoomProps = {
   origin?: Vector;
   size: Vector;
   doors?: Vector[];
+  WallComponent?: React.ComponentType<PositionProps>;
+  FloorComponent?: React.ComponentType<PositionProps>;
+  DoorComponent?: React.ComponentType<DoorProps>;
 };
 
 export const Room = memo(
@@ -21,28 +20,26 @@ export const Room = memo(
     origin = VECTOR_ORIGIN,
     size,
     doors = [],
-    children
+    children,
+    WallComponent = Wall,
+    FloorComponent = Floor,
+    DoorComponent = Door
   }: PropsWithChildren<RoomProps>) => {
     // TODO: Wall/Floor, to be overridable in props, but also can be derived from current biome
     const tiles = useMemo(() => {
-      const tiles = [];
-      for (let x = 0; x < size.x; x++) {
-        for (let y = 0; y < size.y; y++) {
-          const key = `${x}_${y}`;
-          const position = vector(x, y);
-          if (doors.find(door => equals(door, position))) {
-            tiles.push(<Door key={key} position={add(origin, vector(x, y))} />);
-          } else {
-            tiles.push(
-              x === 0 || y === 0 || x === size.x - 1 || y === size.y - 1 ? (
-                <Wall key={key} position={add(origin, vector(x, y))} />
-              ) : (
-                <Floor key={key} position={add(origin, vector(x, y))} />
-              )
-            );
-          }
+      const tiles = reduceQuad<JSX.Element>(VECTOR_ORIGIN, size, position => {
+        const { x, y } = position;
+        const key = `${x}_${y}`;
+        const found = doors.find(door => equals(door, position));
+        if (found) {
+          return <DoorComponent key={key} position={add(origin, position)} />;
         }
-      }
+        return x === 0 || y === 0 || x === size.x - 1 || y === size.y - 1 ? (
+          <WallComponent key={key} position={add(origin, position)} />
+        ) : (
+          <FloorComponent key={key} position={add(origin, position)} />
+        );
+      });
       return tiles;
     }, [size]);
 

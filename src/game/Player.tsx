@@ -25,8 +25,9 @@ import { canLiveAndDie } from "../engine/hasLife";
 import { hasInventory, fireTake } from "../engine/hasInventory";
 import { Card, Description } from "../ui/Card";
 import { Name } from "./meta/Name";
-import { isPlayer } from "../engine/flags";
+import { isPlayer, FLAG_PLAYER_SPAWN } from "../engine/flags";
 import { hasSpawnPosition } from "../engine/recipes/hasSpawnPosition";
+import { fireInteract } from "../engine/canInteractWith";
 
 const PlayerTile = tile("🧙");
 
@@ -44,8 +45,8 @@ const commands = [
 export const Player = entity(() => {
   isPlayer();
   hasTile(PlayerTile, GridLayers.Actor);
-  hasInventory({ gold: 0 });
-  hasSpawnPosition();
+  hasInventory({ gold: 0, items: [] });
+  hasSpawnPosition(FLAG_PLAYER_SPAWN);
   const [currentStats] = hasStats(stats(10, 5, 5, 5, 10));
 
   const player = usePlayer();
@@ -99,10 +100,12 @@ export const Player = entity(() => {
       // should instead store a unique list of entities to only do this once. Also we wouldn't
       // have to check if entity exists on next line
       if (tile.entity) {
+        // Pickup automatically (for now)
         fireTake(entity, tile.entity);
+        // Also general interaction
+        fireInteract(entity, tile.entity);
       }
     }
-    // Pickup automatically (for now)
   }, [position]);
 
   const nextTurn = () => {

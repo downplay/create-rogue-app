@@ -4,6 +4,10 @@ import { useGrid, GridLayers } from "./grid";
 import { useEntity } from "./useEntitiesState";
 import { Emoji } from "../ui/Typography";
 
+export type TileProps = {
+  TileComponent?: React.ComponentType;
+};
+
 export const hasTile = (
   TileComponent: React.ComponentType,
   layer?: GridLayers

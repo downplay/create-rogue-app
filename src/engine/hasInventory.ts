@@ -2,8 +2,14 @@ import { useEntityState, stateGetter } from "./useEntityState";
 import { useEvent, EntityContext } from "./useEntitiesState";
 import { produce } from "immer";
 
+export type InventoryItem = {
+  count: number;
+  type: React.ComponentType;
+};
+
 export type Inventory = {
   gold: number;
+  items: InventoryItem[];
 };
 
 const InventoryKey = Symbol("Inventory");

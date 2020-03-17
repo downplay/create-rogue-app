@@ -9,13 +9,14 @@ export const CHAR_HEIGHT = 32;
 export const FONT_SIZE = 26;
 
 export const Line = styled.p`
-  position: relative;
   display: flex;
   width: 100%;
-  height: ${CHAR_HEIGHT}px;
+  line-height: ${CHAR_HEIGHT}px;
   font-size: ${FONT_SIZE}px;
   font-family: "Fira Code VF", fixed-width;
   font-variant-ligatures: contextual; // For the fun stuff
+  margin: 0;
+  padding: 0;
 `;
 
 export const Char = styled.span`
@@ -33,6 +34,7 @@ type TwoToneProps = {
 const AsciiChar = styled.span<Omit<TwoToneProps, "back">>`
   position: absolute;
   display: block;
+  font-size: ${FONT_SIZE}px;
   /* transform: scaleX(2.1);
   transform-origin: 0 0;
   top: -3px; */

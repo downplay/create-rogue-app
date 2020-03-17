@@ -1,6 +1,6 @@
 @{%
 
-// const moo = require('moo')
+const moo = require('moo')
 
 let lexer = moo.compile({
     number: /-?(?:[0-9]|[1-9][0-9]+)(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?\b/,
@@ -8,8 +8,8 @@ let lexer = moo.compile({
 	bang: /^!/,
 	label: /^[a-zA-Z0-9]+:$/,
     string: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|])+/,
-	newline: {match:/(?:\r\n|\r|\n)/, lineBreaks:true},
-    space: {match: /[.\t]+/, lineBreaks: false},
+	newline: { match:/(?:\r\n|\r|\n)/, lineBreaks:true },
+    space: { match: /[.\t]+/, lineBreaks: false },
     '$': '$',
     '(': '(',
 	')': ')',

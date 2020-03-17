@@ -1,10 +1,11 @@
 import * as nearley from "nearley";
 import { RNG } from "../useRng";
+
 const grammar = require("./herotext.js");
 
-type ContentItemAST = {
+interface ContentItemAST {
   type: "text" | "substitution" | "choices" | "main" | "label";
-};
+}
 
 type ContentAST = ContentItemAST[] | ContentItemAST;
 
@@ -29,7 +30,7 @@ type ChoiceAST = {
   content: ContentAST;
 };
 
-type LabelAST = ContentItemAST & {
+type LabelAST = Omit<ContentChoiceAST, "type"> & {
   type: "label";
   name: string;
 };
@@ -39,15 +40,47 @@ type MainAST = ContentChoiceAST & {
   labels: LabelAST[];
 };
 
-export const parse = (input: string) => {
-  console.log(grammar);
+type AdditionalLabels = Record<string, string | ChoiceAST[]>;
+
+export type ParsedText = (
+  rng: RNG,
+  additionalLabels?: AdditionalLabels
+) => string;
+
+const createLabelsFromObject = (labels: AdditionalLabels) =>
+  Object.entries(labels).map<LabelAST>(([key, value]) => ({
+    type: "label",
+    name: key,
+    choices:
+      typeof value === "string"
+        ? [
+            {
+              type: "choice",
+              content: { type: "text", text: value } as ContentTextAST,
+              weight: 10
+            } as ChoiceAST
+          ]
+        : ((Array.isArray(value) ? value : [value]) as ChoiceAST[])
+  }));
+
+export const parse = (input: string): ParsedText => {
   const parser = new nearley.Parser(
     nearley.Grammar.fromCompiled(grammar as nearley.CompiledRules)
   );
-  const parsed = parser.feed(input);
-  console.log(parsed.results[0]);
+  let parsed;
+  try {
+    parsed = parser.feed(input);
+  } catch (error) {
+    console.error("Error parsing text:");
+    console.error(input);
+    console.error(error);
+    return () => "<Error: Unparseable text>";
+  }
   const main = (parsed.results[0] as unknown) as MainAST;
-  const execute = (rng: RNG) => {
+  const execute = (rng: RNG, additionalLabels?: AdditionalLabels) => {
+    let mergedLabels = additionalLabels
+      ? [...main.labels, ...createLabelsFromObject(additionalLabels)]
+      : main.labels;
     const processContent = (content: ContentAST): string => {
       if (Array.isArray(content)) {
         return content.map(choice => processContent(choice)).join("");
@@ -63,7 +96,7 @@ export const parse = (input: string) => {
           return processContent(chosen.content);
         case "substitution":
           const label = content as ContentSubstitutionAST;
-          const found = main.labels.find(l => l.name === label.label);
+          const found = mergedLabels.find(l => l.name === label.label);
           if (!found) {
             return `<Error: Label ${label.label}not found>`;
           }
@@ -75,4 +108,14 @@ export const parse = (input: string) => {
     return processContent(main);
   };
   return execute;
+};
+
+export const text = (input: TemplateStringsArray, ...interpolations: any[]) => {
+  const flattened = input
+    .map(value => {
+      return value;
+    })
+    .join("");
+  console.log(flattened);
+  return parse(flattened);
 };

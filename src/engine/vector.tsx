@@ -22,6 +22,12 @@ export const addTwo = (a: Vector, b: Vector): Vector =>
 export const add = (a: Vector, ...values: Vector[]): Vector =>
   values.reduce((acc, value) => addTwo(acc, value), a);
 
+export const subtractTwo = (a: Vector, b: Vector): Vector =>
+  vector(a.x - b.x, a.y - b.y);
+
+export const subtract = (a: Vector, ...values: Vector[]): Vector =>
+  values.reduce((acc, value) => addTwo(acc, value), a);
+
 export const multiply = (a: Vector, b: Vector | number): Vector =>
   typeof b === "number"
     ? vector(a.x * b, a.y * b)

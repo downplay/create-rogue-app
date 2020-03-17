@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useTerminal } from "../engine/terminal";
-import { TestLint } from "./levels/TestLint";
-import { TavernEncounter } from "./scenes/TavernEncounter";
+import { TavernEncounter } from "./scenes/tavern/TavernEncounter";
 
 export const Game = () => {
   const terminal = useTerminal();
@@ -11,7 +10,6 @@ export const Game = () => {
   return (
     <>
       <TavernEncounter />
-      <TestLint />
     </>
   );
 };

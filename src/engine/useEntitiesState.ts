@@ -180,10 +180,12 @@ export const [useEntitiesState, EntitiesStateProvider] = createContext<
 >();
 export const [useEntity, EntityProvider] = createContext<EntityContext>();
 
-export const useEvent = <T>(
-  key: string | symbol,
-  handler: (event: T) => void
-) => {
+export type Handler<T> = (event: T) => void;
+
+export const useEvent = <T>(key: string | symbol, handler?: Handler<T>) => {
   const entity = useEntity();
-  useEffect(() => entity.bindEvent<T>(key, handler), [handler]);
+  // Intentionally returning the result from the bind as the cleanup for the effect
+  useEffect(() => (handler ? entity.bindEvent<T>(key, handler) : undefined), [
+    handler
+  ]);
 };
