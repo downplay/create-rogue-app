@@ -1,10 +1,10 @@
 import React, { useMemo, memo } from "react";
-import { reduceQuad, vector } from "../../../engine/vector";
+import { reduceQuad, vector, vectorKey } from "../../../engine/vector";
 import { Floor } from "../../levels/Floor";
 import { useRng } from "../../../engine/useRng";
 import { Ascii } from "../../../ui/Typography";
 import { GrassTile } from "./GrassLand";
-import { Flag } from "../../../engine/flags";
+import { Flag, FLAG_PLAYER_SPAWN, PlayerSpawn } from "../../../engine/flags";
 
 export const FLAG_ROADSIDE = Symbol("RoadsideFlag");
 
@@ -42,12 +42,22 @@ export const RoadLayout = memo(() => {
   return (
     <>
       {reduceQuad(vector(20, 20), vector(60, 60), position => {
-        if (position.y >= bottomPos && position.y <= topPos) {
-          return <Floor TileComponent={RoadTile} position={position} />;
+        const key = vectorKey(position);
+        if (
+          position.y >= bottomPos &&
+          position.y <= topPos &&
+          position.x > 30 &&
+          position.y < 50
+        ) {
+          return (
+            <Floor key={key} TileComponent={RoadTile} position={position}>
+              {position.x === 55 ? <PlayerSpawn /> : null}
+            </Floor>
+          );
         }
 
         return (
-          <Floor TileComponent={GrassTile} position={position}>
+          <Floor key={key} TileComponent={GrassTile} position={position}>
             {position.y === bottomPos - 1 ? <Flag on={FLAG_ROADSIDE} /> : null}
           </Floor>
         );

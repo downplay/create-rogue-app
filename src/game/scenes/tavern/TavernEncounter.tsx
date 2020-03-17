@@ -21,7 +21,7 @@ export const TavernEncounter = entity(() => {
   // useRandomFactor(s) ?
   const initialState = useMemo<TavernState>(() => {
     const size = vector(rng.dice(4, 4) + 2, rng.dice(4, 4) + 2);
-    const door = vector(rng.integer(1, size.x - 1), size.y - 1);
+    const door = vector(rng.integer(1, size.x - 1), size.y);
     return {
       scene: TavernScene.Exterior,
       type: rng.pick([TavernType.Brawl, TavernType.Rest]),
@@ -47,8 +47,13 @@ export const TavernEncounter = entity(() => {
   }, []);
   onTurn(() => {
     if (!state.spawn) {
-      const position = find();
-      if (position) {
+      const spawn = find();
+      if (spawn) {
+        console.log(spawn);
+        setState({
+          ...state,
+          spawn
+        });
       } else {
         game.enqueueTurn(0.1, encounter);
       }

@@ -27,15 +27,15 @@ export const Sign = ({ tavernName, position }: SignProps) => {
 
   const signText = useMemo(() => {
     const parsed = text`
-  (*$tavernName* welcomes
-  careful drunks)
-  (Menu
-  - Beer
-  - Beer
-  - Beer!)
-  (😁 Happy Hour!
-  All day long!!)
-    `;
+(*$tavernName* welcomes
+careful drunks)
+(Menu
+- Beer
+- Beer
+- Beer!)
+(😁 Happy Hour!
+All day long!!)
+`;
 
     return parsed(rng, { tavernName });
   }, []);

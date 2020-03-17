@@ -98,6 +98,7 @@ Brawl:
 (A patron spits on the floor. "You ain't from around 'ere," they grunt.
 Before you can reply, another drunk jeers, "Aye that's rich, comin' from a $(slur=XenophobicSlur)!"
 "'Oo you callin' a $slur?" replies the first. The second hurls their glass in response. Before you know it, the entire bar is embroiled in an out-of-control brawl!
+)
 
 XenophobicSlur:
 Southern Florist

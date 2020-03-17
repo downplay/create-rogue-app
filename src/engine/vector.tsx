@@ -6,6 +6,8 @@ export type Vector = {
 export const vector = (x: number | Vector, y: number): Vector =>
   typeof x === "number" ? { x, y } : x;
 
+export const vectorKey = ({ x, y }: Vector) => `${x}_${y}`;
+
 export const VECTOR_ORIGIN = vector(0, 0);
 export const VECTOR_N = vector(0, -1);
 export const VECTOR_NE = vector(1, -1);
@@ -26,7 +28,7 @@ export const subtractTwo = (a: Vector, b: Vector): Vector =>
   vector(a.x - b.x, a.y - b.y);
 
 export const subtract = (a: Vector, ...values: Vector[]): Vector =>
-  values.reduce((acc, value) => addTwo(acc, value), a);
+  values.reduce((acc, value) => subtractTwo(acc, value), a);
 
 export const multiply = (a: Vector, b: Vector | number): Vector =>
   typeof b === "number"

@@ -71,12 +71,18 @@ export const parse = (input: string): ParsedText => {
   try {
     parsed = parser.feed(input);
   } catch (error) {
-    console.error("Error parsing text:");
+    console.error("Unparseable text:");
     console.error(input);
     console.error(error);
     return () => "<Error: Unparseable text>";
   }
   const main = (parsed.results[0] as unknown) as MainAST;
+  if (main === undefined) {
+    console.error("Undefined main:");
+    console.error(input);
+    console.error(parsed);
+    return () => "<Error: Undefined main>";
+  }
   const execute = (rng: RNG, additionalLabels?: AdditionalLabels) => {
     let mergedLabels = additionalLabels
       ? [...main.labels, ...createLabelsFromObject(additionalLabels)]
@@ -116,6 +122,5 @@ export const text = (input: TemplateStringsArray, ...interpolations: any[]) => {
       return value;
     })
     .join("");
-  console.log(flattened);
   return parse(flattened);
 };

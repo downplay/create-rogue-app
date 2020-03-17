@@ -1,5 +1,11 @@
 import React, { useMemo, memo, PropsWithChildren } from "react";
-import { Vector, VECTOR_ORIGIN, add, equals } from "../../engine/vector";
+import {
+  Vector,
+  VECTOR_ORIGIN,
+  add,
+  equals,
+  vectorKey
+} from "../../engine/vector";
 import { Wall } from "./Wall";
 import { Floor } from "./Floor";
 import { Door, DoorProps } from "./Door";
@@ -29,7 +35,7 @@ export const Room = memo(
     const tiles = useMemo(() => {
       const tiles = reduceQuad<JSX.Element>(VECTOR_ORIGIN, size, position => {
         const { x, y } = position;
-        const key = `${x}_${y}`;
+        const key = vectorKey(position);
         const found = doors.find(door => equals(door, position));
         if (found) {
           return <DoorComponent key={key} position={add(origin, position)} />;

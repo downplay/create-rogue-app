@@ -33,7 +33,7 @@ export const TavernExterior = ({ state }: Props) => {
         ? [
             [state.door],
             subtract(state.spawn, state.door),
-            add(state.door, vector(1, 1))
+            add(state.spawn, vector(1, 1))
           ]
         : [],
     [state.door, state.spawn]

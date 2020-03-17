@@ -82,7 +82,6 @@ const CellOuter = styled.div<PositionProps>`
 `;
 
 const MapCell = memo(({ cell }: MapCellProps) => {
-  console.log(cell);
   const handleMouseOver = useCallback(() => {
     for (const tile of cell.tiles) {
       tile.entity?.fireEvent(ShowCardEventKey);

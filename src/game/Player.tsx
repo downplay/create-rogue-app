@@ -168,6 +168,11 @@ export const Player = entity(() => {
     let doneTick = false;
     while (!doneTick) {
       const turn = game.nextTurn();
+      if (!turn) {
+        // Unexpectedly no turns; queue up another
+        // TODO: This really shouldn't happen, something to get to the bottom of later
+        nextTurn();
+      }
       if (turn.time <= gameState.time) {
         game.shiftTurn();
         if (turn.entity.id === entity.id) {
