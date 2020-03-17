@@ -21,7 +21,7 @@ export const TavernEncounter = entity(() => {
   // useRandomFactor(s) ?
   const initialState = useMemo<TavernState>(() => {
     const size = vector(rng.dice(4, 4) + 2, rng.dice(4, 4) + 2);
-    const door = vector(rng.integer(1, size.x - 1), size.y);
+    const door = vector(rng.integer(1, size.x - 1), size.y - 1);
     return {
       scene: TavernScene.Exterior,
       type: rng.pick([TavernType.Brawl, TavernType.Rest]),

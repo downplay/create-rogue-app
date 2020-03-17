@@ -12,11 +12,13 @@ DuckAndWaffle:
 $ye $sillyThing $and $sillyThing
 
 KingsArms:
-$ye $importantPerson's $limb
+$ye $vip's $limb
 
 ye:
 Ye
 The
+One
+!
 
 adjective:
 Olde
@@ -40,9 +42,10 @@ and:
 And
 &
 +
+'n'
 
 sillyThing:
-Dog
+Doggo
 Bone
 Ladder
 Snake
@@ -59,12 +62,18 @@ Shine
 Sun
 Stars
 Moon
+Fish
+Chips
 
-importantPerson:
+vip:
 King
 Queen
 Ace
 Lord
+Duke
+Duchess
+God
+Knight
 
 limb:
 Arm$s
@@ -75,6 +84,11 @@ Knee$s
 (Feet|Foot)
 Nose
 Ear$s
+Wing$s
+Bowel$s
+Heart
+Eye$s
+Nostril$s
 
 s:
 s
@@ -82,6 +96,9 @@ s
 `;
 
 const wait = (n: number) => "WAIT:" + n;
+
+// $Rest
+// $Abandoned
 
 export const tavernInteriorDescription = text`
 (You stoop into the murky atmosphere. "$tavernName" might just be the grubbiest pub you've ever seen.
@@ -91,8 +108,6 @@ $Scene)
 
 Scene:
 $Brawl
-$Rest
-$Abandoned
 
 Brawl:
 (A patron spits on the floor. "You ain't from around 'ere," they grunt.
@@ -105,4 +120,13 @@ Southern Florist
 Midlandser
 Northern Gridmonkey
 Fairy Islander
+`;
+
+export const patronBanter = text`
+Oi oi!
+What ho!
+Howdy
+¡Hola!
+Pardon...
+Cheers!
 `;

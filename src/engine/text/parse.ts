@@ -4,7 +4,7 @@ import { RNG } from "../useRng";
 const grammar = require("./herotext.js");
 
 interface ContentItemAST {
-  type: "text" | "substitution" | "choices" | "main" | "label";
+  type: "text" | "substitution" | "choices" | "main" | "label" | "assignment";
 }
 
 type ContentAST = ContentItemAST[] | ContentItemAST;
@@ -24,6 +24,11 @@ type ContentSubstitutionAST = ContentItemAST & {
   label: string;
 };
 
+type ContentAssignmentAST = ContentSubstitutionAST & {
+  type: "assignment";
+  variable: string;
+};
+
 type ChoiceAST = {
   type: "choice";
   weight: number;
@@ -40,14 +45,15 @@ type MainAST = ContentChoiceAST & {
   labels: LabelAST[];
 };
 
-type AdditionalLabels = Record<string, string | ChoiceAST[]>;
+type ImportLabels = Record<string, string | ChoiceAST[]>;
 
 export type ParsedText = (
   rng: RNG,
-  additionalLabels?: AdditionalLabels
+  variables?: Record<string, string>,
+  importLabels?: ImportLabels
 ) => string;
 
-const createLabelsFromObject = (labels: AdditionalLabels) =>
+const createLabelsFromObject = (labels: ImportLabels) =>
   Object.entries(labels).map<LabelAST>(([key, value]) => ({
     type: "label",
     name: key,
@@ -83,9 +89,13 @@ export const parse = (input: string): ParsedText => {
     console.error(parsed);
     return () => "<Error: Undefined main>";
   }
-  const execute = (rng: RNG, additionalLabels?: AdditionalLabels) => {
-    let mergedLabels = additionalLabels
-      ? [...main.labels, ...createLabelsFromObject(additionalLabels)]
+  const execute = (
+    rng: RNG,
+    variables: Record<string, string> = {},
+    importLabels?: ImportLabels
+  ) => {
+    let mergedLabels = importLabels
+      ? [...main.labels, ...createLabelsFromObject(importLabels)]
       : main.labels;
     const processContent = (content: ContentAST): string => {
       if (Array.isArray(content)) {
@@ -101,12 +111,23 @@ export const parse = (input: string): ParsedText => {
           const chosen = rng.pick(choices);
           return processContent(chosen.content);
         case "substitution":
+        case "assignment":
           const label = content as ContentSubstitutionAST;
-          const found = mergedLabels.find(l => l.name === label.label);
-          if (!found) {
+          let found;
+          if (Object.prototype.hasOwnProperty.call(variables, label.label)) {
+            found = variables[label.label];
+          } else {
+            found = mergedLabels.find(l => l.name === label.label);
+          }
+          if (found === undefined) {
             return `<Error: Label ${label.label}not found>`;
           }
-          return processContent(found);
+          const result =
+            typeof found === "string" ? found : processContent(found);
+          if (content.type === "assignment") {
+            variables[(content as ContentAssignmentAST).variable] = result;
+          }
+          return result;
         default:
           throw new Error("Unknown content type: " + content.type);
       }

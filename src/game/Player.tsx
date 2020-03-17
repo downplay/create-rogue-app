@@ -172,6 +172,7 @@ export const Player = entity(() => {
         // Unexpectedly no turns; queue up another
         // TODO: This really shouldn't happen, something to get to the bottom of later
         nextTurn();
+        continue;
       }
       if (turn.time <= gameState.time) {
         game.shiftTurn();

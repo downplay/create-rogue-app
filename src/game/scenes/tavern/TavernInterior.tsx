@@ -15,7 +15,7 @@ export const TavernInterior = ({ state }: Props) => {
   // dependencies (or lack of) so when the entity reloads we don't need
   // to run the effect again.
   useEffect(() => {
-    terminal.write(tavernInteriorDescription(rng));
+    terminal.write(tavernInteriorDescription(rng, { tavernName: state.name }));
   });
   const [size, origin] = useMemo(() => {
     const size = multiply(state.size, 2);
