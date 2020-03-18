@@ -1,10 +1,11 @@
 import React, { useMemo, useEffect } from "react";
 import { Room } from "../../levels/Room";
-import { multiply, vector } from "../../../engine/vector";
+import { multiply, subtract } from "../../../engine/vector";
 import { TavernState } from "./types";
 import { useTerminal } from "../../../engine/terminal";
 import { tavernInteriorDescription } from "./text";
 import { useRng } from "../../../engine/useRng";
+import { Patron, Barkeep } from "./entities";
 
 type Props = { state: TavernState };
 
@@ -17,10 +18,20 @@ export const TavernInterior = ({ state }: Props) => {
   useEffect(() => {
     terminal.write(tavernInteriorDescription(rng, { tavernName: state.name }));
   });
-  const [size, origin] = useMemo(() => {
+  const [size, origin, doors] = useMemo(() => {
     const size = multiply(state.size, 2);
-    const origin = vector(40, 40);
-    return [size, origin];
+    const origin = subtract(state.spawn!, multiply(state.door, 2));
+    const doors = [state.door];
+    return [size, origin, doors];
   }, [state.size]);
-  return <Room size={size} origin={origin} />;
+  return (
+    <Room size={size} origin={origin} doors={doors}>
+      <Barkeep />
+      <Patron />
+      <Patron />
+      <Patron />
+      <Patron />
+      <Patron />
+    </Room>
+  );
 };

@@ -1,0 +1,4 @@
+
+enum 
+
+export const Familiar

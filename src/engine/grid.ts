@@ -17,15 +17,11 @@ export enum GridLayers {
 
 export type Tile = {
   id: string;
-  TileComponent: React.ComponentType;
+  TileComponent: React.ComponentType<any>;
   layer: GridLayers;
   position: Vector;
   entity?: EntityContext;
-};
-
-type TileHandle = {
-  tile: Tile;
-  position: Vector;
+  state?: any;
 };
 
 export type Cell = {
@@ -67,13 +63,15 @@ export type GridState = {
 };
 
 export type GridActions = {
-  addTile: (
+  addTile: <T extends {}, S>(
     position: Vector,
-    TileComponent: React.ComponentType,
+    TileComponent: React.ComponentType<T>,
     layer?: GridLayers,
-    entity?: EntityContext
-  ) => TileHandle;
-  removeTile: (handle: TileHandle) => void;
+    entity?: EntityContext,
+    state?: S
+  ) => Tile;
+  updateTileState: (handle: Tile, state: any) => Tile;
+  removeTile: (handle: Tile) => void;
   findTiles: (predicate: TileFilterPredicate) => Tile[];
   getCell: (at: Vector) => Cell;
   updateSeen: (seen: SeenGrid) => void;
@@ -85,13 +83,21 @@ export const [useGrid, GridProvider] = createContext<GridActions>();
 export const [useGridState, GridStateProvider] = createContext<GridState>();
 
 export const gridMutations = {
-  addTile: (
+  addTile: <T, S>(
     position: Vector,
-    TileComponent: React.ComponentType,
+    TileComponent: React.ComponentType<T>,
     layer: GridLayers = GridLayers.Floor,
-    entity?: EntityContext
+    entity?: EntityContext,
+    state?: S
   ) => (grid: GridState): [GridState, Tile] => {
-    const tile: Tile = { TileComponent, id: v4(), layer, position, entity };
+    const tile: Tile = {
+      TileComponent,
+      id: v4(),
+      layer,
+      position,
+      entity,
+      state
+    };
     // TODO: Following grid expansion code didn't work (because of immer proxy)
     // can be reinstated now but need to handle seen grid too
     // if (!original.map[position.y]) {
@@ -112,6 +118,31 @@ export const gridMutations = {
       }),
       tile
     ];
+  },
+  updateTileState: (handle: Tile, state: any) => (
+    grid: GridState
+  ): [GridState, Tile] => {
+    const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
+    if (!tiles) {
+      return [grid, handle];
+    }
+    // Slightly contorted map so we can retrieve the newly generated item to return as handle
+    let newHandle: Tile | undefined;
+    const newTiles = tiles.map(tile => {
+      // TODO: Can't remember why refs didn't work and id was needed...
+      if (tile.id === handle.id) {
+        newHandle = { ...tile, state };
+        return newHandle;
+      }
+      return tile;
+    });
+    if (newHandle) {
+      const newGrid = produce(grid, grid => {
+        grid.map[handle.position.y][handle.position.x].tiles = newTiles;
+      });
+      return [newGrid, newHandle! || handle];
+    }
+    return [grid, handle];
   },
   removeTile: (handle: Tile) => (grid: GridState): [GridState, undefined] => {
     const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
