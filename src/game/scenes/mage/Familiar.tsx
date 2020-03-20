@@ -1,4 +1,13 @@
+import React from "react";
+import { Emoji } from "../../../ui/Typography";
 
-enum 
+const CatTile = () => <Emoji>🐈</Emoji>;
 
-export const Familiar
+const familiarTypes = {
+  cat: Cat,
+  bat: Bat,
+  rat: Rat,
+  dog: Dog
+};
+
+export const Familiar = { owner };
