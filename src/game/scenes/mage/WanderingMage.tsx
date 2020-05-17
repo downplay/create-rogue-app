@@ -4,6 +4,8 @@ import { text } from '../../../engine/text/parse';
 import { entity } from '../../../engine/entity';
 import { Mage } from './Mage';
 import { EntityContext } from '../../../engine/useEntitiesState';
+import { useStory } from "../../../engine/useStory";
+import { commonFunctions } from "../../../engine/text/commonFunctions";
 
 // TODO: Figure out a good way to reuse things between text templates
 
@@ -12,7 +14,7 @@ enum Genders {
     Female = "female"
 }
 
-type WanderingMageState = {
+type WanderingMageStory = {
     gender: Genders,
     name: string,
     kind: string
@@ -28,8 +30,8 @@ type WanderingMageState = {
 export const WanderingMageEncounter = entity(() => {
   const mageRef = useRef<EntityContext>();
 
-  const state:WanderingMageState = useStory(()=>{
-    const warningFireball = async (state:WanderingMageState) => {
+  const [story, dispatch] = useStory<WanderingMageStory>(()=>{
+    const warningFireball = async (state:WanderingMageStory) => {
         // TODO: Some contortions required here if we want to avoid promises (for savegame support).
         // Need a ref to a story handle (2nd arg to this callback) that can be resolved when the fireball lands.
         // On rehydate, we'll need to get back to this point and can call this function again;
@@ -39,11 +41,13 @@ export const WanderingMageEncounter = entity(() => {
         mageRef
         return "FWOOOOOOM!"
     }
-  return text`(<NULL($gender=genders)>
-By the side of the track you see <A($appearance)> $(kind=$(gender)Kinds)),
-accompanied by <A($appearance)> $(familiar=$familiars). <TITLE($subjectPronoun)> looks up as
+  return text`(<null($gender=genders)>
+By the side of the track you see <a($appearance)> $(kind=$(gender)Kinds)),
+accompanied by <a($appearance)> $(familiar=$familiars). <title($subjectPronoun)> looks up as
 you approach, cocks $possessivePronoun head on one side, and $observes. The $familiar $familiarVerbs.
 )
+
+${commonFunctions /* a, title, etc. */ }
 
 appearance:
 mangy
@@ -73,7 +77,7 @@ rat
 bat
 
 familiarVerbs:
-$(kind=$(familiar)Kinds))
+$(kind=$(familiars)Verbs))
 
 catVerbs:
 hisses
@@ -99,18 +103,19 @@ doesn't make a sound, but somehow you feel that it did
 flaps its leathery wings
 
 subjectPronoun:
-<IS($gender,female)?s>he
+<$gender==female?s>he
 
 possessivePronoun:
-[$gender=female]her
-[$gender=male]his
+[$gender==female]her
+[$gender==male]his
 
 observes:
 swints sideways at you
 glares in your direction
 puzzledly watches you
 gazes at a point several feet behind you
-hurls a fireball in your direction!${warningFireball} It narrowly misses you. "Just a warning shot," $subjectPronoun says, $seriously
+hurls a fireball in your direction! ${warningFireball} It narrowly misses you. "Just a warning shot," $subjectPronoun says, $seriously
+[1%]hurls a fireball in your direction!${
 
 seriously:
 pointedly
@@ -128,8 +133,8 @@ hasName(state.name||state.kind)
   return (
     <>
       <RoadLayout />
-      <Mage ref={mageRef} />
-      <Familiar owner={mageRef} />
+      <Mage entityRef={mageRef} />
+      <Familiar owner={mageRef.current} />
       {children}
     </>
   );

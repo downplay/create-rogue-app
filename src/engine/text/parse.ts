@@ -47,11 +47,11 @@ type MainAST = ContentChoiceAST & {
 
 type ImportLabels = Record<string, string | ChoiceAST[]>;
 
-export type ParsedText = (
-  rng: RNG,
-  variables?: Record<string, string>,
-  importLabels?: ImportLabels
-) => string;
+const ERROR_MAIN : MainAST = {
+  type:"main",
+  choices: []
+  labels: []
+}
 
 const createLabelsFromObject = (labels: ImportLabels) =>
   Object.entries(labels).map<LabelAST>(([key, value]) => ({
@@ -63,13 +63,13 @@ const createLabelsFromObject = (labels: ImportLabels) =>
             {
               type: "choice",
               content: { type: "text", text: value } as ContentTextAST,
-              weight: 10
-            } as ChoiceAST
+              weight: 10,
+            } as ChoiceAST,
           ]
-        : ((Array.isArray(value) ? value : [value]) as ChoiceAST[])
+        : ((Array.isArray(value) ? value : [value]) as ChoiceAST[]),
   }));
 
-export const parse = (input: string): ParsedText => {
+export const parse = (input: string): MainAST => {
   const parser = new nearley.Parser(
     nearley.Grammar.fromCompiled(grammar as nearley.CompiledRules)
   );
@@ -80,68 +80,118 @@ export const parse = (input: string): ParsedText => {
     console.error("Unparseable text:");
     console.error(input);
     console.error(error);
-    return () => "<Error: Unparseable text>";
+    throw new Error("Unparseable text");
   }
   const main = (parsed.results[0] as unknown) as MainAST;
   if (main === undefined) {
     console.error("Undefined main:");
     console.error(input);
     console.error(parsed);
-    return () => "<Error: Undefined main>";
+    throw new Error("Undefined main");
   }
-  const execute = (
-    rng: RNG,
-    variables: Record<string, string> = {},
-    importLabels?: ImportLabels
-  ) => {
-    let mergedLabels = importLabels
-      ? [...main.labels, ...createLabelsFromObject(importLabels)]
-      : main.labels;
-    const processContent = (content: ContentAST): string => {
-      if (Array.isArray(content)) {
-        return content.map(choice => processContent(choice)).join("");
-      }
-      switch (content.type) {
-        case "text":
-          return (content as ContentTextAST).text;
-        case "choices":
-        case "main":
-        case "label":
-          const choices = (content as ContentChoiceAST).choices;
-          const chosen = rng.pick(choices);
-          return processContent(chosen.content);
-        case "substitution":
-        case "assignment":
-          const label = content as ContentSubstitutionAST;
-          let found;
-          if (Object.prototype.hasOwnProperty.call(variables, label.label)) {
-            found = variables[label.label];
-          } else {
-            found = mergedLabels.find(l => l.name === label.label);
-          }
-          if (found === undefined) {
-            return `<Error: Label ${label.label}not found>`;
-          }
-          const result =
-            typeof found === "string" ? found : processContent(found);
-          if (content.type === "assignment") {
-            variables[(content as ContentAssignmentAST).variable] = result;
-          }
-          return result;
-        default:
-          throw new Error("Unknown content type: " + content.type);
-      }
-    };
-    return processContent(main);
-  };
-  return execute;
+  return main;
 };
 
-export const text = (input: TemplateStringsArray, ...interpolations: any[]) => {
+export const executeText = (
+  main: MainAST,
+  rng: RNG,
+  variables: Record<string, string> = {},
+  externals: any[] = [],
+  importLabels?: ImportLabels
+) => {
+  let mergedLabels = importLabels
+    ? [...main.labels, ...createLabelsFromObject(importLabels)]
+    : main.labels;
+  const processContent = (content: ContentAST): string => {
+    if (Array.isArray(content)) {
+      return content.map((choice) => processContent(choice)).join("");
+    }
+    switch (content.type) {
+      case "text":
+        return (content as ContentTextAST).text;
+      case "choices":
+      case "main":
+      case "label":
+        const choices = (content as ContentChoiceAST).choices;
+        const chosen = rng.pick(choices);
+        return processContent(chosen.content);
+      case "substitution":
+      case "assignment":
+        const label = content as ContentSubstitutionAST;
+        let found;
+        if (Object.prototype.hasOwnProperty.call(variables, label.label)) {
+          found = variables[label.label];
+        } else {
+          found = mergedLabels.find((l) => l.name === label.label);
+        }
+        if (found === undefined) {
+          return `<Error: Label ${label.label}not found>`;
+        }
+        const result =
+          typeof found === "string" ? found : processContent(found);
+        if (content.type === "assignment") {
+          variables[(content as ContentAssignmentAST).variable] = result;
+        }
+        return result;
+      case "function":
+        const functionNode = content as FunctionAST;
+        switch (functionNode.name) {
+          case "OUT":
+            break;
+        }
+      default:
+        throw new Error("Unknown content type: " + content.type);
+    }
+  };
+  return processContent(main);
+};
+
+export type ParsedTextTemplate = {
+  main: MainAST;
+  externals: any[];
+  render: (
+    rng: RNG,
+    variables?: Record<string, string>,
+    importLabels?: ImportLabels
+  ) => string;
+};
+
+export const text = (
+  input: TemplateStringsArray,
+  ...interpolations: any[]
+): ParsedTextTemplate => {
   const flattened = input
-    .map(value => {
-      return value;
+    .map((fragment, i) => {
+      if (interpolations[i]) {
+        return `${fragment}<OUT(${i})>`;
+      }
+      return fragment;
     })
     .join("");
-  return parse(flattened);
+  try {
+    const main = parse(flattened);
+    const externals = interpolations.slice();
+
+    return {
+      main,
+      externals,
+      render: (
+        rng: RNG,
+        variables?: Record<string, string>,
+        importLabels?: ImportLabels,
+      ) => executeText(main, rng, variables, externals, importLabels),
+      stream: <S extends {}>(
+        rng: RNG,
+        currentState: S,
+        variables?: Record<string, string>,
+        importLabels?: ImportLabels,
+      ) => executeText(main, rng, currentState, externals, importLabels)
+    };
+  } catch (e) {
+    return {
+      main: ERROR_MAIN,
+      externals: [],
+      render: () => `<Error: ${e.message}>`
+    }
+  }
 };

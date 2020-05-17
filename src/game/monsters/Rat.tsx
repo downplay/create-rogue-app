@@ -29,5 +29,3 @@ export const Rat = entity(() => {
     </Monster>
   );
 });
-
-/* react-custom-renderer */
