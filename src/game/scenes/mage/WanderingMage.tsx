@@ -38,9 +38,11 @@ export const WanderingMageEncounter = entity(() => {
         // and the state that instances the fireball needs to be restored.
         // Could handle this by using predetermined id (e.g. "WanderingMageWarningFireball")
         // Also consider state machines (useful also for e.g switching behaviours, see Barkeep)
-        mageRef
+        mageRef.current.
         return "FWOOOOOOM!"
     }
+    const seriousFireball = async (state:WanderingMageStory) => {
+
   return text`(<null($gender=genders)>
 By the side of the track you see <a($appearance)> $(kind=$(gender)Kinds)),
 accompanied by <a($appearance)> $(familiar=$familiars). <title($subjectPronoun)> looks up as
@@ -55,6 +57,7 @@ shabby
 ragged
 twitchy
 scrawny
+singed
 
 genders:
 male
@@ -66,7 +69,7 @@ wizard
 sorceror
 
 femaleKinds:
-mage
+magess
 witch
 enchantress
 
@@ -114,8 +117,8 @@ swints sideways at you
 glares in your direction
 puzzledly watches you
 gazes at a point several feet behind you
-hurls a fireball in your direction! ${warningFireball} It narrowly misses you. "Just a warning shot," $subjectPronoun says, $seriously
-[1%]hurls a fireball in your direction!${
+hurls a fireball in your direction!${warningFireball} It narrowly misses you. "Just a warning shot," $subjectPronoun says, $seriously
+[1%]hurls a fireball in your direction!${seriousFireball}
 
 seriously:
 pointedly

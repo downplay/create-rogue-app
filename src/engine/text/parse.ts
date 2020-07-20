@@ -47,11 +47,11 @@ type MainAST = ContentChoiceAST & {
 
 type ImportLabels = Record<string, string | ChoiceAST[]>;
 
-const ERROR_MAIN : MainAST = {
-  type:"main",
-  choices: []
-  labels: []
-}
+const ERROR_MAIN: MainAST = {
+  type: "main",
+  choices: [],
+  labels: [],
+};
 
 const createLabelsFromObject = (labels: ImportLabels) =>
   Object.entries(labels).map<LabelAST>(([key, value]) => ({
@@ -92,12 +92,18 @@ export const parse = (input: string): MainAST => {
   return main;
 };
 
+type ExecutionContext = {
+  state: any;
+  currentNodePath: string;
+};
+
 export const executeText = (
   main: MainAST,
   rng: RNG,
   variables: Record<string, string> = {},
   externals: any[] = [],
-  importLabels?: ImportLabels
+  importLabels?: ImportLabels,
+  executionContext?: ExecutionContext
 ) => {
   let mergedLabels = importLabels
     ? [...main.labels, ...createLabelsFromObject(importLabels)]
@@ -146,6 +152,15 @@ export const executeText = (
   return processContent(main);
 };
 
+export const streamText = (
+  main: MainAST,
+  rng: RNG,
+  variables: Record<string, string> = {},
+  externals: any[] = [],
+  importLabels?: ImportLabels,
+  executionContext?: ExecutionContext
+) => {};
+
 export type ParsedTextTemplate = {
   main: MainAST;
   externals: any[];
@@ -178,20 +193,20 @@ export const text = (
       render: (
         rng: RNG,
         variables?: Record<string, string>,
-        importLabels?: ImportLabels,
+        importLabels?: ImportLabels
       ) => executeText(main, rng, variables, externals, importLabels),
       stream: <S extends {}>(
         rng: RNG,
         currentState: S,
         variables?: Record<string, string>,
-        importLabels?: ImportLabels,
-      ) => executeText(main, rng, currentState, externals, importLabels)
+        importLabels?: ImportLabels
+      ) => executeText(main, rng, currentState, externals, importLabels),
     };
   } catch (e) {
     return {
       main: ERROR_MAIN,
       externals: [],
-      render: () => `<Error: ${e.message}>`
-    }
+      render: () => `<Error: ${e.message}>`,
+    };
   }
 };

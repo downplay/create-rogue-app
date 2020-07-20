@@ -17,7 +17,7 @@ export const Gold = ({ amount }: GoldProps) => {
   onTake(({ inventory }) => {
     inventory.gold += amount;
     // TODO: Can automatically write the message based non name of entity
-    terminal.write(`Picked up 💰${amount}GP`);
+    terminal.write(`You pocket 💰${amount}GP`);
   });
   return (
     <Item>

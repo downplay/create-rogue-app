@@ -3,7 +3,9 @@ import { useRng } from "./useRng";
 export const useText = (text: ParsedText) => {
   const rng = useRng();
 
-  return;
+  const result = null;
+
+  return [output, state];
 };
 
 useMemo(() => {
