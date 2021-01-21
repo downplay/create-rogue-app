@@ -16,7 +16,7 @@
     "@types/redux": "^3.6.0",
     "@types/styled-components": "^5.0.1",
     "@types/uuid": "^7.0.0",
-    "immer": "^5.3.6",
+    "immer": "^8.0.1",
     "keycode-js": "^2.0.3",
     "modern-css-reset": "^1.1.0",
     "moo": "^0.5.1",
