@@ -1,4 +1,3 @@
-import { current } from "immer";
 import * as nearley from "nearley";
 import { RNG } from "../useRng";
 import { ExecutionContext } from "./ExecutionContext";
@@ -173,15 +172,22 @@ export const executeText = (
         } else {
           found = mergedLabels.find((l) => l.name === label.label);
         }
-        if (found === undefined) {
-          return [`<Error: Label ${label.label}not found>`, currentContext];
-        }
-        const result =
-          typeof found === "string" ? found : processContent(found);
+        let result;
         if (content.type === "assignment") {
-          currentContext.state[
-            (content as ContentAssignmentAST).variable
-          ] = result;
+          if (content.type === "assignment") {
+            currentContext.state[
+              (content as ContentAssignmentAST).variable
+            ] = result;
+          }
+        } else {
+          if (found === undefined) {
+            return [`<Error: Label ${label.label} not found>`, currentContext];
+          }
+          result =
+            typeof found === "string"
+              ? (found as string)
+              : // TODO: Need to use the context from processContent if we bail
+                (processContent(found)[0] as ExecutionResult);
         }
         return [result, currentContext];
       case "function":
