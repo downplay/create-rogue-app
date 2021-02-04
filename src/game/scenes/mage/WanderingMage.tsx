@@ -1,24 +1,25 @@
 import React, { useRef } from "react";
 import { RoadLayout } from "../../biomes/plains/RoadLayout";
-import { text } from '../../../engine/text/parse';
-import { entity } from '../../../engine/entity';
-import { Mage } from './Mage';
-import { EntityContext } from '../../../engine/useEntitiesState';
+import { text } from "../../../engine/text/parse";
+import { entity } from "../../../engine/entity";
+import { Mage } from "./Mage";
+import { EntityContext } from "../../../engine/useEntitiesState";
 import { useStory } from "../../../engine/useStory";
 import { commonFunctions } from "../../../engine/text/commonFunctions";
+import { hasName } from "../../../engine/hasName";
 
 // TODO: Figure out a good way to reuse things between text templates
 
 enum Genders {
-    Male = "male",
-    Female = "female"
+  Male = "male",
+  Female = "female",
 }
 
 type WanderingMageStory = {
-    gender: Genders,
-    name: string,
-    kind: string
-}
+  gender: Genders;
+  name: string;
+  kind: string;
+};
 
 // TODO:
 // Many scenes (e.g. this, tavern) are transferrable to different biomes. RoadLayout would come from the biome tagged as "OutdoorsLayout",
@@ -30,26 +31,27 @@ type WanderingMageStory = {
 export const WanderingMageEncounter = entity(() => {
   const mageRef = useRef<EntityContext>();
 
-  const [story, dispatch] = useStory<WanderingMageStory>(()=>{
-    const warningFireball = async (state:WanderingMageStory) => {
-        // TODO: Some contortions required here if we want to avoid promises (for savegame support).
-        // Need a ref to a story handle (2nd arg to this callback) that can be resolved when the fireball lands.
-        // On rehydate, we'll need to get back to this point and can call this function again;
-        // and the state that instances the fireball needs to be restored.
-        // Could handle this by using predetermined id (e.g. "WanderingMageWarningFireball")
-        // Also consider state machines (useful also for e.g switching behaviours, see Barkeep)
-        mageRef.current.
-        return "FWOOOOOOM!"
-    }
-    const seriousFireball = async (state:WanderingMageStory) => {
-
-  return text`(<null($gender=genders)>
+  const [story, dispatch] = useStory<WanderingMageStory>(() => {
+    const warningFireball = async (state: WanderingMageStory) => {
+      // TODO: Some contortions required here if we want to avoid promises (for savegame support).
+      // Need a ref to a story handle (2nd arg to this callback) that can be resolved when the fireball lands.
+      // On rehydate, we'll need to get back to this point and can call this function again;
+      // and the state that instances the fireball needs to be restored.
+      // Could handle this by using predetermined id (e.g. "WanderingMageWarningFireball")
+      // Also consider state machines (useful also for e.g switching behaviours, see Barkeep)
+      // mageRef.current.
+      return "FWOOOOOOM!";
+    };
+    const seriousFireball = async (state: WanderingMageStory) => {
+      return "FFWOOOOARRRRRMMMM!!!";
+    };
+    return text`(<null($gender=$genders)>
 By the side of the track you see <a($appearance)> $(kind=$(gender)Kinds)),
 accompanied by <a($appearance)> $(familiar=$familiars). <title($subjectPronoun)> looks up as
 you approach, cocks $possessivePronoun head on one side, and $observes. The $familiar $familiarVerbs.
 )
 
-${commonFunctions /* a, title, etc. */ }
+${commonFunctions}
 
 appearance:
 mangy
@@ -128,10 +130,10 @@ intimidatingly
 weightily
 gruffly
 `;
-  }
+  });
 
-// TODO: changing the name should update the state
-hasName(state.name||state.kind)
+  // TODO: changing the name should update the state
+  hasName(story.name || story.kind);
 
   return (
     <>
@@ -141,4 +143,4 @@ hasName(state.name||state.kind)
       {children}
     </>
   );
-};
+});

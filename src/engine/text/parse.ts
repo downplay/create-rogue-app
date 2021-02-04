@@ -1,10 +1,25 @@
+import { current } from "immer";
 import * as nearley from "nearley";
 import { RNG } from "../useRng";
+import { ExecutionContext } from "./ExecutionContext";
 
 const grammar = require("./herotext.js");
 
+type ReturnCommand = {
+  type: "input";
+};
+
+type ExecutionResult = string | ReturnCommand | ExecutionResult[];
+
 interface ContentItemAST {
-  type: "text" | "substitution" | "choices" | "main" | "label" | "assignment";
+  type:
+    | "text"
+    | "substitution"
+    | "main"
+    | "label"
+    | "assignment"
+    | "function"
+    | "choices";
 }
 
 type ContentAST = ContentItemAST[] | ContentItemAST;
@@ -14,19 +29,18 @@ type ContentTextAST = ContentItemAST & {
   text: string;
 };
 
-type ContentChoiceAST = {
-  type: "choices";
-  choices: ChoiceAST[];
-};
-
 type ContentSubstitutionAST = ContentItemAST & {
   type: "substitution";
   label: string;
 };
 
-type ContentAssignmentAST = ContentSubstitutionAST & {
+type ContentAssignmentAST = Omit<ContentSubstitutionAST, "type"> & {
   type: "assignment";
   variable: string;
+};
+
+type FunctionInvocationAST = Omit<ContentSubstitutionAST, "type"> & {
+  parameters: Record<string, ContentItemAST>;
 };
 
 type ChoiceAST = {
@@ -35,12 +49,27 @@ type ChoiceAST = {
   content: ContentAST;
 };
 
+type ContentChoiceAST = {
+  type: "choices";
+  choices: ChoiceAST[];
+};
+
 type LabelAST = Omit<ContentChoiceAST, "type"> & {
   type: "label";
   name: string;
 };
 
-type MainAST = ContentChoiceAST & {
+type FunctionASTParameter = {
+  name: string;
+  defaultValue: ContentItemAST;
+};
+
+type FunctionAST = Omit<LabelAST, "type"> & {
+  type: "function";
+  parameters: FunctionASTParameter[];
+};
+
+type MainAST = Omit<ContentChoiceAST, "type"> & {
   type: "main";
   labels: LabelAST[];
 };
@@ -75,7 +104,7 @@ export const parse = (input: string): MainAST => {
   );
   let parsed;
   try {
-    parsed = parser.feed(input);
+    parsed = parser.feed(input.trim() + "\n");
   } catch (error) {
     console.error("Unparseable text:");
     console.error(input);
@@ -92,74 +121,87 @@ export const parse = (input: string): MainAST => {
   return main;
 };
 
-type ExecutionContext = {
-  state: any;
-  currentNodePath: string;
-};
-
 export const executeText = (
   main: MainAST,
   rng: RNG,
-  variables: Record<string, string> = {},
+  variables?: Record<string, string>,
   externals: any[] = [],
   importLabels?: ImportLabels,
   executionContext?: ExecutionContext
-) => {
-  let mergedLabels = importLabels
+): [ExecutionResult, ExecutionContext] => {
+  const mergedLabels = importLabels
     ? [...main.labels, ...createLabelsFromObject(importLabels)]
     : main.labels;
-  const processContent = (content: ContentAST): string => {
+  let currentContext: ExecutionContext = executionContext
+    ? executionContext.clone()
+    : new ExecutionContext(variables);
+  const processContent = (
+    content: ContentAST
+  ): [ExecutionResult, ExecutionContext] => {
     if (Array.isArray(content)) {
-      return content.map((choice) => processContent(choice)).join("");
+      const results = [];
+      // TODO: Proper handling of context. Node path needs updating each step. Bail when returned context says so.
+      for (const choice of content) {
+        const [result, nextContext] = processContent(choice);
+        results.push(result);
+        currentContext = nextContext;
+      }
+      return [results, currentContext];
     }
     switch (content.type) {
       case "text":
-        return (content as ContentTextAST).text;
+        return [(content as ContentTextAST).text, currentContext];
       case "choices":
       case "main":
       case "label":
         const choices = (content as ContentChoiceAST).choices;
+        // TODO: If context path exists, follow it instead of using rng
         const chosen = rng.pick(choices);
+        // TODO: Need to amend context as pathing into label.
         return processContent(chosen.content);
       case "substitution":
       case "assignment":
         const label = content as ContentSubstitutionAST;
         let found;
-        if (Object.prototype.hasOwnProperty.call(variables, label.label)) {
-          found = variables[label.label];
+        if (
+          Object.prototype.hasOwnProperty.call(
+            currentContext.state,
+            label.label
+          )
+        ) {
+          found = currentContext.state[label.label];
         } else {
           found = mergedLabels.find((l) => l.name === label.label);
         }
         if (found === undefined) {
-          return `<Error: Label ${label.label}not found>`;
+          return [`<Error: Label ${label.label}not found>`, currentContext];
         }
         const result =
           typeof found === "string" ? found : processContent(found);
         if (content.type === "assignment") {
-          variables[(content as ContentAssignmentAST).variable] = result;
+          currentContext.state[
+            (content as ContentAssignmentAST).variable
+          ] = result;
         }
-        return result;
+        return [result, currentContext];
       case "function":
         const functionNode = content as FunctionAST;
         switch (functionNode.name) {
           case "OUT":
             break;
         }
+        return "Could not resolve function <" + functionNode.name + ">";
+      case "input":
+        // TODO: If context path exists it is the result of the input
+        return "????";
+
       default:
         throw new Error("Unknown content type: " + content.type);
     }
   };
-  return processContent(main);
+  const result = processContent(main);
+  return [result, currentContext];
 };
-
-export const streamText = (
-  main: MainAST,
-  rng: RNG,
-  variables: Record<string, string> = {},
-  externals: any[] = [],
-  importLabels?: ImportLabels,
-  executionContext?: ExecutionContext
-) => {};
 
 export type ParsedTextTemplate = {
   main: MainAST;
@@ -169,6 +211,12 @@ export type ParsedTextTemplate = {
     variables?: Record<string, string>,
     importLabels?: ImportLabels
   ) => string;
+  stream: (
+    rng: RNG,
+    variables?: Record<string, string>,
+    importLabels?: ImportLabels,
+    executionContext?: ExecutionContext
+  ) => [string, ExecutionContext];
 };
 
 export const text = (
@@ -194,19 +242,51 @@ export const text = (
         rng: RNG,
         variables?: Record<string, string>,
         importLabels?: ImportLabels
-      ) => executeText(main, rng, variables, externals, importLabels),
+      ) => {
+        const stream = executeText(
+          main,
+          rng,
+          variables,
+          externals,
+          importLabels
+        );
+
+        const stringifyResult = (element: ExecutionResult): string => {
+          if (Array.isArray(element)) {
+            return (element as ExecutionResult[]).map(stringifyResult).join("");
+          }
+          if (typeof element === "string") {
+            return element;
+          }
+          return "";
+        };
+
+        return stringifyResult(stream as ExecutionResult);
+      },
       stream: <S extends {}>(
         rng: RNG,
-        currentState: S,
         variables?: Record<string, string>,
-        importLabels?: ImportLabels
-      ) => executeText(main, rng, currentState, externals, importLabels),
+        importLabels?: ImportLabels,
+        executionContext?: ExecutionContext
+      ) =>
+        executeText(
+          main,
+          rng,
+          variables,
+          externals,
+          importLabels,
+          executionContext
+        ),
     };
   } catch (e) {
     return {
       main: ERROR_MAIN,
       externals: [],
       render: () => `<Error: ${e.message}>`,
+      stream: () => [
+        `<Error: ${e.message}>`,
+        { state: {}, currentNodePath: [], finished: true, error: true },
+      ],
     };
   }
 };

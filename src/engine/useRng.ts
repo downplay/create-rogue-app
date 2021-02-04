@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { elements, sum } from "./helpers";
-import { parse, ParsedText } from "./text/parse";
 
 export type RNG = {
   raw: () => number;
@@ -8,7 +7,35 @@ export type RNG = {
   integer: (min: number, max: number) => number;
   pick: <T>(items: T[]) => T;
   dice: (count: number, sides: number) => number;
-  text: (input: TemplateStringsArray) => string;
+  // text: (input: TemplateStringsArray) => string;
+};
+
+export const buildRng = (getter: () => number = () => Math.random()): RNG => {
+  const integer = (min: number, max: number) =>
+    Math.floor(getter() * (max - min) + min);
+
+  const rng = {
+    raw: getter,
+    range: (min: number, max: number) => getter() * (max - min) + min,
+    integer,
+    pick: <T>(items: T[]) => items[integer(0, items.length)],
+    dice: (count: number, sides: number) =>
+      sum(elements(count, () => integer(1, sides))),
+    // TODO: Not quite sure what the intention was here, leaving for now
+    // text: (input: TemplateStringsArray | ParsedText) => {
+    //   if (Array.isArray(input)) {
+    //     const flattened = input
+    //       .map((value) => {
+    //         return value;
+    //       })
+    //       .join("");
+    //     const parsed = parse(flattened);
+    //     return parsed(rng);
+    //   }
+    //   return (input as ParsedText)(rng);
+    // },
+  };
+  return rng;
 };
 
 export const useRng = (): RNG => {
@@ -19,29 +46,6 @@ export const useRng = (): RNG => {
   //  - Good algo
   // Cheating: for now just Math.random()
   return useMemo<RNG>(() => {
-    const integer = (min: number, max: number) =>
-      Math.floor(Math.random() * (max - min) + min);
-
-    const rng = {
-      raw: () => Math.random(),
-      range: (min: number, max: number) => Math.random() * (max - min) + min,
-      integer,
-      pick: <T>(items: T[]) => items[integer(0, items.length)],
-      dice: (count: number, sides: number) =>
-        sum(elements(count, () => integer(1, sides))),
-      text: (input: TemplateStringsArray | ParsedText) => {
-        if (Array.isArray(input)) {
-          const flattened = input
-            .map(value => {
-              return value;
-            })
-            .join("");
-          const parsed = parse(flattened);
-          return parsed(rng);
-        }
-        return (input as ParsedText)(rng);
-      }
-    };
-    return rng;
+    return buildRng();
   }, []);
 };

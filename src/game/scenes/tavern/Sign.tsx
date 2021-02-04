@@ -9,6 +9,7 @@ import { Card, Description } from "../../../ui/Card";
 import { Name } from "../../meta/Name";
 import { PositionProps, hasPosition } from "../../../engine/hasPosition";
 import { useTerminal } from "../../../engine/terminal";
+import { useText } from "../../../engine/useText";
 
 type SignProps = PositionProps & {
   tavernName: string;
@@ -22,11 +23,9 @@ const SignTile = () => <Emoji>🚧</Emoji>;
 export const Sign = ({ tavernName, position }: SignProps) => {
   hasPosition(position);
   hasTile(SignTile);
-  const rng = useRng();
   const terminal = useTerminal();
-
-  const signText = useMemo(() => {
-    const parsed = text`
+  const signText = useText(
+    text`
 (*$tavernName* welcomes
 careful drunks)
 (Menu
@@ -35,10 +34,9 @@ careful drunks)
 - Beer!)
 (😁 Happy Hour!
 All day long!!)
-`;
-
-    return parsed(rng, { tavernName });
-  }, []);
+`,
+    { tavernName }
+  );
   onInteract(() => {
     terminal.write("The sign reads:");
     terminal.write(signText);

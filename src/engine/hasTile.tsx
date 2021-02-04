@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { hasPosition } from "./hasPosition";
-import { useGrid, GridLayers, TileHandle, Tile } from "./grid";
+import { useGrid, GridLayers, Tile } from "./grid";
 import { useEntity } from "./useEntitiesState";
 import { Emoji } from "../ui/Typography";
 

@@ -1,24 +1,14 @@
+import { useMemo } from "react";
 import { useRng } from "./useRng";
+import { ParsedTextTemplate } from "./text/parse";
 
-export const useText = (text: ParsedText) => {
+export const useText = (
+  text: ParsedTextTemplate,
+  variables: Record<string, string> = {}
+) => {
   const rng = useRng();
-
-  const result = null;
-
-  return [output, state];
+  // TODO: Needs caching at save file level
+  return useMemo(() => {
+    return text.render(rng, variables);
+  }, [text]);
 };
-
-useMemo(() => {
-  const parsed = text`
-(*$tavernName* welcomes
-careful drunks)
-(Menu
-- Beer
-- Beer
-- Beer!)
-(😁 Happy Hour!
-All day long!!)
-`;
-
-  return parsed(rng, { tavernName });
-}, []);

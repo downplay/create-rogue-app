@@ -4,16 +4,21 @@ import { GridLayers } from "../../engine/grid";
 import { onTake } from "../../engine/hasInventory";
 import { Item } from "../meta/Item";
 import { Card, Description } from "../../ui/Card";
-import { useTerminal } from "../../engine/terminal";
 import { Name } from "../meta/Name";
-import { useStory } from '../../engine/useStory';
-import { text } from '../../engine/text/parse';
+import { useStory } from "../../engine/useStory";
+import { text } from "../../engine/text/parse";
 
-type SwordProps = {  };
+type SwordProps = {};
 
 export const SwordTile = tile("†");
 
 const descriptionText = text`
+<null($name $description)>
+
+name:
+$material $blade
+
+description:
 A $size $class $material $blade.
 
 blade:
@@ -30,22 +35,22 @@ material:
 []glass
 [=gold]golden
 
-size
+size:
 [1%,=0.01]tiny
 [10%,=0.1]small
 [50%,=1]
 [10%,=10]large
 [1%,=100]massive
-`
+`;
 
-export const Sword = ({  }: SwordProps) => {
+export const Sword = ({}: SwordProps) => {
   hasTile(SwordTile, GridLayers.Item);
-  const description = useStory(()=>)
+  const description = useStory(descriptionText);
   return (
     <Item>
       <Card>
-        <Name>{`${amount}GP`}</Name>
-        <Description>s
+        <Name>{name}</Name>
+        <Description>
           <SwordTile /> {description}
         </Description>
       </Card>
