@@ -4,6 +4,7 @@ export class ExecutionContext {
   finished: boolean = false;
   // If we are pausing the stream and therefore need to bail from the execution tree
   bail: boolean = false;
+  error: boolean = false;
 
   constructor(
     state: Record<string, any> = {},

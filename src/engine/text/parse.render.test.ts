@@ -10,6 +10,7 @@ it("Renders simple string", () => {
 brown
 fox)`.render(rng)
   ).toEqual("Quick\nbrown\nfox");
+  expect(text`Quick (brown) fox`.render(rng)).toEqual("Quick brown fox");
 });
 
 it("Renders simple choices", () => {
@@ -31,11 +32,11 @@ list)
 });
 
 it("Renders grouped choices", () => {
-  const rng = mockRng();
+  const rng = mockRng([0.5, 0.67, 0.6, 0, 0, 0, 0.9, 0.5, 0.39]);
   const parsed = text`(Quick|Slow) (brown|blue|paisley) (fox|rabbit|dog|cat|mouse)`;
-  expect(parsed.render(rng)).toEqual("Quick blue cat");
-  expect(parsed.render(rng)).toEqual("Quick brown dog");
-  expect(parsed.render(rng)).toEqual("Slow brown rabbit");
+  expect(parsed.render(rng)).toEqual("Slow paisley cat");
+  expect(parsed.render(rng)).toEqual("Quick brown fox");
+  expect(parsed.render(rng)).toEqual("Slow blue rabbit");
 });
 
 it("Picks from list", () => {
@@ -51,20 +52,81 @@ baz
 
 it("Substitutes labels", () => {
   const rng = mockRng();
-  const parsed = text`Foo $bar
+  let parsed = text`Foo $bar
 
 bar:
 Baz
 Barry`;
   expect(parsed.render(rng)).toEqual("Foo Baz");
+  parsed = text`Foo $(foo bar)
+
+foo bar:
+Baz
+Barry`;
+  expect(parsed.render(rng)).toEqual("Foo Baz");
+});
+
+it("Performs label substitution", () => {
+  const rng = mockRng();
+  expect(
+    text`Hello $planet
+  
+planet:
+world`.render(rng)
+  ).toEqual("Hello world");
 });
 
 it("Assigns variables", () => {
-  const rng = mockRng([0.75]);
+  const rng = mockRng([0.75, 0.25]);
+  // TODO: Test context from stream contains variable
   expect(
     text`The $animal=dog was a good $animal`.render(rng, { animal: "" })
   ).toEqual("The dog was a good dog");
   expect(
-    text`The ($animal=dog) was a good $animal`.render(rng, { animal: "" })
-  ).toEqual("The dog was a good dog");
+    text`The $animal=kitty|mouse|badger was a bad $animal`.render(rng)
+  ).toEqual("The badger was a bad badger");
+  expect(
+    text`The $animal=(naughty kitty|tiny mouse|bad badger) was a very $animal`.render(
+      rng
+    )
+  ).toEqual("The naughty kitty was a very naughty kitty");
+  expect(
+    text`See $(animal name)=Spot|Cosmonaught|Shablongy run. Run $(animal name) run.`.render(
+      rng
+    )
+  ).toEqual("See Shablongy run. Run Shablongy run.");
+});
+
+it("Interpolates external variables", () => {
+  const rng = mockRng();
+  const color = "brown"
+  expect(text`Quick ${color} fox`.render(rng)).toEqual("Quick brown fox");
+  const answer = 42
+  expect(text`The answer is ${answer}`.render(rng)).toEqual("The answer is 42")
+})
+
+it("Calls internal functions", () => {
+  const rng = mockRng();
+  expect(
+    text`
+$repeat(NaN,asdasd,asdasd) Batman!
+
+repeat: (word, count)
+$word$word$word$word$word$word$word$word
+`.render(rng)
+  ).toEqual("NaNNaNNaNNaNNaNNaNNaNNaN Batman!");
+});
+
+type FooProps = {
+  foo: string;
+};
+
+it("Calls external functions", () => {
+  const rng = mockRng();
+  const capitalize = (text: string) => text.toLocaleUpperCase();
+  expect(
+    text`$foo=bar ${({ foo }: FooProps) => capitalize(foo)} black sheep`.render(
+      rng
+    )
+  ).toEqual("bar BAR black sheep");
 });

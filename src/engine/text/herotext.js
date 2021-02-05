@@ -6,8 +6,8 @@ function id(x) { return x[0]; }
 
  const moo = require('moo')
  
-		const assign = /\$[a-zA-Z0-9]+=[\$a-zA-Z0-9]+/
-		const bassign = /\$\([a-zA-Z0-9]+=[\$a-zA-Z0-9]+\)/
+		const assign = { match: /\$[a-zA-Z0-9]+=/, push:'nospace', value: x => x.slice(1, x.length - 1) }
+		const bassign = { match: /\$\([a-zA-Z0-9 ]+\)=/, push:'nospace', value: x => x.slice(2, x.length - 2) } 
 		const sub =  /\$[a-zA-Z0-9]+/
 		const bsub = /\$\([a-zA-Z0-9 ]+\)/
 	  
@@ -18,22 +18,35 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
-		label: /^[a-zA-Z0-9 ]+:$/,
+		label: { match: /^[a-zA-Z0-9 ]+:\s*$/, value: x => x.slice(0, x.indexOf(":")) },
 		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|])+/,
 		newline: { match: /(?:\r\n|\r|\n)/, lineBreaks:true },
-		space: { match: /[.\t]+/, lineBreaks: false },
+		space: { match: /[ \t]+/, lineBreaks: false },
 		'$': '$',
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
 		'|': '|',
-		':': ':',
-		'!': '!',
 	},
 	group: {
 		string: { match: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$|])+/, lineBreaks:true },
+		assign,
+		bassign,
+		sub,
+		bsub,
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
 		'|': '|',
+	},
+	nospace: {
+		string: { match: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\s|])+/, lineBreaks:true },
+		assign,
+		bassign,
+		sub,
+		bsub,
+		'(': { match: '(', push: 'group' },
+		')': { match: ')', pop: 1 },
+		'|': '|',
+		space: { match: /(?=[ \t\r\n])/, lineBreaks: true, pop: 1 },
 	}
 })
 
@@ -43,9 +56,8 @@ const textContent = (text) => ({type:"text", text})
 
 const subContent = (label) => ({type:"substitution", label})
 
-const assignContent = (ab) => {
-	const split = ab.split("=");
-	return ({type:"assignment", label: split[1], variable: split[0]})
+const assignContent = (variable, content) => {
+	return ({type:"assignment", content:choices(content), variable})
 }
 
 const choices = (items) => {
@@ -55,12 +67,12 @@ const choices = (items) => {
 	}
 	if (items.length === 0) {
 		// TODO: Should never happen? Actually better to allow it though...
-		return textContext("");
+		return textContent("");
 	}
-	return {type: "choices", choices: items}
+	return {type: "choices", content: items}
 }
 
-const main = (choices, labels) => ({type: "main", choices, labels})
+const main = (content, labels) => ({type: "main", content: choices(content), labels})
 
 const choice = (content) => ({type:"choice", content, weight: 10})
 
@@ -77,32 +89,39 @@ const mergeParts = (a, b) => {
 	return [...a, b];
 }
 
+const flatParts = (a) => a.length === 1 ? a[0] : a
+
 const bracketSlice = value => value.slice(2, value.length - 1)
+
 
 var grammar = {
     Lexer: lexer,
     ParserRules: [
     {"name": "main", "symbols": ["_", "content", "_"], "postprocess": d => main(d[1], [])},
     {"name": "main", "symbols": ["_", "content", "_", "labels", "_"], "postprocess": d => main(d[1], d[3])},
-    {"name": "main", "symbols": ["_", "labels", "_"], "postprocess": d => main(null, d[1])},
+    {"name": "main", "symbols": ["_", "labels", "_"], "postprocess": d => main([], d[1])},
     {"name": "labels", "symbols": ["labelledContent"], "postprocess": d => [d[0]]},
     {"name": "labels", "symbols": ["labels", "labelledContent"], "postprocess": d => [...d[0], d[1]]},
     {"name": "labelledContent", "symbols": ["label", "_", "content", "_"], "postprocess": d => label(d[0], d[2])},
-    {"name": "label", "symbols": [(lexer.has("label") ? {type: "label"} : label), (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => d[0].value.slice(0, d[0].value.length - 1)},
+    {"name": "label", "symbols": [(lexer.has("label") ? {type: "label"} : label), (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => d[0].value},
     {"name": "content", "symbols": ["line"], "postprocess": d => [d[0]]},
     {"name": "content", "symbols": ["content", "line"], "postprocess": d => [...d[0], d[1]]},
     {"name": "line", "symbols": ["choices", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => choice(choices(d[0]))},
     {"name": "group", "symbols": [{"literal":"("}, "choices", {"literal":")"}], "postprocess": d => choices(d[1])},
     {"name": "choices", "symbols": ["choice"], "postprocess": d => [d[0]]},
     {"name": "choices", "symbols": ["choices", {"literal":"|"}, "choice"], "postprocess": d => [...d[0], d[2]]},
-    {"name": "choice", "symbols": ["parts"], "postprocess": d => choice(d[0])},
+    {"name": "choice", "symbols": ["flatParts"], "postprocess": d => choice(d[0])},
+    {"name": "flatParts", "symbols": ["parts"], "postprocess": d => flatParts(d[0])},
     {"name": "parts", "symbols": ["part"], "postprocess": d => [d[0]]},
     {"name": "parts", "symbols": ["parts", "part"], "postprocess": d => [...d[0], d[1]]},
     {"name": "part", "symbols": ["string"], "postprocess": d => textContent(d[0])},
     {"name": "part", "symbols": ["group"], "postprocess": id},
+    {"name": "part", "symbols": ["assignment"], "postprocess": id},
     {"name": "part", "symbols": ["substitution"], "postprocess": id},
     {"name": "substitution", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => subContent(d[0].value.slice(1))},
     {"name": "substitution", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub)], "postprocess": d => subContent(bracketSlice(d[0].value))},
+    {"name": "assignment", "symbols": [(lexer.has("assign") ? {type: "assign"} : assign), "choices", (lexer.has("space") ? {type: "space"} : space)], "postprocess": d => assignContent(d[0].value, d[1])},
+    {"name": "assignment", "symbols": [(lexer.has("bassign") ? {type: "bassign"} : bassign), "choices", (lexer.has("space") ? {type: "space"} : space)], "postprocess": d => assignContent(d[0].value, d[1])},
     {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": d => d[0].value},
     {"name": "_", "symbols": [(lexer.has("space") ? {type: "space"} : space)], "postprocess": empty},
     {"name": "_", "symbols": [(lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": empty},

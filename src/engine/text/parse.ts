@@ -18,7 +18,8 @@ interface ContentItemAST {
     | "label"
     | "assignment"
     | "function"
-    | "choices";
+    | "choices"
+    | "input";
 }
 
 type ContentAST = ContentItemAST[] | ContentItemAST;
@@ -33,9 +34,10 @@ type ContentSubstitutionAST = ContentItemAST & {
   label: string;
 };
 
-type ContentAssignmentAST = Omit<ContentSubstitutionAST, "type"> & {
+type ContentAssignmentAST = ContentItemAST & {
   type: "assignment";
   variable: string;
+  content: ContentAST;
 };
 
 type FunctionInvocationAST = Omit<ContentSubstitutionAST, "type"> & {
@@ -50,12 +52,7 @@ type ChoiceAST = {
 
 type ContentChoiceAST = {
   type: "choices";
-  choices: ChoiceAST[];
-};
-
-type LabelAST = Omit<ContentChoiceAST, "type"> & {
-  type: "label";
-  name: string;
+  content: ChoiceAST[];
 };
 
 type FunctionASTParameter = {
@@ -68,33 +65,43 @@ type FunctionAST = Omit<LabelAST, "type"> & {
   parameters: FunctionASTParameter[];
 };
 
-type MainAST = Omit<ContentChoiceAST, "type"> & {
+type MainAST = {
   type: "main";
+  content: ContentAST;
   labels: LabelAST[];
 };
 
-type ImportLabels = Record<string, string | ChoiceAST[]>;
+type LabelAST = Omit<MainAST, "type" | "labels"> & {
+  type: "label";
+  name: string;
+};
+
+type ImportLabels = Record<string, string | ContentAST>;
 
 const ERROR_MAIN: MainAST = {
   type: "main",
-  choices: [],
+  content: [],
   labels: [],
+};
+
+const createChoicesFromObject = (
+  value: ContentAST | ChoiceAST[]
+): ContentAST => {
+  if (!Array.isArray(value)) return value;
+  return {
+    type: "choices",
+    content: value,
+  } as ContentChoiceAST;
 };
 
 const createLabelsFromObject = (labels: ImportLabels) =>
   Object.entries(labels).map<LabelAST>(([key, value]) => ({
     type: "label",
     name: key,
-    choices:
+    content:
       typeof value === "string"
-        ? [
-            {
-              type: "choice",
-              content: { type: "text", text: value } as ContentTextAST,
-              weight: 10,
-            } as ChoiceAST,
-          ]
-        : ((Array.isArray(value) ? value : [value]) as ChoiceAST[]),
+        ? ({ type: "text", text: value } as ContentTextAST)
+        : createChoicesFromObject(value),
   }));
 
 export const parse = (input: string): MainAST => {
@@ -151,18 +158,28 @@ export const executeText = (
       case "text":
         return [(content as ContentTextAST).text, currentContext];
       case "choices":
-      case "main":
-      case "label":
-        const choices = (content as ContentChoiceAST).choices;
+        const choices = (content as ContentChoiceAST).content;
         // TODO: If context path exists, follow it instead of using rng
         const chosen = rng.pick(choices);
-        // TODO: Need to amend context as pathing into label.
+        // TODO: Need to amend context as pathing into choice.
         return processContent(chosen.content);
+      case "main":
+      case "label":
+        // TODO: Need to amend context if pathing into label.
+        return processContent((content as MainAST).content);
       case "substitution":
       case "assignment":
         const label = content as ContentSubstitutionAST;
         let found;
-        if (
+        if (content.type === "assignment") {
+          if (content.type === "assignment") {
+            currentContext.state[
+              (content as ContentAssignmentAST).variable
+            ] = processContent((content as ContentAssignmentAST).content)[0];
+          }
+          found =
+            currentContext.state[(content as ContentAssignmentAST).variable];
+        } else if (
           Object.prototype.hasOwnProperty.call(
             currentContext.state,
             label.label
@@ -173,22 +190,16 @@ export const executeText = (
           found = mergedLabels.find((l) => l.name === label.label);
         }
         let result;
-        if (content.type === "assignment") {
-          if (content.type === "assignment") {
-            currentContext.state[
-              (content as ContentAssignmentAST).variable
-            ] = result;
-          }
-        } else {
-          if (found === undefined) {
-            return [`<Error: Label ${label.label} not found>`, currentContext];
-          }
-          result =
-            typeof found === "string"
-              ? (found as string)
-              : // TODO: Need to use the context from processContent if we bail
-                (processContent(found)[0] as ExecutionResult);
+
+        if (found === undefined) {
+          return [`<Error: Label ${label.label} not found>`, currentContext];
         }
+        result =
+          typeof found === "string"
+            ? (found as string)
+            : // TODO: Need to use the context from processContent if we bail
+              (processContent(found)[0] as ExecutionResult);
+
         return [result, currentContext];
       case "function":
         const functionNode = content as FunctionAST;
@@ -196,11 +207,15 @@ export const executeText = (
           case "OUT":
             break;
         }
-        return "Could not resolve function <" + functionNode.name + ">";
+        currentContext.error = true;
+        return [
+          "Could not resolve function <" + functionNode.name + ">",
+          currentContext,
+        ];
       case "input":
         // TODO: If context path exists it is the result of the input
-        return "????";
-
+        currentContext.error = true;
+        return ["Cannot process input", currentContext];
       default:
         throw new Error("Unknown content type: " + content.type);
     }
@@ -285,14 +300,14 @@ export const text = (
         ),
     };
   } catch (e) {
+    const errorContext = new ExecutionContext();
+    errorContext.error = true;
+    errorContext.finished = true;
     return {
       main: ERROR_MAIN,
       externals: [],
       render: () => `<Error: ${e.message}>`,
-      stream: () => [
-        `<Error: ${e.message}>`,
-        { state: {}, currentNodePath: [], finished: true, error: true },
-      ],
+      stream: () => [`<Error: ${e.message}>`, errorContext],
     };
   }
 };
