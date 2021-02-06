@@ -46,10 +46,26 @@ export const WanderingMageEncounter = entity(() => {
       return "FFWOOOOARRRRRMMMM!!!";
     };
     return text`(<null($gender=$genders)>
-By the side of the track you see <a($appearance)> $(kind=$(gender)Kinds)),
-accompanied by <a($appearance)> $(familiar=$familiars). <title($subjectPronoun)> looks up as
+By the side of the track you see $a<$appearance> $(kind=$(gender)Kinds)),
+accompanied by $a($appearance) $(familiar=$familiars). <title($subjectPronoun)> looks up as
 you approach, cocks $possessivePronoun head on one side, and $observes. The $familiar $familiarVerbs.
+(@aggressive?$title($subjectPronoun) $subjectVerb(attack) you!
+:$dialog)
 )
+
+dialog:
+("So, are you going to tell me why I shouldn't just roast you alive, right here on the spot?" asks the $kind.
+* Tell them about your quest => $dialogQuest
+* Lie about your intentions => $dialogLie
+* Plea for help => $dialogHelp
+* Throw their question back at them => $dialogQuestion
+* Try to surprise them with an attack => $dialogAttack)
+
+dialogQuest:
+"I wish to end the blight on this land. Stand aside and let me pass, unless you sympathize with the Evil one."
+
+[80]
+[20]A dark look crosses the $kind's face. "I see... in that case, the Evil One will surely pay me handsomely for your head!"($aggressive=true)
 
 ${commonFunctions}
 
@@ -108,19 +124,23 @@ doesn't make a sound, but somehow you feel that it did
 flaps its leathery wings
 
 subjectPronoun:
-<$gender==female?s>he
+[$gender==neutral]they
+($gender==female?s)he
 
 possessivePronoun:
 [$gender==female]her
 [$gender==male]his
+
+subjectVerb(verb):
+@verb($gender!=neutral?s)
 
 observes:
 swints sideways at you
 glares in your direction
 puzzledly watches you
 gazes at a point several feet behind you
-hurls a fireball in your direction!${warningFireball} It narrowly misses you. "Just a warning shot," $subjectPronoun says, $seriously
-[1%]hurls a fireball in your direction!${seriousFireball}
+hurls a fireball in your direction!${warningFireball} It narrowly misses you. "Just a warning shot," $subjectPronoun $subjectVerb(say), $seriously
+[1%]hurls a fireball in your direction!(@aggressive=true)${seriousFireball}
 
 seriously:
 pointedly

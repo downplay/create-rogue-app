@@ -1,7 +1,11 @@
 import { useState, useRef } from "react";
 import { parse } from "./text/parse";
+import { ExecutionContext } from "./text/ExecutionContext";
 
-export const useStory = <S extends {}>(initializer, defaultState = {}) => {
+export const useStory = <S extends {}>(
+  initializer,
+  defaultState = {}
+): [ExecutionResult, ExecutionContext] => {
   // TODO: implement persistedState already
   const [state, setState] = useState<S>(null!);
   // Quite a cheap hack. Maybe need to use useEffect, but it's nice if the story

@@ -1,6 +1,8 @@
 import * as nearley from "nearley";
 import { RNG } from "../useRng";
 import { ExecutionContext } from "./ExecutionContext";
+import isFunction from "lodash/isFunction";
+import { isEmpty } from "lodash";
 
 const grammar = require("./herotext.js");
 
@@ -8,7 +10,7 @@ type ReturnCommand = {
   type: "input";
 };
 
-type ExecutionResult = string | ReturnCommand | ExecutionResult[];
+export type ExecutionResult = string | ReturnCommand | ExecutionResult[];
 
 interface ContentItemAST {
   type:
@@ -65,6 +67,11 @@ type FunctionAST = Omit<LabelAST, "type"> & {
   parameters: FunctionASTParameter[];
 };
 
+type ExternalAST = ContentItemAST & {
+  type: "external";
+  callback: (state: Record<string,string>) => ExecutionResult;
+};
+
 type MainAST = {
   type: "main";
   content: ContentAST;
@@ -74,6 +81,7 @@ type MainAST = {
 type LabelAST = Omit<MainAST, "type" | "labels"> & {
   type: "label";
   name: string;
+  external: boolean;
 };
 
 type ImportLabels = Record<string, string | ContentAST>;
@@ -95,16 +103,41 @@ const createChoicesFromObject = (
 };
 
 const createLabelsFromObject = (labels: ImportLabels) =>
-  Object.entries(labels).map<LabelAST>(([key, value]) => ({
-    type: "label",
-    name: key,
-    content:
-      typeof value === "string"
-        ? ({ type: "text", text: value } as ContentTextAST)
-        : createChoicesFromObject(value),
-  }));
+  Object.entries(labels).map<LabelAST>(([key, value]) => {
+    let content: ContentAST;
+    if (isEmpty(value)) {
+      content = { type: "text", text: "" } as ContentTextAST;
+    }
+    else if (typeof value === "string") {
+      content = { type: "text", text: value } as ContentTextAST;
+    } else if (typeof value === "number" || typeof value === "boolean") {
+      content = {
+        type: "text",
+        text: (value as number).toString(),
+      } as ContentTextAST;
+    } else if (Array.isArray(value)) {
+      // TODO: Might make more sense to just render all sequentially?
+      content = createChoicesFromObject(value);
+    } else if (isFunction(value)) {
+      content = {
+        type: "external",
+        function: value,
+      } as ExternalAST;
+    } else {
+      content = { type: "text", text: `Cannot handle external type (${typeof value}): ${value.toString()}`  } as ContentTextAST;
+    }
+    return {
+      type: "label",
+      name: key,
+      external: true,
+      content,
+    };
+  });
 
-export const parse = (input: string): MainAST => {
+export const parse = (
+  input: string,
+  mergedTemplates?: ParsedTextTemplate[]
+): MainAST => {
   const parser = new nearley.Parser(
     nearley.Grammar.fromCompiled(grammar as nearley.CompiledRules)
   );
@@ -118,11 +151,27 @@ export const parse = (input: string): MainAST => {
     throw new Error("Unparseable text");
   }
   const main = (parsed.results[0] as unknown) as MainAST;
-  if (main === undefined) {
-    console.error("Undefined main:");
+  if (main.labels.some((label) => label.name.startsWith("OUT"))) {
+    console.error("Labels beginning with OUT are reserved for external calls:");
     console.error(input);
     console.error(parsed);
-    throw new Error("Undefined main");
+    throw new Error(
+      "Labels beginning with OUT are reserved for external calls"
+    );
+  }
+  if (mergedTemplates) {
+    // TODO: Potentially hierarchical labels could be a thing
+    const mergedLabels: Record<string, LabelAST> = {};
+    for (const template of mergedTemplates) {
+      for (const label of template.main.labels) {
+        mergedLabels[label.name] = label;
+      }
+    }
+    for (const label of Object.values(mergedLabels)) {
+      if (!main.labels.some((l) => l.name === label.name)) {
+        main.labels.push(label);
+      }
+    }
   }
   return main;
 };
@@ -131,13 +180,9 @@ export const executeText = (
   main: MainAST,
   rng: RNG,
   variables?: Record<string, string>,
-  externals: any[] = [],
-  importLabels?: ImportLabels,
-  executionContext?: ExecutionContext
+  executionContext?: ExecutionContext,
+  entryPoint: string = ""
 ): [ExecutionResult, ExecutionContext] => {
-  const mergedLabels = importLabels
-    ? [...main.labels, ...createLabelsFromObject(importLabels)]
-    : main.labels;
   let currentContext: ExecutionContext = executionContext
     ? executionContext.clone()
     : new ExecutionContext(variables);
@@ -220,9 +265,18 @@ export const executeText = (
         throw new Error("Unknown content type: " + content.type);
     }
   };
-  const result = processContent(main);
-  return [result, currentContext];
+  let entryNode: ContentItemAST | undefined = main;
+  if (entryPoint) {
+    entryNode = main.labels.find((label) => label.name === entryPoint);
+    if (!entryNode) {
+      throw new Error("Entrypoint label not found: " + entryPoint);
+    }
+  }
+  const result = processContent(entryNode);
+  return result;
 };
+
+const ParsedTextTemplateIdentifier = Symbol("ParsedTextTemplate");
 
 export type ParsedTextTemplate = {
   main: MainAST;
@@ -230,46 +284,66 @@ export type ParsedTextTemplate = {
   render: (
     rng: RNG,
     variables?: Record<string, string>,
-    importLabels?: ImportLabels
+    importLabels?: ImportLabels,
+    entryPoint?: string
   ) => string;
   stream: (
     rng: RNG,
     variables?: Record<string, string>,
     importLabels?: ImportLabels,
-    executionContext?: ExecutionContext
-  ) => [string, ExecutionContext];
+    executionContext?: ExecutionContext,
+    entryPoint?: string
+  ) => [ExecutionResult, ExecutionContext];
+  [ParsedTextTemplateIdentifier]: true;
 };
+
+let externalIndex = 0;
 
 export const text = (
   input: TemplateStringsArray,
   ...interpolations: any[]
 ): ParsedTextTemplate => {
+  const externals: Record<string, LabelAST> = {};
+  const mergedTemplates: ParsedTextTemplate[] = [];
   const flattened = input
     .map((fragment, i) => {
       if (interpolations[i]) {
-        return `${fragment}<OUT(${i})>`;
+        const external = interpolations[i];
+        if (
+          typeof external === "object" &&
+          external[ParsedTextTemplateIdentifier]
+        ) {
+          mergedTemplates.push(external);
+          // TODO: If the template has a main, we should actually still render it. Perhaps merging the labels
+          // like this is not the way to go; if a template is merged mid-paragraph, the labels should only be applied
+          // there, and not merged at top level...
+          return fragment;
+        }
+        const labelName = "OUT" + externalIndex;
+        externals[labelName] = external
+        return `${fragment}$${labelName}`;
       }
       return fragment;
     })
     .join("");
+    const importLabels = createLabelsFromObject(externals)
   try {
-    const main = parse(flattened);
-    const externals = interpolations.slice();
+    const main = parse(flattened, mergedTemplates);
 
     return {
       main,
-      externals,
       render: (
         rng: RNG,
         variables?: Record<string, string>,
-        importLabels?: ImportLabels
+        entryPoint: string = ""
       ) => {
         const stream = executeText(
           main,
           rng,
           variables,
-          externals,
-          importLabels
+          importLabels,
+          undefined,
+          entryPoint
         );
 
         const stringifyResult = (element: ExecutionResult): string => {
@@ -288,16 +362,18 @@ export const text = (
         rng: RNG,
         variables?: Record<string, string>,
         importLabels?: ImportLabels,
-        executionContext?: ExecutionContext
+        executionContext?: ExecutionContext,
+        entryPoint: string = ""
       ) =>
         executeText(
           main,
           rng,
           variables,
-          externals,
           importLabels,
-          executionContext
+          executionContext,
+          entryPoint
         ),
+      [ParsedTextTemplateIdentifier]: true,
     };
   } catch (e) {
     const errorContext = new ExecutionContext();
@@ -308,6 +384,7 @@ export const text = (
       externals: [],
       render: () => `<Error: ${e.message}>`,
       stream: () => [`<Error: ${e.message}>`, errorContext],
+      [ParsedTextTemplateIdentifier]: true,
     };
   }
 };

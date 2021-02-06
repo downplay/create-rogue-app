@@ -50,6 +50,19 @@ baz
   expect(parsed.render(rng)).toEqual("baz");
 });
 
+it("Renders labels", () => {
+  const rng = mockRng();
+  const parsed = text`
+one:
+foo
+
+two:
+bar
+`;
+  expect(parsed.render(rng, undefined, undefined, "one")).toEqual("foo");
+  expect(parsed.render(rng, undefined, undefined, "two")).toEqual("bar");
+});
+
 it("Substitutes labels", () => {
   const rng = mockRng();
   let parsed = text`Foo $bar
@@ -76,6 +89,35 @@ world`.render(rng)
   ).toEqual("Hello world");
 });
 
+it("Merges labels from other templates", () => {
+  const rng = mockRng();
+  const baseLabels = text`
+test:
+this is a test
+`;
+  const mainText = text`$test
+
+${baseLabels}`;
+
+  expect(mainText.render(rng)).toEqual("this is a test");
+
+  const overrideLabels = text`
+test:
+this is another test
+`;
+  expect(text`$test${baseLabels}${overrideLabels}`.render(rng)).toEqual(
+    "this is another test"
+  );
+
+  const overrideText = text`$test
+
+${baseLabels}
+
+test:
+the final test`;
+  expect(overrideText.render(rng)).toEqual("the final test");
+});
+
 it("Assigns variables", () => {
   const rng = mockRng([0.75, 0.25]);
   // TODO: Test context from stream contains variable
@@ -99,11 +141,11 @@ it("Assigns variables", () => {
 
 it("Interpolates external variables", () => {
   const rng = mockRng();
-  const color = "brown"
+  const color = "brown";
   expect(text`Quick ${color} fox`.render(rng)).toEqual("Quick brown fox");
-  const answer = 42
-  expect(text`The answer is ${answer}`.render(rng)).toEqual("The answer is 42")
-})
+  const answer = 42;
+  expect(text`The answer is ${answer}`.render(rng)).toEqual("The answer is 42");
+});
 
 it("Calls internal functions", () => {
   const rng = mockRng();

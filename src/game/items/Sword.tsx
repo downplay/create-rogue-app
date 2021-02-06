@@ -7,13 +7,14 @@ import { Card, Description } from "../../ui/Card";
 import { Name } from "../meta/Name";
 import { useStory } from "../../engine/useStory";
 import { text } from "../../engine/text/parse";
+import { useText } from "../../engine/useText";
 
 type SwordProps = {};
 
 export const SwordTile = tile("†");
 
 const descriptionText = text`
-<null($name $description)>
+You see $a($name).
 
 name:
 $material $blade
@@ -21,31 +22,34 @@ $material $blade
 description:
 A $size $class $material $blade.
 
-blade:
+blade:=
 sword
+rapier
 
-class:
+class:=
 
-material:
+
+material:=
 []wooden
 []bronze
 []iron
 []steel
-[]diamond
+[]diamond$null(%toughness=100)
 []glass
 [=gold]golden
 
-size:
-[1%,=0.01]tiny
-[10%,=0.1]small
-[50%,=1]
-[10%,=10]large
-[1%,=100]massive
+size:=
+[1%,~0.01]tiny
+[10%,~0.1]small
+[50%,~1]
+[10%,~10]large
+[1%,~100]massive
 `;
 
 export const Sword = ({}: SwordProps) => {
   hasTile(SwordTile, GridLayers.Item);
-  const description = useStory(descriptionText);
+  const {state: {toughness}} = useStory(descriptionText);
+  const description = useText;
   return (
     <Item>
       <Card>
