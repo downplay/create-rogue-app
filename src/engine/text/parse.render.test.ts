@@ -59,8 +59,8 @@ foo
 two:
 bar
 `;
-  expect(parsed.render(rng, undefined, undefined, "one")).toEqual("foo");
-  expect(parsed.render(rng, undefined, undefined, "two")).toEqual("bar");
+  expect(parsed.render(rng, undefined, "one")).toEqual("foo");
+  expect(parsed.render(rng, undefined, "two")).toEqual("bar");
 });
 
 it("Substitutes labels", () => {
@@ -139,6 +139,23 @@ it("Assigns variables", () => {
   ).toEqual("See Shablongy run. Run Shablongy run.");
 });
 
+it("Performs substitution inside label names", () => {
+  const rng = mockRng([0.25, 0.75, 0.75, 0.25]);
+
+  const fixture = text`The $animal=cat|dog goes $(($animal)Noise)
+
+catNoise:
+meow
+purr
+
+dogNoise:
+woof
+bark`;
+
+  expect(fixture.render(rng)).toEqual("The cat goes purr");
+  expect(fixture.render(rng)).toEqual("The dog goes woof");
+});
+
 it("Interpolates external variables", () => {
   const rng = mockRng();
   const color = "brown";
@@ -147,14 +164,23 @@ it("Interpolates external variables", () => {
   expect(text`The answer is ${answer}`.render(rng)).toEqual("The answer is 42");
 });
 
-it("Calls internal functions", () => {
+it.skip("Calls internal functions", () => {
   const rng = mockRng();
   expect(
     text`
-$repeat(NaN,asdasd,asdasd) Batman!
+$repeat[NaN] Batman!
 
-repeat: (word, count)
+repeat: (@word)
 $word$word$word$word$word$word$word$word
+`.render(rng)
+  ).toEqual("NaNNaNNaNNaNNaNNaNNaNNaN Batman!");
+
+  expect(
+    text`
+$repeat[NaN,8] Batman!
+
+repeat: (@word,@count)
+[count>0]@word$repeat[@word,${({ count }) => count - 1}]
 `.render(rng)
   ).toEqual("NaNNaNNaNNaNNaNNaNNaNNaN Batman!");
 });

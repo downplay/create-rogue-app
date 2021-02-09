@@ -8,9 +8,13 @@ function id(x) { return x[0]; }
  
 		const assign = { match: /\$[a-zA-Z0-9]+=/, push:'nospace', value: x => x.slice(1, x.length - 1) }
 		const bassign = { match: /\$\([a-zA-Z0-9 ]+\)=/, push:'nospace', value: x => x.slice(2, x.length - 2) } 
-		const sub =  /\$[a-zA-Z0-9]+/
-		const bsub = /\$\([a-zA-Z0-9 ]+\)/
+		const sub =  { match: /\$[a-zA-Z0-9]+/, value: x => x.slice(1) }
+		const bsub = { match: /\$\(/, push:'sublabel' }
+		const bsubend = { match: /\)/, pop:1 }
+		const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
+	    const space = { match: /[ \t]+/, lineBreaks: false }
 	  
+		
 const lexer = moo.states({
 	line: {
 		bang: /^!/,
@@ -18,10 +22,10 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
-		label: { match: /^[a-zA-Z0-9 ]+:\s*$/, value: x => x.slice(0, x.indexOf(":")) },
+		label: { match: /^[a-zA-Z0-9 ]+:\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
 		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|])+/,
 		newline: { match: /(?:\r\n|\r|\n)/, lineBreaks:true },
-		space: { match: /[ \t]+/, lineBreaks: false },
+		space,
 		'$': '$',
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
@@ -47,6 +51,21 @@ const lexer = moo.states({
 		')': { match: ')', pop: 1 },
 		'|': '|',
 		space: { match: /(?=[ \t\r\n])/, lineBreaks: true, pop: 1 },
+	},
+	labelparams: {
+		space,
+		newline: { ...newline,  pop: 1 },
+	},
+	sublabel: {
+		string: { match: /[a-zA-Z0-9 ]+/ },
+		assign,
+		bassign,
+		sub,
+		bsub,
+		bsubend,
+		'(': { match: '(', push: 'group' },
+		')': { match: ')', pop: 1 },
+		'|': '|',
 	}
 })
 
@@ -54,7 +73,15 @@ const empty = () => null
 
 const textContent = (text) => ({type:"text", text})
 
-const subContent = (label) => ({type:"substitution", label})
+const subContent = (label) => {
+	// Simplifly if there is just a single text element anyway
+	if (typeof label !== "string") {
+		if (label.type === "text") {
+			label = label.text;
+		}
+	}
+	return {type:"substitution", label};
+}
 
 const assignContent = (variable, content) => {
 	return ({type:"assignment", content:choices(content), variable})
@@ -91,9 +118,6 @@ const mergeParts = (a, b) => {
 
 const flatParts = (a) => a.length === 1 ? a[0] : a
 
-const bracketSlice = value => value.slice(2, value.length - 1)
-
-
 var grammar = {
     Lexer: lexer,
     ParserRules: [
@@ -118,14 +142,17 @@ var grammar = {
     {"name": "part", "symbols": ["group"], "postprocess": id},
     {"name": "part", "symbols": ["assignment"], "postprocess": id},
     {"name": "part", "symbols": ["substitution"], "postprocess": id},
-    {"name": "substitution", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => subContent(d[0].value.slice(1))},
-    {"name": "substitution", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub)], "postprocess": d => subContent(bracketSlice(d[0].value))},
+    {"name": "substitution", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => subContent(d[0].value)},
+    {"name": "substitution", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", (lexer.has("bsubend") ? {type: "bsubend"} : bsubend)], "postprocess": d => subContent(choices(d[1]))},
     {"name": "assignment", "symbols": [(lexer.has("assign") ? {type: "assign"} : assign), "choices", (lexer.has("space") ? {type: "space"} : space)], "postprocess": d => assignContent(d[0].value, d[1])},
     {"name": "assignment", "symbols": [(lexer.has("bassign") ? {type: "bassign"} : bassign), "choices", (lexer.has("space") ? {type: "space"} : space)], "postprocess": d => assignContent(d[0].value, d[1])},
     {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": d => d[0].value},
-    {"name": "_", "symbols": [(lexer.has("space") ? {type: "space"} : space)], "postprocess": empty},
-    {"name": "_", "symbols": [(lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": empty},
-    {"name": "_", "symbols": [], "postprocess": empty}
+    {"name": "_", "symbols": ["whitespace"], "postprocess": empty},
+    {"name": "whitespace", "symbols": ["whitespace", (lexer.has("newline") ? {type: "newline"} : newline)]},
+    {"name": "whitespace", "symbols": ["whitespace", (lexer.has("space") ? {type: "space"} : space)]},
+    {"name": "whitespace", "symbols": [(lexer.has("newline") ? {type: "newline"} : newline)]},
+    {"name": "whitespace", "symbols": [(lexer.has("space") ? {type: "space"} : space)]},
+    {"name": "whitespace", "symbols": []}
 ]
   , ParserStart: "main"
 }

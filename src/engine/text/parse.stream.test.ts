@@ -1,11 +1,18 @@
 import { mockRng } from "../../testUtils";
 import { text } from "./parse";
+import { ExecutionContext } from "./ExecutionContext";
 
 it("Streams simple string", () => {
   const rng = mockRng();
   expect(text`Quick brown fox`.stream(rng)).toEqual([
     "Quick brown fox",
-    { finished: true },
+    new ExecutionContext({
+      finished: true,
+      bail: false,
+      currentNodePath: [],
+      error: false,
+      state: {},
+    }),
   ]);
 });
 
