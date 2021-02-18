@@ -49,6 +49,7 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
+		'[': { match: '[', push: 'precondition' },
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
 		'|': '|',
@@ -88,7 +89,7 @@ const empty = () => null
 const textContent = (text) => ({type:"text", text})
 
 const subContent = (label) => {
-	// Simplifly if there is just a single text element anyway
+	// Simplify if there is just a single text element anyway
 	if (typeof label !== "string") {
 		if (label.type === "text") {
 			label = label.text;
@@ -115,7 +116,7 @@ const choices = (items) => {
 
 const main = (content, labels) => ({type: "main", content: choices(content), labels})
 
-const choice = (content, preconditions) => ()=>{
+const choice = (content, preconditions = []) => {
 	const result = {type:"choice", content, weight: 10, preconditions: []}
 	preconditions.forEach(cond => {
 		if (cond.type === "number" || cond.type === "percent") {
@@ -125,6 +126,31 @@ const choice = (content, preconditions) => ()=>{
 		}
 	})
 	return result;
+}
+
+const operators = {
+	"=": "eq",
+	">=": "gteq",
+	"<=": "lteq",
+	"~": "near",
+	"!=": "noteq"
+};
+
+const preComparison = (left = {type:"parameter"}, operator, right) => ({left, operator: operators[operator], right});
+
+const numberValue = value => {
+	let toParse = value;
+	if (value[value.length - 1] === "%") {
+		toParse = value.slice(0, value.length - 1);
+		return {
+			type: "percent",
+			value: Number(value.slice(0, value.length - 1))
+		}
+	}
+	return {
+		type: "number",
+		value: Number(value)
+	}
 }
 
 const label = (name, items, mode, merge = false) => ({type: "label", name, content: choices(items), mode, merge})
@@ -175,19 +201,17 @@ choices           -> choice                         {% d => [d[0]] %}
 choice            -> preconditions flatParts           {% d => choice(d[1], d[0]) %}
                    | flatParts                         {% d => choice(d[0]) %}
 
-preconditions     -> "[" conditions "]"
+preconditions     -> "[" conditions "]"             {% d => d[1] %}
 
-conditions        -> condition
-                   | conditions "," condition
+conditions        -> condition                      {% d => [d[0]] %}                     
+                   | conditions "," condition       {% d => [...d[0], d[2]] %}
 
-condition         -> %number
-                   | %number "%"
-                   | %compare %number
-				   | conditionValue
-				   | conditionValue %compare conditionValue
+condition         -> conditionValue                 {% d => d[0]preComparison(null, "=", d[0]) %}
+                   | %compare conditionValue        {% d => preComparison(null, d[0], d[1]) %}
+				   | conditionValue %compare conditionValue {% d => preComparison(d[0], d[1], d[2]) %}
 
-conditionValue    -> %number
-                   | parts
+conditionValue    -> %number						{% d => numberValue(d[0]) %}
+                   | parts                          {% d => compoundValue(d[0]) %}
 
 flatParts         -> parts                          {% d => flatParts(d[0]) %}
 
@@ -214,3 +238,5 @@ whitespace        -> whitespace %newline
 				   | %newline
 				   | %space
 				   | null
+				   
+				   
