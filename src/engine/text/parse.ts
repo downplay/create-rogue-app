@@ -2,7 +2,6 @@ import * as nearley from "nearley";
 import { RNG } from "../useRng";
 import { ExecutionContext } from "./ExecutionContext";
 import isFunction from "lodash/isFunction";
-import { isEmpty, nth } from "lodash";
 
 const grammar = require("./herotext.js");
 
@@ -83,6 +82,8 @@ type LabelAST = Omit<MainAST, "type" | "labels"> & {
   type: "label";
   name: string;
   external: boolean;
+  mode: "label" | "set" | "all";
+  merge: boolean;
 };
 
 type ImportLabels = Record<string, string | ContentAST>;
@@ -121,7 +122,7 @@ const createLabelsFromObject = (labels: ImportLabels) =>
     } else if (isFunction(value)) {
       content = {
         type: "external",
-        function: value,
+        callback: value,
       } as ExternalAST;
     } else {
       content = {
@@ -131,6 +132,7 @@ const createLabelsFromObject = (labels: ImportLabels) =>
     }
     return {
       type: "label",
+      mode: "label",
       name: key,
       external: true,
       content,
@@ -202,6 +204,10 @@ export const executeText = (
   const processContent = (
     content: ContentAST
   ): [ExecutionResult, ExecutionContext] => {
+    if (content === null || typeof content === "undefined") {
+      // TODO: Most likely indicates a parse error. Throw something?
+      return ["", currentContext];
+    }
     if (Array.isArray(content)) {
       const results = [];
       // TODO: Proper handling of context. Node path needs updating each step. Bail when returned context says so.
@@ -283,7 +289,7 @@ export const executeText = (
         return [result, currentContext];
       case "external":
         const externalNode = content as ExternalAST;
-        // TODO: Should also past 
+        // TODO: Should also past
         const returned = externalNode.callback(currentContext.state);
         return [returned, currentContext];
       // case "function":
@@ -302,7 +308,10 @@ export const executeText = (
         currentContext.error = true;
         return ["Cannot process input", currentContext];
       default:
-        throw new Error("Unknown content type: " + content.type);
+        throw new Error(
+          "Unknown content type in objecft: " +
+            JSON.stringify(content, null, "  ")
+        );
     }
   };
   let entryNode: ContentItemAST | undefined = main;

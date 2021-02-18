@@ -1,16 +1,15 @@
 @{%
 
- const moo = require('moo')
+const moo = require('moo')
  
-		const assign = { match: /\$[a-zA-Z0-9]+=/, push:'nospace', value: x => x.slice(1, x.length - 1) }
-		const bassign = { match: /\$\([a-zA-Z0-9 ]+\)=/, push:'nospace', value: x => x.slice(2, x.length - 2) } 
-		const sub =  { match: /\$[a-zA-Z0-9]+/, value: x => x.slice(1) }
-		const bsub = { match: /\$\(/, push:'sublabel' }
-		const bsubend = { match: /\)/, pop:1 }
-		const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
-	    const space = { match: /[ \t]+/, lineBreaks: false }
+const assign = { match: /\$[a-zA-Z0-9]+=/, push:'nospace', value: x => x.slice(1, x.length - 1) }
+const bassign = { match: /\$\([a-zA-Z0-9 ]+\)=/, push:'nospace', value: x => x.slice(2, x.length - 2) } 
+const sub =  { match: /\$[a-zA-Z0-9]+/, value: x => x.slice(1) }
+const bsub = { match: /\$\(/, push:'sublabel' }
+const bsubend = { match: /\)/, pop:1 }
+const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
+const space = { match: /[ \t]+/, lineBreaks: false }
 	  
-		
 const lexer = moo.states({
 	line: {
 		bang: /^!/,
@@ -19,26 +18,33 @@ const lexer = moo.states({
 		sub,
 		bsub,
 		label: { match: /^[a-zA-Z0-9 ]+:\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
-		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|])+/,
+		labeleq: { match: /^[a-zA-Z0-9 ]+:=\s*$/, value: x => x.slice(0, x.indexOf(":")) },
+		labeleqmerge: { match: /^[a-zA-Z0-9 ]+:=~\s*$/, value: x => x.slice(0, x.indexOf(":")) },
+		labelplus: { match: /^[a-zA-Z0-9 ]+:\+\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
+		labelplusmerge: { match: /^[a-zA-Z0-9 ]+:+~\+\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
+		labelmerge: { match: /^[a-zA-Z0-9 ]+:~\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
+		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$\[]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|\[\]])+/,
 		newline: { match: /(?:\r\n|\r|\n)/, lineBreaks:true },
 		space,
+		'[': { match: '[', push: 'precondition' },
 		'$': '$',
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
 		'|': '|',
 	},
 	group: {
-		string: { match: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$|])+/, lineBreaks:true },
+		string: { match: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$|\[\]])+/, lineBreaks:true },
 		assign,
 		bassign,
 		sub,
 		bsub,
+		'[': { match: '[', push: 'precondition' },
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
 		'|': '|',
 	},
 	nospace: {
-		string: { match: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\s|])+/, lineBreaks:true },
+		string: { match: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\s|\[\]])+/, lineBreaks:true },
 		assign,
 		bassign,
 		sub,
@@ -61,6 +67,18 @@ const lexer = moo.states({
 		bsubend,
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
+		'|': '|',
+	},
+	precondition: {
+		space,
+		number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
+		compare: /(?:[<>=!]=?)/,
+		sub,
+		bsub,
+		'(': { match: '(', push: 'group' },
+		']': { match: ']', pop: 1 },
+		',': ',',
+		'%': '%',
 		'|': '|',
 	}
 })
@@ -97,9 +115,19 @@ const choices = (items) => {
 
 const main = (content, labels) => ({type: "main", content: choices(content), labels})
 
-const choice = (content) => ({type:"choice", content, weight: 10})
+const choice = (content, preconditions) => ()=>{
+	const result = {type:"choice", content, weight: 10, preconditions: []}
+	preconditions.forEach(cond => {
+		if (cond.type === "number" || cond.type === "percent") {
+			result.weight = cond.value;
+		} else {
+			result.preconditions.push(cond);
+		}
+	})
+	return result;
+}
 
-const label = (name, items) => ({type: "label", name, content: choices(items)})
+const label = (name, items, mode, merge = false) => ({type: "label", name, content: choices(items), mode, merge})
 
 const mergeParts = (a, b) => {
 	while (a[a.length-1] && a[a.length-1].type === "text" && b.type === "text") {
@@ -125,9 +153,14 @@ main              -> _ content _                    {% d => main(d[1], []) %}
 labels           -> labelledContent                {% d => [d[0]] %}	
                   | labels labelledContent         {% d => [...d[0], d[1]] %}
 
-labelledContent  -> label _ content _          {% d => label(d[0], d[2]) %}
+labelledContent  -> label _ content _          {% d => label(d[0][0], d[2], d[0][1], d[0][2]) %}
 
-label            -> %label %newline         {% d => d[0].value %}
+label             -> %label %newline                {% d => [d[0].value, "label"] %}
+				   | %labeleq %newline              {% d => [d[0].value, "set"] %}
+				   | %labelplus %newline            {% d => [d[0].value, "all"] %}
+				   | %labelmerge %newline           {% d => [d[0].value, "label", true] %}
+				   | %labeleqmerge %newline           {% d => [d[0].value, "set", true] %}
+				   | %labelplusmerge %newline           {% d => [d[0].value, "all", true] %}
 
 content           -> line                           {% d => [d[0]] %}
                    | content line                   {% d => [...d[0], d[1]] %}
@@ -139,8 +172,22 @@ group             -> "(" choices ")"                  {% d => choices(d[1]) %}
 choices           -> choice                         {% d => [d[0]] %}                         
                     | choices "|" choice            {% d => [...d[0], d[2]] %}
 
-# Need to add preconditions etc
-choice            -> flatParts                         {% d => choice(d[0]) %}
+choice            -> preconditions flatParts           {% d => choice(d[1], d[0]) %}
+                   | flatParts                         {% d => choice(d[0]) %}
+
+preconditions     -> "[" conditions "]"
+
+conditions        -> condition
+                   | conditions "," condition
+
+condition         -> %number
+                   | %number "%"
+                   | %compare %number
+				   | conditionValue
+				   | conditionValue %compare conditionValue
+
+conditionValue    -> %number
+                   | parts
 
 flatParts         -> parts                          {% d => flatParts(d[0]) %}
 

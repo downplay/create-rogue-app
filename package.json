@@ -37,6 +37,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "grammar": "nearleyc src/engine/text/herotext.ne -o src/engine/text/herotext.js",
+    "grammar-sandbox": "nearley-test src/engine/text/herotext.ne",
     "grammar-test-built": "nearleyc src/engine/text/herotext.js",
     "grammar-test": "npm-run-all grammar grammar-test-built"
   },

@@ -62,14 +62,14 @@ dialog:
 * Try to surprise them with an attack => $dialogAttack)
 
 dialogQuest:
-"I wish to end the blight on this land. Stand aside and let me pass, unless you sympathize with the Evil one."
+"I wish to end the blight on this (land|world|realm). Stand aside and let me pass, unless you sympathize with the Evil one."$dialogQuestResponse
 
 [80]
 [20]A dark look crosses the $kind's face. "I see... in that case, the Evil One will surely pay me handsomely for your head!"($aggressive=true)
 
 ${commonFunctions}
 
-appearance:
+appearance:=
 mangy
 shabby
 ragged
@@ -77,16 +77,16 @@ twitchy
 scrawny
 singed
 
-genders:
+gender:=
 male
 female
 
-maleKinds:
+maleKinds:=
 mage
 wizard
 sorceror
 
-femaleKinds:
+femaleKinds:=
 magess
 witch
 enchantress

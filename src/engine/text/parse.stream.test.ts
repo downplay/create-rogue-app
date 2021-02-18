@@ -16,6 +16,34 @@ it("Streams simple string", () => {
   ]);
 });
 
+it("Accepts input", () => {
+  const rng = mockRng();
+  const fixture = text`Input something: $input=$<IN`;
+  const bailResult = fixture.stream(rng);
+  expect(bailResult).toEqual([
+    ["Input something: ", new ReturnCommand({ type: "IN" })],
+    new ExecutionContext({
+      finished: false,
+      bail: true,
+      currentNodePath: ["1", "0"],
+      error: false,
+      state: {},
+    }),
+  ]);
+  bailResult[1].feedInput("something");
+  const finalResult = fixture.stream(rng, undefined, bailResult[1]);
+  expect(finalResult).toEqual([
+    ["something"],
+    new ExecutionContext({
+      finished: true,
+      bail: false,
+      currentNodePath: [],
+      error: false,
+      state: { input: "something" },
+    }),
+  ]);
+});
+
 it.skip("Awaits a promise resolution", () => {
   const rng = mockRng();
   let hoistResolve;
