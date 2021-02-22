@@ -49,10 +49,22 @@ type FunctionInvocationAST = Omit<ContentSubstitutionAST, "type"> & {
   parameters: Record<string, ContentItemAST>;
 };
 
+type ValueAST = {
+  type: "number" | "percent" | "compound";
+  value: number | ContentAST;
+};
+
+type PreconditionAST = {
+  left: ValueAST;
+  right: ValueAST;
+  operator: "eq" | "gteq" | "lteq" | "match" | "noteq" | "notmatch";
+};
+
 type ChoiceAST = {
   type: "choice";
   weight: number;
   content: ContentAST;
+  preconditions: PreconditionAST[];
 };
 
 type ContentChoiceAST = {
@@ -197,6 +209,17 @@ const stringifyResult = (elements: ExecutionResult): string => {
   return elements.map(stringifyResultItem).join("");
 };
 
+const matchPreconditions = (
+  choice: ChoiceAST,
+  context: ExecutionContext
+  // TODO: Default positional parameters (from func signature)
+): boolean => {
+  for (const pre of choice.preconditions) {
+    // TODO: Actually check them
+  }
+  return true;
+};
+
 export const executeText = (
   main: MainAST,
   rng: RNG,
@@ -244,12 +267,32 @@ export const executeText = (
       case "main":
       case "label": {
         // TODO: Need to amend context if pathing into label.
-        const result = processContent((content as MainAST).content);
+        const label = content as LabelAST;
+        if (
+          label.mode === "all" &&
+          (label.content as ContentItemAST).type === "choices"
+        ) {
+          // Execute all choices
+          // TODO: In parallel with bails
+          const choices = label.content as ContentChoiceAST;
+          const results = [];
+          for (const choice of choices.content) {
+            if (matchPreconditions(choice, currentContext)) {
+              results.push(processContent(choice.content));
+            }
+          }
+          // TODO: Combine executions in context
+          return [results.flatMap((r) => r[0]), currentContext];
+        }
+        const result = processContent(label.content);
         if (content.type === "main") {
           // End of main with no bailout means we have finished
           if (!result[1].bail) {
             result[1].finished = true;
           }
+        }
+        if (label.mode === "set") {
+          currentContext.state[label.name] = stringifyResult(result[0]);
         }
         return result;
       }

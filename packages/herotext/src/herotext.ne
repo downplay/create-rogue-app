@@ -133,8 +133,9 @@ const operators = {
 	"=": "eq",
 	">=": "gteq",
 	"<=": "lteq",
-	"~": "near",
-	"!=": "noteq"
+	"~": "match",
+	"!=": "noteq",
+	"!~": "notmatch"
 };
 
 const preComparison = (left = {type:"parameter"}, operator, right) => ({left, operator: operators[operator], right});

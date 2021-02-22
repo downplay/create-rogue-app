@@ -17,7 +17,7 @@ it("Streams simple string", () => {
 
 it("Accepts input", () => {
   const rng = mockRng();
-  const fixture = text`Input something: $input=$<IN`;
+  const fixture = text`Input something: $input=$?`;
   const bailResult = fixture.stream(rng);
   expect(bailResult).toEqual([
     [
