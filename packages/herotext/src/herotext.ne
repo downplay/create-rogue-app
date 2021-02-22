@@ -9,7 +9,7 @@ const bsub = { match: /\$\(/, push:'sublabel' }
 const bsubend = { match: /\)/, pop:1 }
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
 const space = { match: /[ \t]+/, lineBreaks: false }
-	  
+		
 const lexer = moo.states({
 	line: {
 		bang: /^!/,
@@ -26,8 +26,8 @@ const lexer = moo.states({
 		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$\[]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|\[\]])+/,
 		newline: { match: /(?:\r\n|\r|\n)/, lineBreaks:true },
 		space,
-		'[': { match: '[', push: 'precondition' },
 		'$': '$',
+		'[': { match: '[', push: 'precondition' },	 	
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
 		'|': '|',
@@ -74,6 +74,7 @@ const lexer = moo.states({
 		space,
 		number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
 		compare: /(?:[<>=!]=?)/,
+		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$\[]|\\u[a-fA-F0-9]{4}|[^,=\\()\$\n\r|\[\]])+/,
 		sub,
 		bsub,
 		'(': { match: '(', push: 'group' },
@@ -119,7 +120,7 @@ const main = (content, labels) => ({type: "main", content: choices(content), lab
 const choice = (content, preconditions = []) => {
 	const result = {type:"choice", content, weight: 10, preconditions: []}
 	preconditions.forEach(cond => {
-		if (cond.type === "number" || cond.type === "percent") {
+		if (/*cond.type === "number" || */cond.type === "percent") {
 			result.weight = cond.value;
 		} else {
 			result.preconditions.push(cond);
@@ -138,20 +139,26 @@ const operators = {
 
 const preComparison = (left = {type:"parameter"}, operator, right) => ({left, operator: operators[operator], right});
 
+const soloValueComparison = (value) => {
+	return (/*value.type === "number" ||*/ value.type === "percent") ? value : preComparison(null, "=", value); 
+}
+
 const numberValue = value => {
 	let toParse = value;
 	if (value[value.length - 1] === "%") {
 		toParse = value.slice(0, value.length - 1);
 		return {
 			type: "percent",
-			value: Number(value.slice(0, value.length - 1))
+			value: Number(toParse)
 		}
 	}
 	return {
 		type: "number",
-		value: Number(value)
+		value: Number(toParse)
 	}
 }
+
+const compoundValue = value => ({ type:"compound", value })
 
 const label = (name, items, mode, merge = false) => ({type: "label", name, content: choices(items), mode, merge})
 
@@ -191,7 +198,7 @@ label             -> %label %newline                {% d => [d[0].value, "label"
 content           -> line                           {% d => [d[0]] %}
                    | content line                   {% d => [...d[0], d[1]] %}
 
-line              -> choices %newline                 {% d => choice(choices(d[0])) %}
+line              -> choice %newline                 {% id %}
 
 group             -> "(" choices ")"                  {% d => choices(d[1]) %}
 
@@ -206,11 +213,11 @@ preconditions     -> "[" conditions "]"             {% d => d[1] %}
 conditions        -> condition                      {% d => [d[0]] %}                     
                    | conditions "," condition       {% d => [...d[0], d[2]] %}
 
-condition         -> conditionValue                 {% d => d[0]preComparison(null, "=", d[0]) %}
-                   | %compare conditionValue        {% d => preComparison(null, d[0], d[1]) %}
-				   | conditionValue %compare conditionValue {% d => preComparison(d[0], d[1], d[2]) %}
+condition         -> conditionValue                 {% d => soloValueComparison(d[0]) %}
+                   | %compare conditionValue        {% d => preComparison(null, d[0].value, d[1]) %}
+				   | conditionValue %compare conditionValue {% d => preComparison(d[0], d[1].value, d[2]) %}
 
-conditionValue    -> %number						{% d => numberValue(d[0]) %}
+conditionValue    -> %number						{% d => numberValue(d[0].value) %}
                    | parts                          {% d => compoundValue(d[0]) %}
 
 flatParts         -> parts                          {% d => flatParts(d[0]) %}
@@ -238,5 +245,3 @@ whitespace        -> whitespace %newline
 				   | %newline
 				   | %space
 				   | null
-				   
-				   

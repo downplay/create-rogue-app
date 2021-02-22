@@ -13,7 +13,7 @@ const bsub = { match: /\$\(/, push:'sublabel' }
 const bsubend = { match: /\)/, pop:1 }
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
 const space = { match: /[ \t]+/, lineBreaks: false }
-	  
+		
 const lexer = moo.states({
 	line: {
 		bang: /^!/,
@@ -30,8 +30,8 @@ const lexer = moo.states({
 		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$\[]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|\[\]])+/,
 		newline: { match: /(?:\r\n|\r|\n)/, lineBreaks:true },
 		space,
-		'[': { match: '[', push: 'precondition' },
 		'$': '$',
+		'[': { match: '[', push: 'precondition' },	 	
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
 		'|': '|',
@@ -53,6 +53,7 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
+		'[': { match: '[', push: 'precondition' },
 		'(': { match: '(', push: 'group' },
 		')': { match: ')', pop: 1 },
 		'|': '|',
@@ -77,6 +78,7 @@ const lexer = moo.states({
 		space,
 		number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
 		compare: /(?:[<>=!]=?)/,
+		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$\[]|\\u[a-fA-F0-9]{4}|[^,=\\()\$\n\r|\[\]])+/,
 		sub,
 		bsub,
 		'(': { match: '(', push: 'group' },
@@ -92,7 +94,7 @@ const empty = () => null
 const textContent = (text) => ({type:"text", text})
 
 const subContent = (label) => {
-	// Simplifly if there is just a single text element anyway
+	// Simplify if there is just a single text element anyway
 	if (typeof label !== "string") {
 		if (label.type === "text") {
 			label = label.text;
@@ -119,10 +121,10 @@ const choices = (items) => {
 
 const main = (content, labels) => ({type: "main", content: choices(content), labels})
 
-const choice = (content, preconditions) => ()=>{
+const choice = (content, preconditions = []) => {
 	const result = {type:"choice", content, weight: 10, preconditions: []}
 	preconditions.forEach(cond => {
-		if (cond.type === "number" || cond.type === "percent") {
+		if (/*cond.type === "number" || */cond.type === "percent") {
 			result.weight = cond.value;
 		} else {
 			result.preconditions.push(cond);
@@ -130,6 +132,37 @@ const choice = (content, preconditions) => ()=>{
 	})
 	return result;
 }
+
+const operators = {
+	"=": "eq",
+	">=": "gteq",
+	"<=": "lteq",
+	"~": "near",
+	"!=": "noteq"
+};
+
+const preComparison = (left = {type:"parameter"}, operator, right) => ({left, operator: operators[operator], right});
+
+const soloValueComparison = (value) => {
+	return (/*value.type === "number" ||*/ value.type === "percent") ? value : preComparison(null, "=", value); 
+}
+
+const numberValue = value => {
+	let toParse = value;
+	if (value[value.length - 1] === "%") {
+		toParse = value.slice(0, value.length - 1);
+		return {
+			type: "percent",
+			value: Number(toParse)
+		}
+	}
+	return {
+		type: "number",
+		value: Number(toParse)
+	}
+}
+
+const compoundValue = value => ({ type:"compound", value })
 
 const label = (name, items, mode, merge = false) => ({type: "label", name, content: choices(items), mode, merge})
 
@@ -163,22 +196,20 @@ var grammar = {
     {"name": "label", "symbols": [(lexer.has("labelplusmerge") ? {type: "labelplusmerge"} : labelplusmerge), (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => [d[0].value, "all", true]},
     {"name": "content", "symbols": ["line"], "postprocess": d => [d[0]]},
     {"name": "content", "symbols": ["content", "line"], "postprocess": d => [...d[0], d[1]]},
-    {"name": "line", "symbols": ["choices", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => choice(choices(d[0]))},
+    {"name": "line", "symbols": ["choice", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": id},
     {"name": "group", "symbols": [{"literal":"("}, "choices", {"literal":")"}], "postprocess": d => choices(d[1])},
     {"name": "choices", "symbols": ["choice"], "postprocess": d => [d[0]]},
     {"name": "choices", "symbols": ["choices", {"literal":"|"}, "choice"], "postprocess": d => [...d[0], d[2]]},
     {"name": "choice", "symbols": ["preconditions", "flatParts"], "postprocess": d => choice(d[1], d[0])},
     {"name": "choice", "symbols": ["flatParts"], "postprocess": d => choice(d[0])},
-    {"name": "preconditions", "symbols": [{"literal":"["}, "conditions", {"literal":"]"}]},
-    {"name": "conditions", "symbols": ["condition"]},
-    {"name": "conditions", "symbols": ["conditions", {"literal":","}, "condition"]},
-    {"name": "condition", "symbols": [(lexer.has("number") ? {type: "number"} : number)]},
-    {"name": "condition", "symbols": [(lexer.has("number") ? {type: "number"} : number), {"literal":"%"}]},
-    {"name": "condition", "symbols": [(lexer.has("compare") ? {type: "compare"} : compare), (lexer.has("number") ? {type: "number"} : number)]},
-    {"name": "condition", "symbols": ["conditionValue"]},
-    {"name": "condition", "symbols": ["conditionValue", (lexer.has("compare") ? {type: "compare"} : compare), "conditionValue"]},
-    {"name": "conditionValue", "symbols": [(lexer.has("number") ? {type: "number"} : number)]},
-    {"name": "conditionValue", "symbols": ["parts"]},
+    {"name": "preconditions", "symbols": [{"literal":"["}, "conditions", {"literal":"]"}], "postprocess": d => d[1]},
+    {"name": "conditions", "symbols": ["condition"], "postprocess": d => [d[0]]},
+    {"name": "conditions", "symbols": ["conditions", {"literal":","}, "condition"], "postprocess": d => [...d[0], d[2]]},
+    {"name": "condition", "symbols": ["conditionValue"], "postprocess": d => soloValueComparison(d[0])},
+    {"name": "condition", "symbols": [(lexer.has("compare") ? {type: "compare"} : compare), "conditionValue"], "postprocess": d => preComparison(null, d[0].value, d[1])},
+    {"name": "condition", "symbols": ["conditionValue", (lexer.has("compare") ? {type: "compare"} : compare), "conditionValue"], "postprocess": d => preComparison(d[0], d[1].value, d[2])},
+    {"name": "conditionValue", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": d => numberValue(d[0].value)},
+    {"name": "conditionValue", "symbols": ["parts"], "postprocess": d => compoundValue(d[0])},
     {"name": "flatParts", "symbols": ["parts"], "postprocess": d => flatParts(d[0])},
     {"name": "parts", "symbols": ["part"], "postprocess": d => [d[0]]},
     {"name": "parts", "symbols": ["parts", "part"], "postprocess": d => [...d[0], d[1]]},

@@ -8,9 +8,9 @@
     "prepublish": "tsc",
     "build": "tsc --watch",
     "test": "jest",
-    "grammar": "nearleyc src/engine/text/herotext.ne -o src/engine/text/herotext.js",
-    "grammar-sandbox": "nearley-test src/engine/text/herotext.ne",
-    "grammar-test-built": "nearleyc src/engine/text/herotext.js",
+    "grammar": "nearleyc src/herotext.ne -o src/herotext.js",
+    "grammar-sandbox": "nearley-test src/herotext.ne",
+    "grammar-test-built": "nearleyc src/herotext.js",
     "grammar-test": "npm-run-all grammar grammar-test-built"
   },
   "keywords": [],

@@ -15,13 +15,13 @@ const pluralise = (word: string) =>
   word[word.length - 1] === "s" ? word + "es" : word + "s";
 
 export const commonFunctions = text`
-a($word):
+a: ($word)
 ${({ word }: AProps) => (usesAnForm(word) ? "an" : "a")} $word
 
-title($word):
+title: ($word)
 ${({ word }: AProps) => titleCase(word)}
 
-plural($word):
+plural: ($word)
 ${({ word }: AProps) => pluralise(word)}
 
 null:
