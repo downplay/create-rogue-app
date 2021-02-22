@@ -4,7 +4,7 @@ import { mockRng } from "./testUtils";
 it("Streams simple string", () => {
   const rng = mockRng();
   expect(text`Quick brown fox`.stream(rng)).toEqual([
-    "Quick brown fox",
+    ["Quick brown fox"],
     new ExecutionContext({
       finished: true,
       bail: false,

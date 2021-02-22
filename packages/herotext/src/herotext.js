@@ -7,10 +7,10 @@ function id(x) { return x[0]; }
 const moo = require('moo')
  
 const assign = { match: /\$[a-zA-Z0-9]+=/, push:'nospace', value: x => x.slice(1, x.length - 1) }
-const bassign = { match: /\$\([a-zA-Z0-9 ]+\)=/, push:'nospace', value: x => x.slice(2, x.length - 2) } 
+const bassign = { match: /\$\[[a-zA-Z0-9 ]+\]=/, push:'nospace', value: x => x.slice(2, x.length - 2) } 
 const sub =  { match: /\$[a-zA-Z0-9]+/, value: x => x.slice(1) }
-const bsub = { match: /\$\(/, push:'sublabel' }
-const bsubend = { match: /\)/, pop:1 }
+const bsub = { match: /\$\[/, push:'sublabel' }
+const bsubend = { match: /\]/, pop:1 }
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
 const space = { match: /[ \t]+/, lineBreaks: false }
 		
@@ -27,35 +27,35 @@ const lexer = moo.states({
 		labelplus: { match: /^[a-zA-Z0-9 ]+:\+\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
 		labelplusmerge: { match: /^[a-zA-Z0-9 ]+:+~\+\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
 		labelmerge: { match: /^[a-zA-Z0-9 ]+:~\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
-		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$\[]|\\u[a-fA-F0-9]{4}|[^\\()\$\n\r|\[\]])+/,
+		string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r|\[\]\{\}])+/,
 		newline: { match: /(?:\r\n|\r|\n)/, lineBreaks:true },
 		space,
 		'$': '$',
-		'[': { match: '[', push: 'precondition' },	 	
-		'(': { match: '(', push: 'group' },
-		')': { match: ')', pop: 1 },
+		'{': { match: '{', push: 'precondition' },	 	
+		'[': { match: '[', push: 'group' },
+		']': { match: ']', pop: 1 },
 		'|': '|',
 	},
 	group: {
-		string: { match: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$|\[\]])+/, lineBreaks:true },
+		string: { match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\$]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$|\[\]])+/, lineBreaks:true },
 		assign,
 		bassign,
 		sub,
 		bsub,
-		'[': { match: '[', push: 'precondition' },
-		'(': { match: '(', push: 'group' },
-		')': { match: ')', pop: 1 },
+		'{': { match: '{', push: 'precondition' },
+		'[': { match: '[', push: 'group' },
+		']': { match: ']', pop: 1 },
 		'|': '|',
 	},
 	nospace: {
-		string: { match: /(?:\$\$|\(\(|\)\)|\\[\\()\$]|\\u[a-fA-F0-9]{4}|[^\\()\$\s|\[\]])+/, lineBreaks:true },
+		string: { match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\$]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/, lineBreaks:true },
 		assign,
 		bassign,
 		sub,
 		bsub,
-		'[': { match: '[', push: 'precondition' },
-		'(': { match: '(', push: 'group' },
-		')': { match: ')', pop: 1 },
+		'{': { match: '{', push: 'precondition' },
+		'[': { match: '[', push: 'group' },
+		']': { match: ']', pop: 1 },
 		'|': '|',
 		space: { match: /(?=[ \t\r\n])/, lineBreaks: true, pop: 1 },
 	},
@@ -70,19 +70,19 @@ const lexer = moo.states({
 		sub,
 		bsub,
 		bsubend,
-		'(': { match: '(', push: 'group' },
-		')': { match: ')', pop: 1 },
+		'[': { match: '[', push: 'group' },
+		']': { match: ']', pop: 1 },
 		'|': '|',
 	},
 	precondition: {
 		space,
 		number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
 		compare: /(?:[<>=!]=?)/,
-		string: /(?:\$\$|\(\(|\)\)|\\[\\()\$\[]|\\u[a-fA-F0-9]{4}|[^,=\\()\$\n\r|\[\]])+/,
+		string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\$\[]|\\u[a-fA-F0-9]{4}|[^,=\\\{\}\$\n\r|\[\]])+/,
 		sub,
 		bsub,
-		'(': { match: '(', push: 'group' },
-		']': { match: ']', pop: 1 },
+		'[': { match: '[', push: 'group' },
+		'}': { match: '}', pop: 1 },
 		',': ',',
 		'%': '%',
 		'|': '|',
@@ -197,12 +197,12 @@ var grammar = {
     {"name": "content", "symbols": ["line"], "postprocess": d => [d[0]]},
     {"name": "content", "symbols": ["content", "line"], "postprocess": d => [...d[0], d[1]]},
     {"name": "line", "symbols": ["choice", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": id},
-    {"name": "group", "symbols": [{"literal":"("}, "choices", {"literal":")"}], "postprocess": d => choices(d[1])},
+    {"name": "group", "symbols": [{"literal":"["}, "choices", {"literal":"]"}], "postprocess": d => choices(d[1])},
     {"name": "choices", "symbols": ["choice"], "postprocess": d => [d[0]]},
     {"name": "choices", "symbols": ["choices", {"literal":"|"}, "choice"], "postprocess": d => [...d[0], d[2]]},
     {"name": "choice", "symbols": ["preconditions", "flatParts"], "postprocess": d => choice(d[1], d[0])},
     {"name": "choice", "symbols": ["flatParts"], "postprocess": d => choice(d[0])},
-    {"name": "preconditions", "symbols": [{"literal":"["}, "conditions", {"literal":"]"}], "postprocess": d => d[1]},
+    {"name": "preconditions", "symbols": [{"literal":"{"}, "conditions", {"literal":"}"}], "postprocess": d => d[1]},
     {"name": "conditions", "symbols": ["condition"], "postprocess": d => [d[0]]},
     {"name": "conditions", "symbols": ["conditions", {"literal":","}, "condition"], "postprocess": d => [...d[0], d[2]]},
     {"name": "condition", "symbols": ["conditionValue"], "postprocess": d => soloValueComparison(d[0])},

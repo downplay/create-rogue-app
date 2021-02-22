@@ -1,30 +1,32 @@
-import { text, commonFunctions } from "../index";
+import { text } from "../index";
 import { mockRng } from "./testUtils";
 
 it("Renders simple string", () => {
   const rng = mockRng();
   expect(text`Quick brown fox`.render(rng)).toEqual("Quick brown fox");
-  expect(text`(Quick brown fox)`.render(rng)).toEqual("Quick brown fox");
+  expect(text`[Quick brown fox]`.render(rng)).toEqual("Quick brown fox");
   expect(
-    text`(Quick
+    text`[Quick
 brown
-fox)`.render(rng)
+fox]`.render(rng)
   ).toEqual("Quick\nbrown\nfox");
-  expect(text`Quick {brown} fox`.render(rng)).toEqual("Quick brown fox");
+  expect(text`Quick [brown] fox`.render(rng)).toEqual("Quick brown fox");
 });
 
 it("Renders simple choices", () => {
   const rng = mockRng([0.75, 0.25]);
-  let parsed = text`You win|You lose`;
+  let parsed = text`[You win|You lose]`;
+  // TODO: figure out nospace word choices? (no preconds)
+  // let parsed = text`You win|lose`;
   expect(parsed.render(rng)).toEqual("You lose");
   expect(parsed.render(rng)).toEqual("You win");
   parsed = text`
-{Group
+[Group
 multi|choice
-list}
-{Second
+list]
+[Second
 multi|line
-list}
+list]
 `;
   expect(parsed.render(rng)).toEqual("Second\nmulti");
   rng.raw();
@@ -33,7 +35,7 @@ list}
 
 it("Renders grouped choices", () => {
   const rng = mockRng([0.5, 0.67, 0.6, 0, 0, 0, 0.9, 0.5, 0.39]);
-  const parsed = text`{Quick|Slow} {brown|blue|paisley} {fox|rabbit|dog|cat|mouse}`;
+  const parsed = text`[Quick|Slow] [brown|blue|paisley] [fox|rabbit|dog|cat|mouse]`;
   expect(parsed.render(rng)).toEqual("Slow paisley cat");
   expect(parsed.render(rng)).toEqual("Quick brown fox");
   expect(parsed.render(rng)).toEqual("Slow blue rabbit");
@@ -71,7 +73,7 @@ bar:
 Baz
 Barry`;
   expect(parsed.render(rng)).toEqual("Foo Baz");
-  parsed = text`Foo $(foo bar)
+  parsed = text`Foo $[foo bar]
 
 foo bar:
 Baz
@@ -128,12 +130,12 @@ it("Assigns variables", () => {
     text`The $animal=kitty|mouse|badger was a bad $animal`.render(rng)
   ).toEqual("The badger was a bad badger");
   expect(
-    text`The $animal=(naughty kitty|tiny mouse|bad badger) was a very $animal`.render(
+    text`The $animal=[naughty kitty|tiny mouse|bad badger] was a very $animal`.render(
       rng
     )
   ).toEqual("The naughty kitty was a very naughty kitty");
   expect(
-    text`See $(animal name)=Spot|Cosmonaught|Shablongy run. Run $(animal name) run.`.render(
+    text`See $[animal name]=Spot|Cosmonaught|Shablongy run. Run $[animal name] run.`.render(
       rng
     )
   ).toEqual("See Shablongy run. Run Shablongy run.");
@@ -163,14 +165,14 @@ countdown:+
 });
 
 it("Honours preconditions", () => {
-  const rng = mockRng([0, 0.19, 0.2, 0.99]);
+  const rng = mockRng([0, 0.18, 0.2, 0.99]);
   // Basic weightings
   const fixture = text`$demo
 
 demo:
-[20%]Only 20% chance
-[80%]More likely
-[10%]Doesn't actually have to add up to 100...
+{20%}Only 20% chance
+{80%}More likely
+{10%}Doesn't actually have to add up to 100...
 `;
   expect(fixture.render(rng)).toEqual("Only 20% chance");
   expect(fixture.render(rng)).toEqual("Only 20% chance");
@@ -180,54 +182,10 @@ demo:
   );
 });
 
-it("Counts up to 9999", () => {
-  // TODO: Move to its own suite, more of a complete example than a basic test case
-  const fixture = text`$speak->234, $speak->999, $speak->1, $speak->12, $speak->112
-
-${commonFunctions}
-
-speak: ($number)
-[0]nought
-[1]one
-[2]two
-[3]three
-[4]four
-[5]five
-[6]six
-[7]seven
-[8]eight
-[9]nine
-[10]ten
-[11]eleven
-[12]twelve
-[13]thirteen
-[15]fifteen
-[<20]$speak->$slice($number,1)teen
-[20]twenty
-[30]thirty
-[40]fourty
-[50]fifty
-[60]sixty
-[70]seventy
-[80]eighty
-[90]ninety
-[<100]$speak->($slice($number,0,1)0)-$speak->$slice($number,1)
-[<1000]$speak->($slice($number,0,1)0) hundred$and->$slice($number,1)
-[1000]one thousand
-
-umpteen: ($number)
-($number)teen
-
-and: ($number)
-[=00]
-[0] and $speak->$number
-`;
-});
-
 it("Performs substitution inside label names", () => {
   const rng = mockRng([0.25, 0.75, 0.75, 0.25]);
 
-  const fixture = text`The $animal=cat|dog goes $(($animal)Noise)
+  const fixture = text`The $animal=cat|dog goes $[[$animal]Noise]
 
 catNoise:
 meow

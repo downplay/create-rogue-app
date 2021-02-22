@@ -214,6 +214,9 @@ export const executeText = (
       // TODO: Most likely indicates a parse error. Throw something?
       return [[], currentContext];
     }
+    if (typeof content === "string") {
+      return [[content], currentContext];
+    }
     if (Array.isArray(content)) {
       const results: ExecutionResult = [];
       // TODO: Proper handling of context. Node path needs updating each step. Bail when returned context says so.
@@ -235,7 +238,7 @@ export const executeText = (
       case "choices":
         const choices = (content as ContentChoiceAST).content;
         // TODO: If context path exists, follow it instead of using rng
-        const chosen = rng.pick(choices);
+        const chosen = rng.pick(choices, "weight");
         // TODO: Need to amend context as pathing into choice.
         return processContent(chosen.content);
       case "main":
@@ -256,9 +259,13 @@ export const executeText = (
         let found;
         if (content.type === "assignment") {
           if (content.type === "assignment") {
-            currentContext.state[
-              (content as ContentAssignmentAST).variable
-            ] = processContent((content as ContentAssignmentAST).content)[0];
+            currentContext.state[(content as ContentAssignmentAST).variable] =
+              // TODO: We won't always want to stringify the result. Could assign a number, an entity,
+              // a label ref, etc etc. Just automatically stringify if there are any text components,
+              // maybe have an &= operator for storing references specifically.
+              stringifyResult(
+                processContent((content as ContentAssignmentAST).content)[0]
+              );
           }
           found =
             currentContext.state[(content as ContentAssignmentAST).variable];
@@ -295,7 +302,8 @@ export const executeText = (
         return [result, currentContext];
       case "external":
         const externalNode = content as ExternalAST;
-        // TODO: Should also past
+        // TODO: Should also pass context and even yielded value; can return
+        // an YieldInput if it wants to bail
         const returned = externalNode.callback(currentContext.state);
         return [returned, currentContext];
       // case "function":
@@ -377,7 +385,7 @@ export const text = (
         }
         const labelName = "OUT" + externalIndex;
         externals[labelName] = external;
-        return `${fragment}($${labelName})`;
+        return `${fragment}[$${labelName}]`;
       }
       return fragment;
     })
