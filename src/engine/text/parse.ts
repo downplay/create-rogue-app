@@ -78,12 +78,13 @@ type MainAST = {
   labels: LabelAST[];
 };
 
-type LabelAST = Omit<MainAST, "type" | "labels"> & {
+type LabelAST = Omit<ContentItemAST, "type"> & {
   type: "label";
   name: string;
   external: boolean;
   mode: "label" | "set" | "all";
   merge: boolean;
+  content: ContentAST;
 };
 
 type ImportLabels = Record<string, string | ContentAST>;
@@ -135,6 +136,7 @@ const createLabelsFromObject = (labels: ImportLabels) =>
       mode: "label",
       name: key,
       external: true,
+      merge: false,
       content,
     };
   });
@@ -343,6 +345,10 @@ export type ParsedTextTemplate = {
   [ParsedTextTemplateIdentifier]: true;
 };
 
+// export const merge = (...templates: ParsedTextTemplate[]) => {
+
+// };
+
 let externalIndex = 0;
 
 export const text = (
@@ -372,7 +378,6 @@ export const text = (
       return fragment;
     })
     .join("");
-  console.log(flattened);
   const importLabels = createLabelsFromObject(externals);
   try {
     const main = parse(flattened, [

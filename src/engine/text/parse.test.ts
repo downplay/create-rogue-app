@@ -6,16 +6,22 @@ it("Parses simple string", () => {
     labels: [],
     type: "main",
   });
+
+  expect(parse("Quick (brown) fox")).toEqual({
+    content: { text: "Quick (brown) fox", type: "text" },
+    labels: [],
+    type: "main",
+  });
 });
 
 it("Parses group", () => {
-  expect(parse("(Group)")).toEqual({
+  expect(parse("[Group]")).toEqual({
     content: { text: "Group", type: "text" },
     labels: [],
     type: "main",
   });
 
-  expect(parse("Text (Group)")).toEqual({
+  expect(parse("Text [Group]")).toEqual({
     content: [
       { text: "Text ", type: "text" },
       { text: "Group", type: "text" },

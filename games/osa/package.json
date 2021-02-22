@@ -1,0 +1,12 @@
+{
+    "name": "OldSchoolAdventure",
+    "version": "0.0.1",
+    "dependencies": {},
+    "scripts": {
+        "start": "babel-node ./start.js"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.13.1",
+        "@babel/node": "^7.13.0"
+    }
+}
