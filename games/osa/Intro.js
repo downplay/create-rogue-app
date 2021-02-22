@@ -1,4 +1,4 @@
-import { text } from "../../src/engine/text/parse";
+import { text } from "herotext";
 import { goTo } from "./commands/goTo";
 import { Alley } from "./locations/Alley";
 

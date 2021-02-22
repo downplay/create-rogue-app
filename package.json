@@ -4,8 +4,9 @@
   "private": true,
   "workspaces": ["packages/herotext", "games/osa", "games/hero"],
   "scripts": {
-    "start": "cd games/hero && yarn start",
+    "test": "yarn workspaces run test",
     "build": "yarn workspaces run build",
+    "start": "cd games/hero && yarn start",
     "osa": "cd games/osa && yarn start"
   },
   "devDependencies": {

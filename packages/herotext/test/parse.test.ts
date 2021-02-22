@@ -1,4 +1,4 @@
-import { parse } from "./parse";
+import { parse } from "../index";
 
 it("Parses simple string", () => {
   expect(parse("Quick brown fox")).toEqual({

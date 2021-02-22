@@ -1,15 +1,18 @@
 import * as nearley from "nearley";
-import { RNG } from "../useRng";
-import { ExecutionContext } from "./ExecutionContext";
+import { RNG } from "./rng";
+import { ExecutionContext, ExecutionContextPath } from "./ExecutionContext";
 import isFunction from "lodash/isFunction";
 
 const grammar = require("./herotext.js");
 
-type ReturnCommand = {
+export type ReturnCommand = {
   type: "input";
+  yieldValue?: any;
+  execution: ExecutionContextPath;
 };
 
-export type ExecutionResult = string | ReturnCommand | ExecutionResult[];
+export type ExecutionResultItem = string | ReturnCommand;
+export type ExecutionResult = ExecutionResultItem[];
 
 interface ContentItemAST {
   type:
@@ -183,14 +186,15 @@ export const parse = (
   return main;
 };
 
-const stringifyResult = (element: ExecutionResult): string => {
-  if (Array.isArray(element)) {
-    return (element as ExecutionResult[]).map(stringifyResult).join("");
-  }
+const stringifyResultItem = (element: string | ReturnCommand): string => {
   if (typeof element === "string") {
     return element;
   }
-  return "";
+  return "?";
+};
+
+const stringifyResult = (elements: ExecutionResult): string => {
+  return elements.map(stringifyResultItem).join("");
 };
 
 export const executeText = (
@@ -208,14 +212,14 @@ export const executeText = (
   ): [ExecutionResult, ExecutionContext] => {
     if (content === null || typeof content === "undefined") {
       // TODO: Most likely indicates a parse error. Throw something?
-      return ["", currentContext];
+      return [[], currentContext];
     }
     if (Array.isArray(content)) {
-      const results = [];
+      const results: ExecutionResult = [];
       // TODO: Proper handling of context. Node path needs updating each step. Bail when returned context says so.
       for (const choice of content) {
         const [result, nextContext] = processContent(choice);
-        results.push(result);
+        results.push(...result);
         currentContext = nextContext;
       }
       return [results, currentContext];
@@ -227,7 +231,7 @@ export const executeText = (
     }
     switch (content.type) {
       case "text":
-        return [(content as ContentTextAST).text, currentContext];
+        return [[(content as ContentTextAST).text], currentContext];
       case "choices":
         const choices = (content as ContentChoiceAST).content;
         // TODO: If context path exists, follow it instead of using rng
@@ -280,11 +284,11 @@ export const executeText = (
         let result;
 
         if (found === undefined) {
-          return [`<Error: Label ${label.label} not found>`, currentContext];
+          return [[`<Error: Label ${label.label} not found>`], currentContext];
         }
         result =
           typeof found === "string"
-            ? (found as string)
+            ? [found as string]
             : // TODO: Need to use the context from processContent if we bail
               (processContent(found)[0] as ExecutionResult);
 
@@ -308,7 +312,7 @@ export const executeText = (
       case "input":
         // TODO: If context path exists it is the result of the input
         currentContext.error = true;
-        return ["Cannot process input", currentContext];
+        return [["Cannot process input"], currentContext];
       default:
         throw new Error(
           "Unknown content type in objecft: " +
@@ -418,7 +422,7 @@ export const text = (
     return {
       main: ERROR_MAIN,
       render: () => `<Error: ${e.message}>`,
-      stream: () => [`<Error: ${e.message}>`, errorContext],
+      stream: () => [[`<Error: ${e.message}>`], errorContext],
       [ParsedTextTemplateIdentifier]: true,
     };
   }

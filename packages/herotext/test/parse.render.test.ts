@@ -1,6 +1,5 @@
-import { executeText, text } from "./parse";
-import { mockRng } from "../../testUtils";
-import { commonFunctions } from "./commonFunctions";
+import { text, commonFunctions } from "../index";
+import { mockRng } from "./testUtils";
 
 it("Renders simple string", () => {
   const rng = mockRng();

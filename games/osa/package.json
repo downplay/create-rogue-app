@@ -1,7 +1,9 @@
 {
     "name": "OldSchoolAdventure",
     "version": "0.0.1",
-    "dependencies": {},
+    "dependencies": {
+        "herotext": "0.0.1"
+    },
     "scripts": {
         "start": "babel-node ./start.js"
     },

@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
-"types": "dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "prepublish": "tsc",
-    "build": "tsc",
+    "build": "tsc --watch",
     "test": "jest",
     "grammar": "nearleyc src/engine/text/herotext.ne -o src/engine/text/herotext.js",
     "grammar-sandbox": "nearley-test src/engine/text/herotext.ne",
@@ -15,5 +15,13 @@
   },
   "keywords": [],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.13.1",
+    "@babel/preset-env": "^7.13.0",
+    "@babel/preset-typescript": "^7.13.0",
+    "@types/jest": "^26.0.20",
+    "babel-jest": "^26.6.3",
+    "jest": "^26.6.3"
+  }
 }

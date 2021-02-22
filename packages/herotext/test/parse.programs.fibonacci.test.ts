@@ -1,5 +1,6 @@
-import { text } from "./parse";
-import { mockRng } from "../../testUtils";
+import { text } from "../src/parse";
+import { mockRng } from "./testUtils";
+
 it.skip("Computes Fibonacci sequence", () => {
   const rng = mockRng();
   const fixture = text`1,1$fibonacci(<1>,<1>,<10>)
