@@ -1,11 +1,10 @@
+import { text, commonFunctions } from "herotext";
 import React, { useRef } from "react";
 import { RoadLayout } from "../../biomes/plains/RoadLayout";
-import { text } from "../../../engine/text/parse";
 import { entity } from "../../../engine/entity";
 import { Mage } from "./Mage";
 import { EntityContext } from "../../../engine/useEntitiesState";
 import { useStory } from "../../../engine/useStory";
-import { commonFunctions } from "../../../engine/text/commonFunctions";
 import { hasName } from "../../../engine/hasName";
 
 // TODO: Figure out a good way to reuse things between text templates

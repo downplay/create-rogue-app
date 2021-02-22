@@ -1,13 +1,19 @@
 {
   "name": "herotext",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+"types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublish": "tsc",
+    "build": "tsc",
+    "test": "jest",
+    "grammar": "nearleyc src/engine/text/herotext.ne -o src/engine/text/herotext.js",
+    "grammar-sandbox": "nearley-test src/engine/text/herotext.ne",
+    "grammar-test-built": "nearleyc src/engine/text/herotext.js",
+    "grammar-test": "npm-run-all grammar grammar-test-built"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "types": "index.d.ts"
+  "license": "MIT"
 }

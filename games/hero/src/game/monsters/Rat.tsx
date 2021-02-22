@@ -1,4 +1,5 @@
 import React from "react";
+import { text, commonFunctions } from "herotext";
 import { hasTile } from "../../engine/hasTile";
 import { Monster } from "../meta/Monster";
 import { entity } from "../../engine/entity";
@@ -8,27 +9,30 @@ import { hasRandomMovement } from "../behaviours/hasRandomMovement";
 import { Card, Description } from "../../ui/Card";
 import { Name } from "../meta/Name";
 import { Emoji } from "../../ui/Typography";
-import { commonFunctions } from "../../engine/text/commonFunctions";
 import { useStory } from "../../engine/useStory";
-import { text } from "../../engine/text/parse";
 
 const ratStats = stats(2, 1, 3, 0, 12);
 
 const RatTile = () => <Emoji>🐀</Emoji>;
 
 const ratStory = text`
-$null(
-  %size = $randomRange()
-)
+name:
+rat
+
+tile:
+🐀
+
+setup:
+$size = <0.5..5.0>
 
 description:
 A mangy and foul smelling $size rodent
 
 size:=
-[0.5]small
-[1]medium
-[2]large
-[4]unusually massive
+[~0.5]small
+[~1]medium
+[~2]large
+[~4]unusually massive
 
 ${commonFunctions}
 `;
