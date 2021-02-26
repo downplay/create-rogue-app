@@ -12,21 +12,29 @@ export type RNG = {
   raw: () => number;
   range: (min: number, max: number) => number;
   integer: (min: number, max: number) => number;
-  pick: <T>(items: T[], weightProp?: string) => T;
+  pick: <T>(items: T[], weightProp?: string | ((item: T) => number)) => T;
   dice: (count: number, sides: number) => number;
   // text: (input: TemplateStringsArray) => string;
 };
 
 // TODO: Could probably specify that T must have weightProp
-const pickWeighted = <T>(items: T[], weightProp: string, value: number) => {
+const pickWeighted = <T>(
+  items: T[],
+  weightProp: string | ((item: T) => number),
+  value: number
+) => {
   let total = 0;
+  const weight =
+    typeof weightProp === "string"
+      ? (item: any) => item[weightProp]
+      : weightProp;
   for (const item of items) {
-    total += (item as any)[weightProp] as number;
+    total += weight(item) as number;
   }
   const target = value * total;
   let running = 0;
   for (const item of items) {
-    running += (item as any)[weightProp] as number;
+    running += weight(item) as number;
     if (running > target) {
       return item;
     }
@@ -43,7 +51,7 @@ export const buildRng = (getter: () => number = () => Math.random()): RNG => {
     raw: getter,
     range: (min: number, max: number) => getter() * (max - min) + min,
     integer,
-    pick: <T>(items: T[], weightProp?: string) =>
+    pick: <T>(items: T[], weightProp?: string | ((item: T) => number)) =>
       weightProp
         ? pickWeighted(items, weightProp, getter())
         : items[integer(0, items.length)],

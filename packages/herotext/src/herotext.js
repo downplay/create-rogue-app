@@ -13,6 +13,7 @@ const bsub = { match: /\$\[/, push:'sublabel' }
 const bsubend = { match: /\]/, pop:1 }
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
 const space = { match: /[ \t]+/, lineBreaks: false }
+		const input = '$?'
 		
 const lexer = moo.states({
 	line: {
@@ -21,6 +22,7 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
+		input,
 		label: { match: /^[a-zA-Z0-9 ]+:\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
 		labeleq: { match: /^[a-zA-Z0-9 ]+:=\s*$/, value: x => x.slice(0, x.indexOf(":")) },
 		labeleqmerge: { match: /^[a-zA-Z0-9 ]+:=~\s*$/, value: x => x.slice(0, x.indexOf(":")) },
@@ -30,7 +32,6 @@ const lexer = moo.states({
 		string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r|\[\]\{\}])+/,
 		newline: { match: /(?:\r\n|\r|\n)/, lineBreaks:true },
 		space,
-		'$': '$',
 		'{': { match: '{', push: 'precondition' },	 	
 		'[': { match: '[', push: 'group' },
 		']': { match: ']', pop: 1 },
@@ -42,6 +43,7 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
+		input,
 		'{': { match: '{', push: 'precondition' },
 		'[': { match: '[', push: 'group' },
 		']': { match: ']', pop: 1 },
@@ -53,6 +55,7 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
+		input,
 		'{': { match: '{', push: 'precondition' },
 		'[': { match: '[', push: 'group' },
 		']': { match: ']', pop: 1 },
@@ -70,6 +73,7 @@ const lexer = moo.states({
 		sub,
 		bsub,
 		bsubend,
+		input,
 		'[': { match: '[', push: 'group' },
 		']': { match: ']', pop: 1 },
 		'|': '|',
@@ -137,8 +141,9 @@ const operators = {
 	"=": "eq",
 	">=": "gteq",
 	"<=": "lteq",
-	"~": "near",
-	"!=": "noteq"
+	"~": "match",
+	"!=": "noteq",
+	"!~": "notmatch"
 };
 
 const preComparison = (left = {type:"parameter"}, operator, right) => ({left, operator: operators[operator], right});
@@ -165,6 +170,8 @@ const numberValue = value => {
 const compoundValue = value => ({ type:"compound", value })
 
 const label = (name, items, mode, merge = false) => ({type: "label", name, content: choices(items), mode, merge})
+
+const inputContent = value => ({ type: "input" })
 
 const mergeParts = (a, b) => {
 	while (a[a.length-1] && a[a.length-1].type === "text" && b.type === "text") {
@@ -214,14 +221,16 @@ var grammar = {
     {"name": "parts", "symbols": ["part"], "postprocess": d => [d[0]]},
     {"name": "parts", "symbols": ["parts", "part"], "postprocess": d => [...d[0], d[1]]},
     {"name": "part", "symbols": ["string"], "postprocess": d => textContent(d[0])},
-    {"name": "part", "symbols": ["group"], "postprocess": id},
     {"name": "part", "symbols": ["assignment"], "postprocess": id},
     {"name": "part", "symbols": ["substitution"], "postprocess": id},
-    {"name": "substitution", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => subContent(d[0].value)},
-    {"name": "substitution", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", (lexer.has("bsubend") ? {type: "bsubend"} : bsubend)], "postprocess": d => subContent(choices(d[1]))},
+    {"name": "part", "symbols": ["input"], "postprocess": id},
+    {"name": "part", "symbols": ["group"], "postprocess": id},
+    {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": d => d[0].value},
     {"name": "assignment", "symbols": [(lexer.has("assign") ? {type: "assign"} : assign), "choices", (lexer.has("space") ? {type: "space"} : space)], "postprocess": d => assignContent(d[0].value, d[1])},
     {"name": "assignment", "symbols": [(lexer.has("bassign") ? {type: "bassign"} : bassign), "choices", (lexer.has("space") ? {type: "space"} : space)], "postprocess": d => assignContent(d[0].value, d[1])},
-    {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": d => d[0].value},
+    {"name": "substitution", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => subContent(d[0].value)},
+    {"name": "substitution", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", (lexer.has("bsubend") ? {type: "bsubend"} : bsubend)], "postprocess": d => subContent(choices(d[1]))},
+    {"name": "input", "symbols": [(lexer.has("input") ? {type: "input"} : input)], "postprocess": d => inputContent()},
     {"name": "_", "symbols": ["whitespace"], "postprocess": empty},
     {"name": "whitespace", "symbols": ["whitespace", (lexer.has("newline") ? {type: "newline"} : newline)]},
     {"name": "whitespace", "symbols": ["whitespace", (lexer.has("space") ? {type: "space"} : space)]},

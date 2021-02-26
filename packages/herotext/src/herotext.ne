@@ -9,6 +9,7 @@ const bsub = { match: /\$\[/, push:'sublabel' }
 const bsubend = { match: /\]/, pop:1 }
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
 const space = { match: /[ \t]+/, lineBreaks: false }
+		const input = '$?'
 		
 const lexer = moo.states({
 	line: {
@@ -17,6 +18,7 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
+		input,
 		label: { match: /^[a-zA-Z0-9 ]+:\s*$/, value: x => x.slice(0, x.indexOf(":")), push: "labelparams" },
 		labeleq: { match: /^[a-zA-Z0-9 ]+:=\s*$/, value: x => x.slice(0, x.indexOf(":")) },
 		labeleqmerge: { match: /^[a-zA-Z0-9 ]+:=~\s*$/, value: x => x.slice(0, x.indexOf(":")) },
@@ -26,7 +28,6 @@ const lexer = moo.states({
 		string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r|\[\]\{\}])+/,
 		newline: { match: /(?:\r\n|\r|\n)/, lineBreaks:true },
 		space,
-		'$': '$',
 		'{': { match: '{', push: 'precondition' },	 	
 		'[': { match: '[', push: 'group' },
 		']': { match: ']', pop: 1 },
@@ -38,6 +39,7 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
+		input,
 		'{': { match: '{', push: 'precondition' },
 		'[': { match: '[', push: 'group' },
 		']': { match: ']', pop: 1 },
@@ -49,6 +51,7 @@ const lexer = moo.states({
 		bassign,
 		sub,
 		bsub,
+		input,
 		'{': { match: '{', push: 'precondition' },
 		'[': { match: '[', push: 'group' },
 		']': { match: ']', pop: 1 },
@@ -66,6 +69,7 @@ const lexer = moo.states({
 		sub,
 		bsub,
 		bsubend,
+		input,
 		'[': { match: '[', push: 'group' },
 		']': { match: ']', pop: 1 },
 		'|': '|',
@@ -163,6 +167,8 @@ const compoundValue = value => ({ type:"compound", value })
 
 const label = (name, items, mode, merge = false) => ({type: "label", name, content: choices(items), mode, merge})
 
+const inputContent = value => ({ type: "input" })
+
 const mergeParts = (a, b) => {
 	while (a[a.length-1] && a[a.length-1].type === "text" && b.type === "text") {
 		b = {
@@ -227,17 +233,20 @@ parts             -> part                          {% d => [d[0]] %}
                    | parts part                    {% d => [...d[0], d[1]] %}
 
 part              -> string                        {% d => textContent(d[0]) %}
-                   | group                        {% id %}
                    | assignment                   {% id %}
                    | substitution                 {% id %}
+				   | input                        {% id %}
+                   | group                        {% id %}
+
+string            -> %string                       {% d => d[0].value %}
+
+assignment        -> %assign choices %space         {% d => assignContent(d[0].value, d[1]) %}
+                   | %bassign choices %space         {% d => assignContent(d[0].value, d[1]) %}
 
 substitution      -> %sub                          {% d => subContent(d[0].value) %}
                    | %bsub choices %bsubend          {% d => subContent(choices(d[1])) %}
 
-assignment        -> %assign choices %space         {% d => assignContent(d[0].value, d[1]) %}
-                   | %bassign choices %space         {% d => assignContent(d[0].value, d[1]) %}
-				   
-string            -> %string                       {% d => d[0].value %}
+input             -> %input                         {% d => inputContent() %}
 
 _                 -> whitespace                         {% empty %} 
 

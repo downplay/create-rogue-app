@@ -211,11 +211,11 @@ type RepeatProps = {
   count: number;
 };
 
-it.skip("Calls internal functions", () => {
+it.skip("Calls label functions", () => {
   const rng = mockRng();
   expect(
     text`
-$repeat->NaN Batman!
+$repeat(NaN) Batman!
 
 repeat: (word)
 $word$word$word$word$word$word$word$word
@@ -224,10 +224,10 @@ $word$word$word$word$word$word$word$word
 
   expect(
     text`
-$repeat->NaN,<8> Batman!
+$repeat(NaN,<8>) Batman!
 
 repeat: (word,count)
-[count>0]$word$repeat->$word,<${({ count }: RepeatProps) => count - 1}>
+{count>0}$word$repeat($word,<${({ count }: RepeatProps) => count - 1}>)
 `.render(rng)
   ).toEqual("NaNNaNNaNNaNNaNNaNNaNNaN Batman!");
 });
