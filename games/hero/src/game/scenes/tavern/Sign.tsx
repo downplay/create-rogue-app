@@ -30,8 +30,8 @@ export const Sign = ({ tavernName, position }: SignProps) => {
 careful drunks)
 (Menu
 - Beer
-- Beer
-- Beer!)
+- Cider
+- Bears!)
 (😁 Happy Hour!
 All day long!!)
 `,

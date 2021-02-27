@@ -9,7 +9,7 @@ const bsub = { match: /\$\[/, push:'sublabel' }
 const bsubend = { match: /\]/, pop:1 }
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks:true }
 const space = { match: /[ \t]+/, lineBreaks: false }
-		const input = '$?'
+const input = '$?'
 		
 const lexer = moo.states({
 	line: {
@@ -134,8 +134,11 @@ const choice = (content, preconditions = []) => {
 }
 
 const operators = {
+	"==": "eq",
 	"=": "eq",
+	">": "gt",
 	">=": "gteq",
+	"<": "lt",
 	"<=": "lteq",
 	"~": "match",
 	"!=": "noteq",

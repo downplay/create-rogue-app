@@ -133,6 +133,7 @@ possessivePronoun:
 subjectVerb(verb):
 @verb($gender!=neutral?s)
 
+
 observes:
 swints sideways at you
 glares in your direction

@@ -17,7 +17,7 @@ import { text } from "../../../engine/text/parse";
 
 enum BarkeepPose {
   Normal,
-  Sweating
+  Sweating,
 }
 
 type BarkeepTileProps = {
@@ -26,7 +26,7 @@ type BarkeepTileProps = {
 
 const barkeepFaces = {
   [BarkeepPose.Normal]: "😃",
-  [BarkeepPose.Sweating]: "😅"
+  [BarkeepPose.Sweating]: "😅",
 };
 
 const BarkeepTile = ({ pose = BarkeepPose.Normal }: BarkeepTileProps) => {
@@ -73,6 +73,7 @@ export const Barkeep = () => {
       </Card>
     </Monster>
   );
+  +dtgefghfdhsfe;
 };
 
 const neutralPerson = [
@@ -93,7 +94,7 @@ const neutralPerson = [
   "🧑🏼",
   "🧑🏽",
   "🧑🏾",
-  "🧑🏿"
+  "🧑🏿",
 ];
 
 const malePerson = [
@@ -138,7 +139,7 @@ const malePerson = [
   "👨🏼‍🦰",
   "👨🏽‍🦰",
   "👨🏾‍🦰",
-  "👨🏿‍🦰"
+  "👨🏿‍🦰",
 ];
 const femalePerson = [
   "👱‍♀️",
@@ -176,7 +177,7 @@ const femalePerson = [
   "👩🏼‍🦳",
   "👩🏽‍🦳",
   "👩🏾‍🦳",
-  "👩🏿‍🦳"
+  "👩🏿‍🦳",
 ];
 const PatronTile = () => (
   <>

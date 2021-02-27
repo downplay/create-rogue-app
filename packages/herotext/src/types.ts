@@ -39,7 +39,16 @@ export type ValueAST = {
 export type PreconditionAST = {
   left: ValueAST;
   right: ValueAST;
-  operator: "eq" | "gteq" | "lteq" | "match" | "noteq" | "notmatch";
+  // TODO: Cna generate this list automatically from `operators` const?
+  operator:
+    | "eq"
+    | "gt"
+    | "gteq"
+    | "lt"
+    | "lteq"
+    | "match"
+    | "noteq"
+    | "notmatch";
 };
 
 export type ChoiceAST = {

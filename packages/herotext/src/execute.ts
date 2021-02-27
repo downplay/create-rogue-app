@@ -69,6 +69,88 @@ const executeArrayNode = (
   return results;
 };
 
+const valueOfExpression = (
+  choice: ValueAST,
+  context: ExecutionContext,
+  strand: ExecutionStrand
+) => {};
+
+/**
+ * Match is defined as "approximately equals".
+ * For
+ */
+const matchValue = (left, right) => {
+  // Javascript cast equals
+  if (left == right) {
+    return true;
+  }
+  if (typeof left === "string") {
+    return left.indexOf(right.toString()) > -1;
+  }
+  if (typeof left === "number") {
+    // TODO: Should attempt to convert right string to number
+    if (typeof right !== "number") {
+      return false;
+    }
+    // TODO: This is temporary: intended for use in lists where range is midpoint between prev and next values
+    // Are they within 10%?
+    return left * 0.9 < right && left * 1.1 > right;
+  }
+};
+
+const matchPreconditions = (
+  choice: ChoiceAST,
+  context: ExecutionContext,
+  strand: ExecutionStrand
+) => {
+  // TODO: Gets a bit more complicated if suspensions are allowed inside expression values
+  // TODO: Way more things to consider like AND/OR, math, all sorts
+  for (const pre of choice.preconditions) {
+    let leftValue;
+    if (!pre.left) {
+      // Is there an available default parameter?
+      // TODO: Naughty in a couple of ways. Object.values does not have a definite ordering.
+      // Also localScope could get polluted with other local vars if local vars are implemented.
+      leftValue = Object.values(strand.localScope)[0];
+    } else {
+      leftValue = valueOfExpression(pre.left, context, strand);
+    }
+    const rightValue = valueOfExpression(pre.right, context, strand);
+    let passed = false;
+    switch (pre.operator) {
+      case "eq":
+        // TODO: Consider difference of === or ==. = and == ?
+        passed = leftValue === rightValue;
+        break;
+      case "noteq":
+        passed = leftValue !== rightValue;
+        break;
+      case "gt":
+        passed = leftValue > rightValue;
+        break;
+      case "gteq":
+        passed = leftValue >= rightValue;
+        break;
+      case "lt":
+        passed = leftValue < rightValue;
+        break;
+      case "lteq":
+        passed = leftValue <= rightValue;
+        break;
+      case "match":
+        passed = matchValue(leftvalue, rightValue);
+        break;
+      case "notmatch":
+        passed = !matchValue(leftvalue, rightValue);
+        break;
+    }
+    if (passed) {
+      // First level preconditions are OR for now, return immediately on first pass
+      return true;
+    }
+  }
+};
+
 const executeChoicesNode = (
   node: ContentChoiceAST,
   context: ExecutionContext,
