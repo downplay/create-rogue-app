@@ -43,7 +43,7 @@ const pickWeighted = <T>(
   return items[0];
 };
 
-export const buildRng = (getter: () => number = () => Math.random()): RNG => {
+export const createRng = (getter: () => number = () => Math.random()): RNG => {
   const integer = (min: number, max: number) =>
     Math.floor(getter() * (max - min) + min);
 

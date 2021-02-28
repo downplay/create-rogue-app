@@ -5,23 +5,22 @@ import {
   ExecutionStrand,
   ExecutionResult,
   StateElement,
-} from "./types";
-import { RNG } from "./rng";
-import { ExecutionContext } from "./ExecutionContext";
-import { ContentItemAST } from "../dist/src/types";
-import {
   ChoiceAST,
   LabelAST,
   ContentSubstitutionAST,
   ContentAssignmentAST,
-} from "./types";
-import { stringifyResult } from "./parse";
-import { ExternalAST, InputAST, ReturnCommand } from "./types";
-import {
   NodeExecutionResult,
   ExecutionResultItem,
   ContentChoiceAST,
+  ExternalAST,
+  InputAST,
+  ReturnCommand,
+  ValueAST,
+  ContentItemAST,
 } from "./types";
+import { RNG } from "./rng";
+import { ExecutionContext } from "./ExecutionContext";
+import { stringifyResult } from "./parse";
 
 type ExecutionOptions = {
   rng?: RNG;
@@ -36,7 +35,7 @@ const executeTextNode = (node: ContentTextAST) => {
 const baseStrand = () => ({ localScope: {}, children: [] });
 
 let executeNode: (
-  node: ContentAST,
+  node: ContentAST | null,
   context: ExecutionContext,
   strand: ExecutionStrand
 ) => NodeExecutionResult;
@@ -54,7 +53,7 @@ const executeArrayNode = (
   }
   while (i < node.length) {
     const choice = node[i];
-    if (strand.children[0].path !== i) {
+    if (!strand.children[0] || strand.children[0].path !== i) {
       strand.children = [
         { ...baseStrand(), path: i, localScope: {}, children: [] },
       ];
@@ -70,16 +69,37 @@ const executeArrayNode = (
 };
 
 const valueOfExpression = (
-  choice: ValueAST,
+  value: ValueAST,
   context: ExecutionContext,
   strand: ExecutionStrand
-) => {};
+): string | number => {
+  if (["string", "number"].includes(typeof value)) {
+    return (value as unknown) as string;
+  }
+  switch (value.type) {
+    case "text":
+    case "number":
+    case "percent":
+      return value.value as number;
+    case "compound":
+      const results = executeNode(value.value as ContentAST, context, strand);
+      if (context.suspend) {
+        throw new Error(
+          "Attmempted to suspend during processing of precondition expressions."
+        );
+      }
+      // TODO: How to handle executions that might return a number ...
+      return stringifyResult(results);
+    default:
+      throw new Error("Unknown value type: " + JSON.stringify(value));
+  }
+};
 
 /**
  * Match is defined as "approximately equals".
  * For
  */
-const matchValue = (left, right) => {
+const matchValue = (left: string | number, right: string | number) => {
   // Javascript cast equals
   if (left == right) {
     return true;
@@ -96,6 +116,7 @@ const matchValue = (left, right) => {
     // Are they within 10%?
     return left * 0.9 < right && left * 1.1 > right;
   }
+  return false;
 };
 
 const matchPreconditions = (
@@ -106,12 +127,12 @@ const matchPreconditions = (
   // TODO: Gets a bit more complicated if suspensions are allowed inside expression values
   // TODO: Way more things to consider like AND/OR, math, all sorts
   for (const pre of choice.preconditions) {
-    let leftValue;
+    let leftValue: string | number;
     if (!pre.left) {
       // Is there an available default parameter?
       // TODO: Naughty in a couple of ways. Object.values does not have a definite ordering.
       // Also localScope could get polluted with other local vars if local vars are implemented.
-      leftValue = Object.values(strand.localScope)[0];
+      leftValue = Object.values(strand.localScope)[0] as string;
     } else {
       leftValue = valueOfExpression(pre.left, context, strand);
     }
@@ -138,10 +159,10 @@ const matchPreconditions = (
         passed = leftValue <= rightValue;
         break;
       case "match":
-        passed = matchValue(leftvalue, rightValue);
+        passed = matchValue(leftValue, rightValue);
         break;
       case "notmatch":
-        passed = !matchValue(leftvalue, rightValue);
+        passed = !matchValue(leftValue, rightValue);
         break;
     }
     if (passed) {
@@ -165,7 +186,7 @@ const executeChoicesNode = (
       // TODO: Logic might need to be a bit more intricate than this; some weird
       // cases might be afoot. Failing precondition maybe means item should be excluded from list
       // altogether.
-      matchPreconditions(choice, context) ? choice.weight : 0
+      matchPreconditions(choice, context, strand) ? choice.weight : 0
     );
     strand.children = [
       {
@@ -198,7 +219,7 @@ const executeChoicesNodeAll = (
     }
     // TODO: We might even need to suspend during precondition matching. Or could
     // just throw an error? Gets super messy otherwise...
-    if (!matchPreconditions(choice, context)) {
+    if (!matchPreconditions(choice, context, strand.children[0])) {
       i++;
       continue;
     }
@@ -250,8 +271,7 @@ const executeSubstitutionNode = (
   if (Object.prototype.hasOwnProperty.call(context.state, labelName)) {
     found = context.state[labelName];
   } else {
-    // TODO: Index them
-    found = context.main.labels.find((l) => l.name === labelName);
+    found = context.main.labels[labelName];
   }
   if (found === undefined) {
     return [`<Error: Label ${labelName} not found>`];
@@ -326,12 +346,11 @@ const executeInputNode = (
 };
 
 executeNode = (
-  node: ContentAST,
+  node: ContentAST | null,
   context: ExecutionContext,
   strand: ExecutionStrand
 ): NodeExecutionResult => {
   if (node === null || typeof node === "undefined") {
-    // TODO: Most likely indicates a parse error. Throw something?
     return [];
   }
 
@@ -350,11 +369,7 @@ executeNode = (
       case "choices":
         return executeChoicesNode(node as ContentChoiceAST, context, strand);
       case "main": {
-        const result = executeChoicesNode(
-          node as ContentChoiceAST,
-          context,
-          strand
-        );
+        const result = executeNode((node as MainAST).content, context, strand);
         if (!context.suspend) {
           context.finished = true;
         }
@@ -461,7 +476,7 @@ export const executeText = (
     new ExecutionContext({ state: initialState, rng, root: rootStrand, main });
   let entryNode: ContentItemAST | undefined = main;
   if (entryPoint) {
-    entryNode = main.labels.find((label) => label.name === entryPoint);
+    entryNode = main.labels[entryPoint];
     if (!entryNode) {
       throw new Error("Entrypoint label not found: " + entryPoint);
     }
@@ -470,3 +485,36 @@ export const executeText = (
   const results = executeNode(entryNode, context, rootStrand);
   return [results, context];
 };
+
+export const render = (
+  main: MainAST,
+  rng: RNG,
+  variables?: Record<string, string>,
+  entryPoint: string = ""
+): string => {
+  // console.log(JSON.stringify(main, null, "  "));
+  const stream = executeText(main, {
+    rng,
+    entryPoint,
+    initialState: variables,
+  });
+
+  return stringifyResult(stream[0]);
+};
+
+export const stream = (
+  main: MainAST,
+  rng: RNG,
+  variables?: Record<string, string>,
+  executionContext?: ExecutionContext,
+  entryPoint: string = ""
+) =>
+  executeText(
+    main,
+    {
+      rng,
+      initialState: variables,
+      entryPoint,
+    },
+    executionContext
+  );

@@ -1,4 +1,4 @@
-import { text } from "../../../src/engine/text/parse";
+import { text } from "herotext";
 
 export const baseLocation = text`You are in a buggy place.
 {0%}Buggy place.

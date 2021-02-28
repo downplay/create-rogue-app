@@ -1,5 +1,6 @@
 import { ExecutionStrand, MainAST } from "./types";
-import { buildRng, RNG } from "./rng";
+import { createRng } from "./rng";
+import { RNG } from "./rng";
 
 type ConstructorProps = {
   state?: Record<string, any>;
@@ -8,7 +9,7 @@ type ConstructorProps = {
   error?: boolean;
   root?: ExecutionStrand;
   rng?: RNG;
-  main?: MainAST;
+  main: MainAST;
 };
 
 export class ExecutionContext {
@@ -16,7 +17,7 @@ export class ExecutionContext {
   rng: RNG;
 
   // NOTE: Main only needed for access to labels. Maybe just fold labels into state? Would have same effect...
-  main?: MainAST;
+  main: MainAST;
 
   /**
    * Finished, success
@@ -37,14 +38,14 @@ export class ExecutionContext {
    */
   root?: ExecutionStrand;
 
-  constructor(props: ConstructorProps = {}) {
+  constructor(props: ConstructorProps) {
     const { state, finished, suspend, error, root, rng, main } = props;
     this.state = state || this.state;
     this.finished = typeof finished !== "undefined" ? finished : this.finished;
     this.suspend = typeof suspend !== "undefined" ? suspend : this.suspend;
     this.error = typeof error !== "undefined" ? error : this.error;
     this.root = root;
-    this.rng = rng || buildRng();
+    this.rng = rng || createRng();
     this.main = main;
   }
 

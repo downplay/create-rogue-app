@@ -1,19 +1,19 @@
-import { text } from "../../../src/engine/text/parse";
-import { goTo } from "../commands/goTo";
+import { text } from "herotext";
 
-export const HighStreetMid = text`[You are about half-way up the High St. To the East is the pie shop.
+export const HighStreetMid = text`[You are about half-way up the High St. From a door to the East wafts
+the delicious smell of the Pie Shop.
 To the West is the bank. The street runs North and South.]
 {0}The middle of the High St.
 
-go north:
-${goTo(HighStreetNorth)}
+GO NORTH:
+$goto(HighStreetNorth)
 
-go south:
-${goTo(HighStreetSouth)}
+GO SOUTH:
+$goto(HighStreetSouth)
 
-go west:
-${goTo(Bank)}
+GO WEST:
+$goto(Bank)
 
-go east:
-${goTo(PieShop)}
+GO EAST:
+$goto(PieShop)
 `;

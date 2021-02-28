@@ -32,8 +32,8 @@ export type ContentAssignmentAST = ContentItemAST & {
 };
 
 export type ValueAST = {
-  type: "number" | "percent" | "compound";
-  value: number | ContentAST;
+  type: "number" | "percent" | "compound" | "text";
+  value: string | number | ContentAST;
 };
 
 export type PreconditionAST = {
@@ -93,8 +93,8 @@ export type InputAST = ContentItemAST & {
 
 export type MainAST = {
   type: "main";
-  content: ContentAST;
-  labels: LabelAST[];
+  content: ContentAST | null;
+  labels: Record<string, LabelAST>;
 };
 
 export type LabelAST = Omit<ContentItemAST, "type"> & {
@@ -103,7 +103,7 @@ export type LabelAST = Omit<ContentItemAST, "type"> & {
   external: boolean;
   mode: "label" | "set" | "all";
   merge: boolean;
-  content: ContentAST;
+  content: ContentAST | null;
 };
 
 export type ReturnCommand = {

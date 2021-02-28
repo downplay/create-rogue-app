@@ -2,10 +2,15 @@
   "name": "create-rogue-app-workspaces",
   "version": "0.3.0",
   "private": true,
-  "workspaces": ["packages/herotext", "games/osa", "games/hero"],
+  "workspaces": [
+    "packages/herotext",
+    "games/osa",
+    "games/hero"
+  ],
   "scripts": {
     "test": "yarn workspaces run test",
     "build": "yarn workspaces run build",
+    "grammar": "yarn workspaces run grammar",
     "start": "cd games/hero && yarn start",
     "osa": "cd games/osa && yarn start"
   },

@@ -1,10 +1,10 @@
 import { cliTextEngine } from "./engine/cliTextEngine";
-import { intro } from "./intro";
+import { Intro } from "./Intro";
 
 const start = () => {
   const engine = cliTextEngine();
 
-  engine.play(intro);
+  engine.play(Intro);
 };
 
 start();

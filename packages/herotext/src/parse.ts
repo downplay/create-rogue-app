@@ -1,30 +1,26 @@
+import isFunction from "lodash/isFunction";
 import * as nearley from "nearley";
 import { RNG } from "./rng";
 import { ExecutionContext } from "./ExecutionContext";
-import isFunction from "lodash/isFunction";
-import { ReturnCommand, ExecutionResult } from "./types";
-import { executeText } from "./execute";
 import {
-  ContentItemAST,
+  ReturnCommand,
+  ExecutionResult,
   ContentTextAST,
   ExternalAST,
   ExecutionResultItem,
-} from "./types";
-import {
   MainAST,
   ContentAST,
   ChoiceAST,
   ContentChoiceAST,
   LabelAST,
 } from "./types";
+import grammar from "./herotext";
 
-const grammar = require("./herotext.js");
-
-const ERROR_MAIN: MainAST = {
+const errorMain = (message: string): MainAST => ({
   type: "main",
-  content: [],
-  labels: [],
-};
+  content: [{ type: "text", text: message } as ContentTextAST],
+  labels: {},
+});
 
 const createChoicesFromObject = (
   value: ContentAST | ChoiceAST[]
@@ -72,13 +68,8 @@ const createLabelsFromObject = (labels: Record<string, LabelAST>) =>
     };
   });
 
-export const parse = (
-  input: string,
-  mergedTemplates?: ParsedTextTemplate[]
-): MainAST => {
-  const parser = new nearley.Parser(
-    nearley.Grammar.fromCompiled(grammar as nearley.CompiledRules)
-  );
+export const parse = (input: string): MainAST => {
+  const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
   let parsed;
   try {
     parsed = parser.feed(input.trim() + "\n");
@@ -89,27 +80,13 @@ export const parse = (
     throw new Error("Unparseable text");
   }
   const main = (parsed.results[0] as unknown) as MainAST;
-  if (main.labels.some((label) => label.name.startsWith("OUT"))) {
+  if (Object.keys(main.labels).some((name) => name.startsWith("OUT"))) {
     console.error("Labels beginning with OUT are reserved for external calls:");
     console.error(input);
     console.error(parsed);
     throw new Error(
       "Labels beginning with OUT are reserved for external calls"
     );
-  }
-  if (mergedTemplates) {
-    // TODO: Potentially hierarchical labels could be a thing
-    const mergedLabels: Record<string, LabelAST> = {};
-    for (const template of mergedTemplates) {
-      for (const label of template.main.labels) {
-        mergedLabels[label.name] = label;
-      }
-    }
-    for (const label of Object.values(mergedLabels)) {
-      if (!main.labels.some((l) => l.name === label.name)) {
-        main.labels.push(label);
-      }
-    }
   }
   return main;
 };
@@ -154,25 +131,38 @@ export type ParsedTextTemplate = {
   [ParsedTextTemplateIdentifier]: true;
 };
 
-// export const merge = (...templates: ParsedTextTemplate[]) => {
-
-// };
+export const merge = (...mains: MainAST[]) => {
+  const newMain: MainAST = {
+    type: "main",
+    content: null,
+    labels: {},
+  };
+  for (const main of mains) {
+    if (main.content !== null) {
+      newMain.content = main.content;
+    }
+    newMain.labels = { ...newMain.labels, ...main.labels };
+  }
+  return newMain;
+};
 
 let externalIndex = 0;
 
 export const text = (
   input: TemplateStringsArray,
   ...interpolations: any[]
-): ParsedTextTemplate => {
+): MainAST => {
   const externals: Record<string, LabelAST> = {};
-  const mergedTemplates: ParsedTextTemplate[] = [];
+  const mergedTemplates: MainAST[] = [];
   const flattened = input
     .map((fragment, i) => {
       if (interpolations[i]) {
         const external = interpolations[i];
         if (
+          // TODO: Hmm, not the best way to determine this. Could start using more complex strings
+          // for types? e.g. "Herotext::MainAST". Also could still decorate all the ASTs with a symbol I guess...
           typeof external === "object" &&
-          external[ParsedTextTemplateIdentifier]
+          external.type === "main"
         ) {
           mergedTemplates.push(external);
           // TODO: If the template has a main, we should actually still render it. Perhaps merging the labels
@@ -187,48 +177,14 @@ export const text = (
       return fragment;
     })
     .join("");
-  const importLabels = createLabelsFromObject(externals);
   try {
-    const main = parse(flattened, [
-      ...mergedTemplates,
-      { main: { labels: importLabels } } as ParsedTextTemplate,
-    ]);
-
-    return {
-      main,
-      render: (
-        rng: RNG,
-        variables?: Record<string, string>,
-        entryPoint: string = ""
-      ) => {
-        // console.log(JSON.stringify(main, null, "  "));
-        const stream = executeText(
-          main,
-          rng,
-          variables,
-          new ExecutionContext(),
-          entryPoint
-        );
-
-        return stringifyResult(stream[0]);
-      },
-      stream: (
-        rng: RNG,
-        variables?: Record<string, string>,
-        executionContext?: ExecutionContext,
-        entryPoint: string = ""
-      ) => executeText(main, rng, variables, executionContext, entryPoint),
-      [ParsedTextTemplateIdentifier]: true,
-    };
+    const main = merge(...mergedTemplates, parse(flattened), {
+      type: "main",
+      content: null,
+      labels: externals,
+    });
+    return main;
   } catch (e) {
-    const errorContext = new ExecutionContext({});
-    errorContext.error = true;
-    errorContext.finished = true;
-    return {
-      main: ERROR_MAIN,
-      render: () => `<Error: ${e.message}>`,
-      stream: () => [[`<Error: ${e.message}>`], errorContext],
-      [ParsedTextTemplateIdentifier]: true,
-    };
+    return errorMain(e.message);
   }
 };

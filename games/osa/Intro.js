@@ -1,12 +1,10 @@
 import { text } from "herotext";
-import { goTo } from "./commands/goTo";
-import { Alley } from "./locations/Alley";
 
 const Derek = "Derek";
 const Biscuits = "Biscuits";
 const Gilly = "Gilly";
 
-export const intro = text`[
+export const Intro = text`[
 O.S.A.: OLD SCHOOL ADVENTURE
 ============================
 
@@ -27,9 +25,9 @@ $BeginGame
 ]
 
 BeginGame:
-{$choice=1}$player=${Derek}${goTo(Bedroom)}
-{$choice=2}$player=${Gilly}${goTo(Bar)}
-{$choice=3}$player=${Biscuits}${goTo(Alley)}
+{$choice=1}$player=${Derek}$goto(Bedroom)
+{$choice=2}$player=${Gilly}$goto(Bar)
+{$choice=3}$player=${Biscuits}$goto(Alley)
 {0%}
 `;
 

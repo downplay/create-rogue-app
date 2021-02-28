@@ -1,6 +1,4 @@
-import { text } from "../../../src/engine/text/parse";
-import { goTo } from "../commands/goTo";
-import { HighStreetMid } from "./HighStreetMid";
+import { text } from "herotext";
 
 export const BankTeller = text`
 Setup:+
@@ -25,20 +23,18 @@ DialogTree:+
 -> Take out a loan
 `;
 
-export const Bank = text`[You are about half-way up the High St. To the East is the pie shop.
-To the West is the bank. The street runs North and South.]
-{0}The middle of the High St.
-
+export const Bank = text`
 LongDescription:
-[Once upon a time, this building was the local pub. Now it is decored in the gaudy plastic branding of Gonzo Bank Unlimited.
+[Once upon a time, this building was a fine local pub. Now it is decored in the gaudy plastic branding of Gonzo Bank Unlimited.
 Some of the original architecture prevails, but where the bar once stood, now there is a series of bulletproof glass 
-teller enclosures. Only one of them is manned, by a smartly-dressed but entirely forgettable emlpoyee.
+teller enclosures. Only one of them is manned, by a smartly-dressed but otherwise entirely forgettable employee.]
 
 ShortDescription:
+A carbon-copy Gonzo branch.
 
 GO WEST:
 A staff door with a numeric keypad lock is blocking your way.
 
 GO EAST:
-${goTo(HighStreetMid)}
+$goto(HighStreetMid)
 `;

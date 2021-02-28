@@ -1,0 +1,14 @@
+{
+  "extends": ["airbnb", "prettier"],
+  "rules": {
+    "import/prefer-default-export": "off",
+    "no-await-in-loop": "off",
+    "no-plusplus": "off",
+    "no-restricted-syntax": [
+      "error",
+      "ForInStatement",
+      "LabeledStatement",
+      "WithStatement"
+    ]
+  }
+}

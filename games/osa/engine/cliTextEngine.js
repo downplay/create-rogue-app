@@ -1,9 +1,9 @@
 // import chalk from "chalk";
+import { stream, createRng } from "herotext";
 import readline from "readline";
-import { buildRng } from "../../../src/engine/useRng";
 
-const inputChars = (prompt = "?") => {
-  return new Promise((resolve, reject) => {
+const inputChars = (prompt = "?") =>
+  new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
@@ -12,44 +12,46 @@ const inputChars = (prompt = "?") => {
       resolve(answer);
     });
   });
-};
 
 export const cliTextEngine = () => {
-  const rng = buildRng();
+  const rng = createRng();
 
-  let executions;
-  let context;
+  // let executions;
+  // let context;
 
   const renderResult = async (result) => {
     if (typeof result === "string") {
       console.log(result);
     } else {
       switch (result.type) {
-        case "input":
+        case "input": {
           const input = await inputChars();
+          // eslint-disable-next-line no-param-reassign
           result.execution.yieldValue = input;
           break;
+        }
         default:
-          return result.toString();
+          console.log(JSON.stringify(result, null, "  "));
       }
     }
   };
   const engine = {
-    play: (story) => {
+    play: (story, state) => {
       const mainLoop = async () => {
-        const [results, newExecutions] = story.stream(rng, executions, context);
+        let context;
+        const [results, newContext] = stream(story, rng, state, context);
         for (const result of results) {
           await renderResult(result);
         }
         // Either we're waiting for an input, or the game has finished
-        if (!newExecutions.finished) {
-          executions = newExecutions;
+        context = newContext;
+        if (!context.finished) {
           mainLoop();
         }
       };
       mainLoop();
     },
   };
-  context = { rng, engine };
+  // context = { rng, engine };
   return engine;
 };
