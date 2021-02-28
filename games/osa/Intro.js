@@ -28,7 +28,7 @@ BeginGame:
 {$choice=1}$player=${Derek}$goto(Bedroom)
 {$choice=2}$player=${Gilly}$goto(Bar)
 {$choice=3}$player=${Biscuits}$goto(Alley)
-{0%}
+{0%}Invalid choice, please pick again...$ChooseCharacter
 `;
 
 // $<OPTION([1. Derek, the Mild Mannered Office Worker],[$player=${Derek}]${(

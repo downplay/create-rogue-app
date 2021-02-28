@@ -363,8 +363,8 @@ part              -> string                         {% d => textContent(d[0]) %}
 
 string            -> %string                        {% d => d[0].value %}
 
-assignment        -> %assign choices %space         {% d => assignContent(d[0].value, choices(d[1])) %}
-                   | %bassign choices %space        {% d => assignContent(d[0].value, choices(d[1])) %}
+assignment        -> %assign choices %space         {% d => assignContent(d[0].value, d[1]) %}
+                   | %bassign choices %space        {% d => assignContent(d[0].value, d[1]) %}
 
 substitution      -> %sub                          {% d => subContent(d[0].value) %}
                    | %bsub choices %bsubend          {% d => subContent(choices(d[1])) %}

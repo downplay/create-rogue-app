@@ -9,6 +9,7 @@ const inputChars = (prompt = "?") =>
       output: process.stdout,
     });
     rl.question(prompt, (answer) => {
+      rl.close();
       resolve(answer);
     });
   });
@@ -27,7 +28,7 @@ export const cliTextEngine = () => {
         case "input": {
           const input = await inputChars();
           // eslint-disable-next-line no-param-reassign
-          result.execution.yieldValue = input;
+          result.strand.internalState = input;
           break;
         }
         default:
@@ -37,8 +38,8 @@ export const cliTextEngine = () => {
   };
   const engine = {
     play: (story, state) => {
+      let context;
       const mainLoop = async () => {
-        let context;
         const [results, newContext] = stream(story, rng, state, context);
         for (const result of results) {
           await renderResult(result);
