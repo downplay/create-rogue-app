@@ -30,7 +30,7 @@ BeginGame:
 {$choice=3}$player=${Biscuits}$goto(Alley)
 {0%}Invalid choice, please pick again...$ChooseCharacter
 `;
-
+console.log(JSON.stringify(Intro, null, "  "));
 // $<OPTION([1. Derek, the Mild Mannered Office Worker],[$player=${Derek}]${(
 //   _,
 //   { engine }

@@ -58,6 +58,7 @@ const executeArrayNode = (
         { ...baseStrand(), path: i, localScope: {}, children: [] },
       ];
     }
+
     const result = executeNode(choice, context, strand.children[0]);
     results.push(...result);
     if (context.suspend) {
@@ -141,10 +142,11 @@ const matchPreconditions = (
     switch (pre.operator) {
       case "eq":
         // TODO: Consider difference of === or ==. = and == ?
-        passed = leftValue === rightValue;
+        // TODO: Cheap hack for now using == to get around string/number difference
+        passed = leftValue == rightValue;
         break;
       case "noteq":
-        passed = leftValue !== rightValue;
+        passed = leftValue != rightValue;
         break;
       case "gt":
         passed = leftValue > rightValue;
@@ -191,7 +193,7 @@ const executeChoicesNode = (
     strand.children = [
       {
         ...baseStrand(),
-        path: choices.indexOf(chosen), // OPTI: indexOf doesn't scale
+        path: choices.indexOf(chosen), // TODO: indexOf doesn't scale
       },
     ];
   }
@@ -212,7 +214,7 @@ const executeChoicesNodeAll = (
   }
   while (i < choices.length) {
     const choice = choices[i];
-    if (strand.children[0].path !== i) {
+    if (!strand.children[0] || strand.children[0].path !== i) {
       strand.children = [
         { ...baseStrand(), path: i, localScope: {}, children: [] },
       ];
@@ -244,6 +246,8 @@ const executeSubstitutionNode = (
     ...baseStrand(),
     path: "label",
   };
+  strand.children[0] = childStrand;
+
   if (childStrand.path === "label") {
     if (typeof labelName === "object") {
       const labelResult = executeNode(
@@ -290,6 +294,7 @@ const executeAssignmentNode = (
     ...baseStrand(),
     path: "content",
   };
+  strand.children[0] = childStrand;
   const result = executeNode(node.content, context, childStrand);
   // TODO: Variable could also be content that needs resolving
   if (context.suspend) {
@@ -329,6 +334,7 @@ const executeInputNode = (
   strand: ExecutionStrand
 ) => {
   const inputStrand = strand.children[0] || { ...baseStrand() };
+  strand.children[0] = inputStrand;
   // TODO: Using internalState works, but should use yieldValue prop instead?
   if (typeof inputStrand.internalState !== "undefined") {
     // Might not be a string; could be entity, object etc
@@ -474,6 +480,9 @@ export const executeText = (
   let context: ExecutionContext =
     previousContext ||
     new ExecutionContext({ state: initialState, rng, root: rootStrand, main });
+
+  context.suspend = false;
+
   let entryNode: ContentItemAST | undefined = main;
   if (entryPoint) {
     entryNode = main.labels[entryPoint];

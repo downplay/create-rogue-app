@@ -10,7 +10,7 @@ const inputChars = (prompt = "?") =>
     });
     rl.question(prompt, (answer) => {
       rl.close();
-      resolve(answer);
+      resolve(answer.trim());
     });
   });
 
@@ -22,7 +22,7 @@ export const cliTextEngine = () => {
 
   const renderResult = async (result) => {
     if (typeof result === "string") {
-      console.log(result);
+      process.stdout.write(result);
     } else {
       switch (result.type) {
         case "input": {
