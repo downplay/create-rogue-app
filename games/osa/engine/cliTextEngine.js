@@ -17,10 +17,11 @@ const inputChars = (prompt = "?") =>
 export const cliTextEngine = () => {
   const rng = createRng();
 
-  // let executions;
-  // let context;
+  let baseState;
+  let currentLocation;
+  let context;
 
-  const renderResult = async (result) => {
+  const renderResult = async (result, context) => {
     if (typeof result === "string") {
       process.stdout.write(result);
     } else {
@@ -31,21 +32,32 @@ export const cliTextEngine = () => {
           result.strand.internalState = input;
           break;
         }
+        case "goto": {
+          break;
+        }
         default:
           console.log(JSON.stringify(result, null, "  "));
       }
     }
   };
+
   const engine = {
-    play: (story, state) => {
-      let context;
+    go: (locationName) => {
+      const location = context.state.locations[locationName];
+      if (!location) {
+        throw new Error(`Unknown location: ${locationName}`);
+      }
+      nextLocation = locationName;
+    },
+    play: (story, state, context) => {
       const mainLoop = async () => {
         const [results, newContext] = stream(story, rng, state, context);
+        // eslint-disable-next-line no-param-reassign
+        context = newContext;
         for (const result of results) {
-          await renderResult(result);
+          await renderResult(result, context);
         }
         // Either we're waiting for an input, or the game has finished
-        context = newContext;
         if (!context.finished) {
           mainLoop();
         }

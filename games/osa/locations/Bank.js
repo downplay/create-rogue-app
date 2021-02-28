@@ -1,4 +1,5 @@
 import { text } from "herotext";
+import { LOCATION_BANK } from "./locationNames";
 
 export const BankTeller = text`
 Setup:+
@@ -24,6 +25,9 @@ DialogTree:+
 `;
 
 export const Bank = text`
+Name:
+${LOCATION_BANK}
+
 LongDescription:
 [Once upon a time, this building was a fine local pub. Now it is decored in the gaudy plastic branding of Gonzo Bank Unlimited.
 Some of the original architecture prevails, but where the bar once stood, now there is a series of bulletproof glass 

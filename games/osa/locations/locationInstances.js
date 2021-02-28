@@ -1,11 +1,34 @@
+import { merge, render } from "herotext";
 import { Bank } from "./Bank";
-import { LOCATION_BANK } from "./locationNames";
 import { baseLocation } from "./baseLocation";
+import { baseCommands } from "../commands/baseCommands";
+import { Alley } from "./Alley";
+import { PieShop } from "./PieShop";
+import { HighStreetSouth } from "./HighStreetSouth";
+import { HighStreetNorth } from "./HighStreetNorth";
+import { HighStreetMid } from "./HighStreetMid";
 
-const makeInstance = (ast) => {
-  const merged = merge(baseLocation, ast);
+const location = (ast) => {
+  const merged = merge(baseCommands, baseLocation, ast);
+  const state = {};
+  const name = render(merged, null, state, "Name");
+  return {
+    main: merged,
+    name,
+    state,
+    doneSetup: false,
+  };
 };
 
-export const locationInstances = () => ({
-  [LOCATION_BANK]: makeInstance(Bank),
-});
+export const locationInstances = () =>
+  [
+    location(Alley),
+    location(Bank),
+    location(HighStreetMid),
+    location(HighStreetNorth),
+    location(HighStreetSouth),
+    location(PieShop),
+  ].reduce((loc, acc) => {
+    acc[loc.name] = loc;
+    return acc;
+  }, {});

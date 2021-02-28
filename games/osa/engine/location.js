@@ -1,9 +1,7 @@
-export const location = (story) => {
-  const name = story.render(null, {}, "Name");
+import { render } from "herotext";
 
-  return {
-    type: "location",
-    name,
-    story,
-  };
-};
+export const location = (story) => ({
+  type: "location",
+  name,
+  story,
+});
