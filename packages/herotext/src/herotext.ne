@@ -129,6 +129,7 @@ const lexer = moo.states({
     },
     sub,
     bsub,
+    input,
     ",": ",",
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },

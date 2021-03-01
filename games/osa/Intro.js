@@ -23,6 +23,18 @@ ChooseCharacter:
 1. Derek, the Mild Mannered Office Worker
 2. Gilly "the Grass Snake", a Rogue and a Wanderer
 3. Biscuits, a Street Cat
+$BeginGame($?)
+]
+
+BeginGame: ($choice)
+{=1}[$player=${Derek}]$goto(Bedroom)
+{=2}[$player=${Gilly}]$goto(Bar)
+{=3}[$player=${Biscuits}]$goto(Alley)
+{0%}Invalid choice, please pick again...$ChooseCharacter
+`
+);
+
+/* prev version:
 $choice=$?
 $BeginGame
 ]
@@ -32,9 +44,9 @@ BeginGame:
 {$choice=2}[$player=${Gilly}]$goto(Bar)
 {$choice=3}[$player=${Biscuits}]$goto(Alley)
 {0%}Invalid choice, please pick again...$ChooseCharacter
-`
-);
-console.log(JSON.stringify(Intro, null, "  "));
+*/
+
+// console.log(JSON.stringify(Intro, null, "  "));
 // $<OPTION([1. Derek, the Mild Mannered Office Worker],[$player=${Derek}]${(
 //   _,
 //   { engine }

@@ -13,6 +13,7 @@ import {
   ChoiceAST,
   ContentChoiceAST,
   LabelAST,
+  ScopeValue,
 } from "./types";
 import grammar from "./herotext";
 
@@ -105,9 +106,7 @@ export const stringifyResult = (elements: ExecutionResultItem[]): string => {
 };
 
 // TODO: Figure out how scope values work and start supporting non-strings
-export const coalesceResult = (
-  elements: ExecutionResultItem[]
-): string /*| ScopeValue*/ => {
+export const coalesceResult = (elements: ExecutionResultItem[]): ScopeValue => {
   return elements.map(stringifyResultItem).join("");
 };
 

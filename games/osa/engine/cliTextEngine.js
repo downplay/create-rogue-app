@@ -23,6 +23,9 @@ export const cliTextEngine = () => {
   let context;
 
   const renderResult = async (result, context) => {
+    if (typeof result === "undefined" || result === null) {
+      return;
+    }
     if (typeof result === "string") {
       process.stdout.write(result);
     } else {

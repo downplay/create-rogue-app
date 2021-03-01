@@ -79,10 +79,41 @@ export type FunctionInvocationAST = Omit<ContentSubstitutionAST, "type"> & {
   parameters: ContentAST[];
 };
 
+export type StoryInstance = {
+  main: MainAST;
+  globalScope: Record<string, ScopeValue>;
+};
+
+export type PrimitiveValue = {
+  type:
+    | "string"
+    | "number"
+    | "boolean"
+    | "array"
+    | "object"
+    | "story"
+    | "instance";
+  value:
+    | string
+    | number
+    | boolean
+    | PrimitiveValue[]
+    | Record<string, PrimitiveValue>
+    | MainAST
+    | StoryInstance;
+};
+
+export type ScopeValue =
+  | string
+  | number
+  | boolean
+  | PrimitiveValue
+  | ScopeValue[];
+
 export type ExternalAST = ContentItemAST & {
   type: "external";
   callback: (
-    state: Record<string, string>,
+    state: Record<string, ScopeValue>,
     context: ExecutionContext,
     strand: ExecutionStrand
   ) => NodeExecutionResult | string;

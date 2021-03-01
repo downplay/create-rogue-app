@@ -33,7 +33,12 @@ const executeTextNode = (node: ContentTextAST) => {
   return [node.text];
 };
 
-const baseStrand = () => ({ localScope: {}, children: [] });
+const inheritStrand = (parent: ExecutionStrand): ExecutionStrand => ({
+  ...parent,
+  internalState: undefined,
+  children: [],
+  path: "",
+});
 
 let executeNode: (
   node: ContentAST | null,
@@ -55,9 +60,7 @@ const executeArrayNode = (
   while (i < node.length) {
     const choice = node[i];
     if (!strand.children[0] || strand.children[0].path !== i) {
-      strand.children = [
-        { ...baseStrand(), path: i, localScope: {}, children: [] },
-      ];
+      strand.children = [{ ...inheritStrand(strand), path: i }];
     }
 
     const result = executeNode(choice, context, strand.children[0]);
@@ -193,7 +196,7 @@ const executeChoicesNode = (
     );
     strand.children = [
       {
-        ...baseStrand(),
+        ...inheritStrand(strand),
         path: choices.indexOf(chosen), // TODO: indexOf doesn't scale
       },
     ];
@@ -216,9 +219,7 @@ const executeChoicesNodeAll = (
   while (i < choices.length) {
     const choice = choices[i];
     if (!strand.children[0] || strand.children[0].path !== i) {
-      strand.children = [
-        { ...baseStrand(), path: i, localScope: {}, children: [] },
-      ];
+      strand.children = [{ ...inheritStrand(strand), path: i }];
     }
     // TODO: We might even need to suspend during precondition matching. Or could
     // just throw an error? Gets super messy otherwise...
@@ -247,10 +248,10 @@ const resolveLabelPath = (
 ): [string, any, NodeExecutionResult] => {
   let found;
 
-  // TODO: There's a obug in using childStrand for path ... or maybe in using strand for
+  // TODO: There's a bug in using childStrand for path ... or maybe in using strand for
   // internalState ... not sure but both should be the same, seems weird
-  const childStrand = strand.children[0] || {
-    ...baseStrand(),
+  let childStrand = strand.children[0] || {
+    ...inheritStrand(strand),
     path: "label",
   };
   strand.children[0] = childStrand;
@@ -281,9 +282,29 @@ const resolveLabelPath = (
     ? (strand.internalState as string)
     : (path as string);
 
-  childStrand.path = "content";
+  // Logic getting insanely convoluted until this mess is sorted out ...
+  // Here we have to drop the localScope *only* if we're about to resolve a label
+  // with no function parameters. executionFunctionNodeInvocation will handle the
+  // function scope (it still needs local scope to evaluate params).
+  // This really all should be a lot clearer.
+  if (childStrand.path !== "content") {
+    childStrand = strand.children[0] = {
+      ...inheritStrand(strand),
+      path: "content",
+      localScope: parameters ? strand.localScope : {},
+    };
+  }
 
-  if (Object.prototype.hasOwnProperty.call(resolveParent, labelName)) {
+  // More weird logic, if we're trying to resolve a label it means local scope is also still in play.
+  // TODO: Make a proper inheriting object (in some optimal way) and have it on the StrandContext so
+  // all strands running in the context have a single object to check for scope purposes
+  // TODO: Also makes it easier when calling externals etc
+  if (
+    resolveLabels &&
+    Object.prototype.hasOwnProperty.call(strand.localScope, labelName)
+  ) {
+    found = strand.localScope[labelName];
+  } else if (Object.prototype.hasOwnProperty.call(resolveParent, labelName)) {
     found = resolveParent[labelName];
   } else if (resolveLabels) {
     found = resolveLabels[labelName];
@@ -298,20 +319,17 @@ const resolveLabelPath = (
   }
   // TODO: Some reliable test for "is this something executable like a label or another story?"
   // ...Answer is have a better managed `scope` which knows what type each thing is...
-  return typeof found === "object" && found.type
-    ? [
-        labelName,
-        found,
-        parameters
-          ? executeFunctionNodeInvocation(
-              found,
-              parameters,
-              context,
-              childStrand
-            )
-          : executeNode(found, context, childStrand),
-      ]
-    : [labelName, found, [found as string]];
+  if (typeof found === "object" && found.type) {
+    return [
+      labelName,
+      found,
+      parameters
+        ? executeFunctionNodeInvocation(found, parameters, context, childStrand)
+        : executeNode(found, context, childStrand),
+    ];
+  } else {
+    return [labelName, found, [found as string]];
+  }
 };
 
 const executeFunctionNodeInvocation = (
@@ -354,7 +372,7 @@ const executeFunctionNodeInvocation = (
       const paramNode = parameters[i];
       parameterValues[i] = parameterValues[i] || [];
       if (!strand.children[0] || strand.children[0].path !== i) {
-        strand.children = [{ ...baseStrand(), path: i }];
+        strand.children = [{ ...inheritStrand(strand), path: i }];
       }
 
       const result = executeNode(paramNode, context, strand.children[0]);
@@ -367,13 +385,18 @@ const executeFunctionNodeInvocation = (
   }
 
   // TODO: Also changes with named params
+  // TODO: Buffer in internal state?
   const localScope = node.signature.reduce((acc, param, i) => {
     acc[param.name] = coalesceResult(parameterValues[i]);
     return acc;
   }, {} as Record<string, any>);
 
   if (!invoke) {
-    strand.children[0] = { ...baseStrand(), path: "invoke", localScope };
+    strand.children[0] = {
+      ...inheritStrand(strand),
+      path: "invoke",
+      localScope,
+    };
   }
 
   return executeNode(node, context, strand.children[0]);
@@ -387,8 +410,7 @@ const executeSubstitutionNode = (
   let i = 0;
   let resolveParent: any =
     typeof strand.internalState === "undefined"
-      ? // TODO: Heavy op here
-        context.state
+      ? context.state
       : strand.internalState;
   let result: ExecutionResultItem[] = [];
   if (strand.children.length) {
@@ -398,7 +420,7 @@ const executeSubstitutionNode = (
   while (i < node.path.length) {
     const path = node.path[i];
     if (!strand.children[0] || strand.children[0].path !== i) {
-      strand.children = [{ ...baseStrand(), path: i, children: [] }];
+      strand.children = [{ ...inheritStrand(strand), path: i }];
     }
     const [labelName, nextParent, results] = resolveLabelPath(
       path,
@@ -411,16 +433,17 @@ const executeSubstitutionNode = (
         : undefined
     );
     result = results;
-    resolveParent = strand.internalState = nextParent;
     if (context.suspend) {
       break;
     }
+    resolveParent = strand.internalState = nextParent;
     if (i < node.path.length - 1 && typeof resolveParent !== "object") {
-      throw new Error(
-        `Label path ${node.path.slice(0, i).join(".")} not found`
-      );
+      throw new Error(`Label path ${labelName} not found`);
     }
     i++;
+  }
+  if (!context.suspend) {
+    result = [resolveParent];
   }
   return result;
 };
@@ -431,7 +454,7 @@ const executeAssignmentNode = (
   strand: ExecutionStrand
 ) => {
   const childStrand = strand.children[0] || {
-    ...baseStrand(),
+    ...inheritStrand(strand),
     path: "content",
   };
   strand.children[0] = childStrand;
@@ -460,10 +483,18 @@ const executeExternalNode = (
   strand: ExecutionStrand
 ) => {
   const childStrand = strand.children[0] || {
-    ...baseStrand(),
+    ...inheritStrand(strand),
+    // NOT persisted to any subsequent children (unlikely to use it tho), although it
+    // is used in calling the external. ???
+    localScope: {},
   };
   strand.children = [childStrand];
-  const result = node.callback(context.state, context, childStrand);
+  // TODO: Properly convert primitives in ScopeValue objects
+  const result = node.callback(
+    { ...context.state, ...strand.localScope },
+    context,
+    childStrand
+  );
   // Be forgiving with external function results
   return Array.isArray(result) ? result : [result];
 };
@@ -473,7 +504,7 @@ const executeInputNode = (
   context: ExecutionContext,
   strand: ExecutionStrand
 ) => {
-  const inputStrand = strand.children[0] || { ...baseStrand() };
+  const inputStrand = strand.children[0] || inheritStrand(strand);
   strand.children[0] = inputStrand;
   // TODO: Using internalState works, but should use yieldValue prop instead?
   if (typeof inputStrand.internalState !== "undefined") {
