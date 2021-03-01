@@ -19,6 +19,7 @@ export const cliTextEngine = () => {
 
   let baseState;
   let currentLocation;
+  let nextLocation;
   let context;
 
   const renderResult = async (result, context) => {

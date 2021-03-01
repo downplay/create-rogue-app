@@ -234,13 +234,15 @@ const executeChoicesNodeAll = (
   return results;
 };
 
-const executeSubstitutionNode = (
-  node: ContentSubstitutionAST,
+// TODO: Generally not happy with this whole system, needs serious revision
+const resolveLabelPath = (
+  path: string | ContentAST,
   context: ExecutionContext,
-  strand: ExecutionStrand
-): NodeExecutionResult => {
+  strand: ExecutionStrand,
+  resolveParent: any,
+  resolveLabels?: Record<string, LabelAST>
+): [string, any, NodeExecutionResult] => {
   let found;
-  let labelName: string = node.label as string;
 
   const childStrand = strand.children[0] || {
     ...baseStrand(),
@@ -249,17 +251,20 @@ const executeSubstitutionNode = (
   strand.children[0] = childStrand;
 
   if (childStrand.path === "label") {
-    if (typeof labelName === "object") {
-      const labelResult = executeNode(
-        node.label as ContentAST,
-        context,
-        childStrand
-      );
+    if (typeof path === "object") {
+      const labelResult = executeNode(path as ContentAST, context, childStrand);
+      // NOTE: Doesn't seem like it makes sense to resolve mid-path; maybe it hurts performance
+      // and we can optimise by just removing some unneccessary processing of suspense here
+      // (and throw an error)
       if (context.suspend) {
         strand.internalState =
           (strand.internalState || "") +
           stringifyResult(labelResult.slice(0, labelResult.length - 1));
-        return [labelResult[labelResult.length - 1]];
+        return [
+          strand.internalState,
+          resolveParent,
+          [labelResult[labelResult.length - 1]],
+        ];
       } else {
         strand.internalState =
           (strand.internalState || "") + stringifyResult(labelResult);
@@ -267,22 +272,73 @@ const executeSubstitutionNode = (
     }
   }
 
-  labelName = strand.internalState
+  const labelName = strand.internalState
     ? (strand.internalState as string)
-    : labelName;
+    : (path as string);
 
   childStrand.path = "content";
-  if (Object.prototype.hasOwnProperty.call(context.state, labelName)) {
-    found = context.state[labelName];
-  } else {
-    found = context.main.labels[labelName];
+
+  if (Object.prototype.hasOwnProperty.call(resolveParent, labelName)) {
+    found = resolveParent[labelName];
+  } else if (resolveLabels) {
+    found = resolveLabels[labelName];
+    if (found === undefined) {
+      // TODO: Sometimes, undefined might be desired
+      return [labelName, found, [`<Error: Label ${labelName} not found>`]];
+    }
   }
-  if (found === undefined) {
-    return [`<Error: Label ${labelName} not found>`];
+
+  if (found === null || typeof found !== "object") {
+    return [labelName, found, []];
   }
-  return typeof found === "string"
-    ? [found as string]
-    : executeNode(found, context, childStrand);
+  // TODO: Some reliable test for "is this something executable like a label or another story?"
+  // ...Answer is have a better managed `scope` which knows what type each thing is...
+  return typeof found === "object" && found.type
+    ? [labelName, found, executeNode(found, context, childStrand)]
+    : [labelName, found, [found as string]];
+};
+
+const executeSubstitutionNode = (
+  node: ContentSubstitutionAST,
+  context: ExecutionContext,
+  strand: ExecutionStrand
+): NodeExecutionResult => {
+  let i = 0;
+  let resolveParent: any =
+    typeof strand.internalState === "undefined"
+      ? // TODO: Heavy op here
+        context.state
+      : strand.internalState;
+  let result: ExecutionResultItem[] = [];
+  if (strand.children.length) {
+    // Has already executed
+    i = strand.children[0].path as number;
+  }
+  while (i < node.path.length) {
+    const path = node.path[i];
+    if (!strand.children[0] || strand.children[0].path !== i) {
+      strand.children = [{ ...baseStrand(), path: i, children: [] }];
+    }
+    const [labelName, nextParent, results] = resolveLabelPath(
+      path,
+      context,
+      strand.children[0],
+      resolveParent,
+      i === 0 ? context.main.labels : undefined
+    );
+    result = results;
+    resolveParent = strand.internalState = nextParent;
+    if (context.suspend) {
+      break;
+    }
+    if (i < node.path.length - 1 && typeof resolveParent !== "object") {
+      throw new Error(
+        `Label path ${node.path.slice(0, i).join(".")} not found`
+      );
+    }
+    i++;
+  }
+  return result;
 };
 
 const executeAssignmentNode = (

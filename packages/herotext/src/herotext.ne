@@ -12,11 +12,8 @@ const bassign = {
   push: "nospace",
   value: (x) => x.slice(2, x.length - 2),
 };
-const sub = { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1) };
+const sub = { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1), push: "subpath" };
 const bsub = { match: /\$\[/, push: "sublabel" };
-const bsubend = { match: /\]/, pop: 1 };
-const func = { match: /\$[a-zA-Z0-9]+\(/, value: (x) => x.slice(1, -1), push: "funcparams" };
-const bfuncend = { match: /\]\(/, pop: 1, push: "funcparams" };
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks: true };
 const space = { match: /[ \t]+/, lineBreaks: false };
 const input = "$?";
@@ -26,43 +23,36 @@ const lexer = moo.states({
     bang: /^!/,
     assign,
     bassign,
-    func,
     sub,
     bsub,
     input,
     labeleqmerge: {
       match: /^[a-zA-Z0-9 ]+:=~/,
       value: (x) => x.slice(0, x.indexOf(":")),
-      lineBreaks: false,
     },
     labeleq: {
       match: /^[a-zA-Z0-9 ]+:=/,
       value: (x) => x.slice(0, x.indexOf(":")),
-      lineBreaks: false,
     },
     labelplusmerge: {
       match: /^[a-zA-Z0-9 ]+:+~\+/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
-      lineBreaks: false,
     },
     labelplus: {
       match: /^[a-zA-Z0-9 ]+:\+/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
-      lineBreaks: false,
     },
     labelmerge: {
       match: /^[a-zA-Z0-9 ]+:~/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
-      lineBreaks: false,
     },
     label: {
       match: /^[a-zA-Z0-9 ]+:/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
-      lineBreaks: false,
     },
     string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|:]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r:|\[\]\{\}])+/,
     newline,
@@ -79,7 +69,7 @@ const lexer = moo.states({
     },
     assign,
     bassign,
-    func,
+    // func,
     sub,
     bsub,
     input,
@@ -95,7 +85,6 @@ const lexer = moo.states({
     },
     assign,
     bassign,
-    func,
     sub,
     bsub,
     input,
@@ -111,22 +100,25 @@ const lexer = moo.states({
     "(": { match: "(", push: "labelparams" },
   },
   labelparams: {
-    sub,
+    // TODO: support spaces in var names
+    varname: { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1)},
     ",": ",",
-	")": { match: ")", pop: 1 },
-	// TODO: support spaces in sub names
+    ")": { match: ")", pop: 1 },
     space,
     newline,
+  },
+  subpath: {
+    path: { match: /\.[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
+    bpath: { match: /\.\[/, push: "sublabel" },
+    "(": { match: "(", next: "funcparams" },
+    pathend: { match: /(?=[^])/, pop: 1, lineBreaks: true }
   },
   sublabel: {
     string: { match: /[a-zA-Z0-9 ]+/ },
     assign,
     bassign,
-    func,
     sub,
     bsub,
-    bfuncend,
-    bsubend,
     input,
     "[": { match: "[", push: "group" },
     "]": { match: "]", pop: 1 },
@@ -137,14 +129,12 @@ const lexer = moo.states({
       match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
       lineBreaks: true,
     },
-    func,
     sub,
     bsub,
-    bfuncend,
-	",": ",",
+    ",": ",",
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
-  	")": { match: ")", pop: 1 },
+    ")": { match: ")", pop: 1 },
     "|": "|",
   },
   precondition: {
@@ -173,7 +163,7 @@ const subContent = (label) => {
       label = label.text;
     }
   }
-  return { type: "substitution", label };
+  return { type: "substitution", path: label };
 };
 
 const functionCallContent = (label, parameters) => {
@@ -182,7 +172,7 @@ const functionCallContent = (label, parameters) => {
       label = label.text;
     }
   }
-  return { type: "call", label, parameters };
+  return { type: "call", path: label, parameters };
 };
 
 const assignContent = (variable, content) => {
@@ -323,8 +313,8 @@ labelType         -> %label                {% d => [d[0].value, "label"] %}
                    | %labelplusmerge       {% d => [d[0].value, "all", true] %}
 
 # TODO: Default values
-signature         -> %sub                           {% d => [signatureParam(d[0].value)] %}
-                   | signature _ "," _ %sub         {% d => [...d[0], signatureParam(d[4].value)] %}
+signature         -> %varname                       {% d => [signatureParam(d[0].value)] %}
+                   | signature _ "," _ %varname     {% d => [...d[0], signatureParam(d[4].value)] %}
 
 content           -> line                           {% d => [d[0]] %}
                    | content line                   {% d => [...d[0], d[1]] %}
@@ -346,7 +336,8 @@ conditions        -> condition                      {% d => [d[0]] %}
 
 condition         -> conditionValue                 {% d => soloValueComparison(d[0]) %}
                    | %compare conditionValue        {% d => preComparison(null, d[0].value, d[1]) %}
-                   | conditionValue %compare conditionValue {% d => preComparison(d[0], d[1].value, d[2]) %}
+                   | conditionValue %compare conditionValue 
+                                                    {% d => preComparison(d[0], d[1].value, d[2]) %}
 
 conditionValue    -> %number                        {% d => numberValue(d[0].value) %}
                    | parts                          {% d => compoundValue(d[0]) %}
@@ -368,11 +359,23 @@ string            -> %string                        {% d => d[0].value %}
 assignment        -> %assign choices %space         {% d => assignContent(d[0].value, d[1]) %}
                    | %bassign choices %space        {% d => assignContent(d[0].value, d[1]) %}
 
-substitution      -> %sub                          {% d => subContent(d[0].value) %}
-                   | %bsub choices %bsubend          {% d => subContent(choices(d[1])) %}
+substitution      -> substitutionPath %pathend             {% d => subContent(d[0]) %}
 
-functionCall      -> %func parameters ")"            {% d => functionCallContent(d[0].value, d[1]) %}
-                   | %bsub choices %bfuncend parameters ")" {% d => functionCallContent(choices(d[1]), d[3]) %}
+functionCall      -> substitutionPath "(" parameters ")"   {% d => functionCallContent(d[0], d[2]) %}
+
+# TODO: Can probably be simplified to two rules ... somehow
+substitutionPath  -> %sub                           {% d => [d[0].value] %}
+                   | %bsub choices "]"              {% d => [choices(d[1])] %}
+                   | %sub substitutionPathParts     {% d => [d[0].value, ...d[1]] %}
+                   | %bsub choices "]" substitutionPathParts
+                        {% d => [choices(d[1]), ...d[3]] %}
+
+substitutionPathParts -> substitutionPathPart      {% d => [d[0]] %}  
+                   | substitutionPathParts substitutionPathPart
+                                                    {% d => [...d[0], d[1]] %}
+
+substitutionPathPart -> %path                       {% d => d[0].value %}
+                   | %bpath choices "]"             {% d => choices(d[1]) %}
 
 parameters        -> parameter                      {% d => [d[0]] %}                     
                    | parameters "," parameter       {% d => [...d[0], d[2]] %}

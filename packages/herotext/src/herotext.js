@@ -16,11 +16,8 @@ const bassign = {
   push: "nospace",
   value: (x) => x.slice(2, x.length - 2),
 };
-const sub = { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1) };
+const sub = { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1), push: "subpath" };
 const bsub = { match: /\$\[/, push: "sublabel" };
-const bsubend = { match: /\]/, pop: 1 };
-const func = { match: /\$[a-zA-Z0-9]+\(/, value: (x) => x.slice(1, -1), push: "funcparams" };
-const bfuncend = { match: /\]\(/, pop: 1, push: "funcparams" };
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks: true };
 const space = { match: /[ \t]+/, lineBreaks: false };
 const input = "$?";
@@ -30,43 +27,36 @@ const lexer = moo.states({
     bang: /^!/,
     assign,
     bassign,
-    func,
     sub,
     bsub,
     input,
     labeleqmerge: {
       match: /^[a-zA-Z0-9 ]+:=~/,
       value: (x) => x.slice(0, x.indexOf(":")),
-      lineBreaks: false,
     },
     labeleq: {
       match: /^[a-zA-Z0-9 ]+:=/,
       value: (x) => x.slice(0, x.indexOf(":")),
-      lineBreaks: false,
     },
     labelplusmerge: {
       match: /^[a-zA-Z0-9 ]+:+~\+/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
-      lineBreaks: false,
     },
     labelplus: {
       match: /^[a-zA-Z0-9 ]+:\+/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
-      lineBreaks: false,
     },
     labelmerge: {
       match: /^[a-zA-Z0-9 ]+:~/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
-      lineBreaks: false,
     },
     label: {
       match: /^[a-zA-Z0-9 ]+:/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
-      lineBreaks: false,
     },
     string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|:]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r:|\[\]\{\}])+/,
     newline,
@@ -83,7 +73,7 @@ const lexer = moo.states({
     },
     assign,
     bassign,
-    func,
+    // func,
     sub,
     bsub,
     input,
@@ -99,7 +89,6 @@ const lexer = moo.states({
     },
     assign,
     bassign,
-    func,
     sub,
     bsub,
     input,
@@ -115,22 +104,25 @@ const lexer = moo.states({
     "(": { match: "(", push: "labelparams" },
   },
   labelparams: {
-    sub,
+    // TODO: support spaces in var names
+    varname: { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1)},
     ",": ",",
-	")": { match: ")", pop: 1 },
-	// TODO: support spaces in sub names
+    ")": { match: ")", pop: 1 },
     space,
     newline,
+  },
+  subpath: {
+    path: { match: /\.[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
+    bpath: { match: /\.\[/, push: "sublabel" },
+    "(": { match: "(", next: "funcparams" },
+    pathend: { match: /(?=[^])/, pop: 1, lineBreaks: true }
   },
   sublabel: {
     string: { match: /[a-zA-Z0-9 ]+/ },
     assign,
     bassign,
-    func,
     sub,
     bsub,
-    bfuncend,
-    bsubend,
     input,
     "[": { match: "[", push: "group" },
     "]": { match: "]", pop: 1 },
@@ -141,14 +133,12 @@ const lexer = moo.states({
       match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
       lineBreaks: true,
     },
-    func,
     sub,
     bsub,
-    bfuncend,
-	",": ",",
+    ",": ",",
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
-  	")": { match: ")", pop: 1 },
+    ")": { match: ")", pop: 1 },
     "|": "|",
   },
   precondition: {
@@ -177,7 +167,7 @@ const subContent = (label) => {
       label = label.text;
     }
   }
-  return { type: "substitution", label };
+  return { type: "substitution", path: label };
 };
 
 const functionCallContent = (label, parameters) => {
@@ -186,7 +176,7 @@ const functionCallContent = (label, parameters) => {
       label = label.text;
     }
   }
-  return { type: "call", label, parameters };
+  return { type: "call", path: label, parameters };
 };
 
 const assignContent = (variable, content) => {
@@ -325,8 +315,8 @@ var grammar = {
     {"name": "labelType", "symbols": [(lexer.has("labelmerge") ? {type: "labelmerge"} : labelmerge)], "postprocess": d => [d[0].value, "label", true]},
     {"name": "labelType", "symbols": [(lexer.has("labeleqmerge") ? {type: "labeleqmerge"} : labeleqmerge)], "postprocess": d => [d[0].value, "set", true]},
     {"name": "labelType", "symbols": [(lexer.has("labelplusmerge") ? {type: "labelplusmerge"} : labelplusmerge)], "postprocess": d => [d[0].value, "all", true]},
-    {"name": "signature", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => [signatureParam(d[0].value)]},
-    {"name": "signature", "symbols": ["signature", "_", {"literal":","}, "_", (lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => [...d[0], signatureParam(d[4].value)]},
+    {"name": "signature", "symbols": [(lexer.has("varname") ? {type: "varname"} : varname)], "postprocess": d => [signatureParam(d[0].value)]},
+    {"name": "signature", "symbols": ["signature", "_", {"literal":","}, "_", (lexer.has("varname") ? {type: "varname"} : varname)], "postprocess": d => [...d[0], signatureParam(d[4].value)]},
     {"name": "content", "symbols": ["line"], "postprocess": d => [d[0]]},
     {"name": "content", "symbols": ["content", "line"], "postprocess": d => [...d[0], d[1]]},
     {"name": "line", "symbols": ["choice", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": id},
@@ -355,10 +345,16 @@ var grammar = {
     {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": d => d[0].value},
     {"name": "assignment", "symbols": [(lexer.has("assign") ? {type: "assign"} : assign), "choices", (lexer.has("space") ? {type: "space"} : space)], "postprocess": d => assignContent(d[0].value, d[1])},
     {"name": "assignment", "symbols": [(lexer.has("bassign") ? {type: "bassign"} : bassign), "choices", (lexer.has("space") ? {type: "space"} : space)], "postprocess": d => assignContent(d[0].value, d[1])},
-    {"name": "substitution", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => subContent(d[0].value)},
-    {"name": "substitution", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", (lexer.has("bsubend") ? {type: "bsubend"} : bsubend)], "postprocess": d => subContent(choices(d[1]))},
-    {"name": "functionCall", "symbols": [(lexer.has("func") ? {type: "func"} : func), "parameters", {"literal":")"}], "postprocess": d => functionCallContent(d[0].value, d[1])},
-    {"name": "functionCall", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", (lexer.has("bfuncend") ? {type: "bfuncend"} : bfuncend), "parameters", {"literal":")"}], "postprocess": d => functionCallContent(choices(d[1]), d[3])},
+    {"name": "substitution", "symbols": ["substitutionPath", (lexer.has("pathend") ? {type: "pathend"} : pathend)], "postprocess": d => subContent(d[0])},
+    {"name": "functionCall", "symbols": ["substitutionPath", {"literal":"("}, "parameters", {"literal":")"}], "postprocess": d => functionCallContent(d[0], d[2])},
+    {"name": "substitutionPath", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub)], "postprocess": d => [d[0].value]},
+    {"name": "substitutionPath", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", {"literal":"]"}], "postprocess": d => [choices(d[1])]},
+    {"name": "substitutionPath", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub), "substitutionPathParts"], "postprocess": d => [d[0].value, ...d[1]]},
+    {"name": "substitutionPath", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", {"literal":"]"}, "substitutionPathParts"], "postprocess": d => [choices(d[1]), ...d[3]]},
+    {"name": "substitutionPathParts", "symbols": ["substitutionPathPart"], "postprocess": d => [d[0]]},
+    {"name": "substitutionPathParts", "symbols": ["substitutionPathParts", "substitutionPathPart"], "postprocess": d => [...d[0], d[1]]},
+    {"name": "substitutionPathPart", "symbols": [(lexer.has("path") ? {type: "path"} : path)], "postprocess": d => d[0].value},
+    {"name": "substitutionPathPart", "symbols": [(lexer.has("bpath") ? {type: "bpath"} : bpath), "choices", {"literal":"]"}], "postprocess": d => choices(d[1])},
     {"name": "parameters", "symbols": ["parameter"], "postprocess": d => [d[0]]},
     {"name": "parameters", "symbols": ["parameters", {"literal":","}, "parameter"], "postprocess": d => [...d[0], d[2]]},
     {"name": "parameter", "symbols": ["choices"], "postprocess": d => choices(d[0])},

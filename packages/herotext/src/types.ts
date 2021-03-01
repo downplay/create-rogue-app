@@ -22,7 +22,7 @@ export type ContentTextAST = ContentItemAST & {
 
 export type ContentSubstitutionAST = ContentItemAST & {
   type: "substitution";
-  label: string | ContentAST;
+  path: (string | ContentAST)[];
 };
 
 export type ContentAssignmentAST = ContentItemAST & {
