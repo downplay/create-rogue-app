@@ -23,6 +23,10 @@ import { RNG } from "./rng";
 import { ExecutionContext } from "./ExecutionContext";
 import { stringifyResult, coalesceResult } from "./parse";
 
+// TODO: command line param
+// const debug = (...parts: any) => {};
+const debug = (...parts: any) => console.log(...parts);
+
 type ExecutionOptions = {
   rng?: RNG;
   initialState?: Record<string, StateElement>;
@@ -278,22 +282,14 @@ const resolveLabelPath = (
     }
   }
 
+  // Don't try to run labels again next time if something else suspends now...
+  childStrand.path = "labelDone";
+
   const labelName = strand.internalState
     ? (strand.internalState as string)
     : (path as string);
 
-  // Logic getting insanely convoluted until this mess is sorted out ...
-  // Here we have to drop the localScope *only* if we're about to resolve a label
-  // with no function parameters. executionFunctionNodeInvocation will handle the
-  // function scope (it still needs local scope to evaluate params).
-  // This really all should be a lot clearer.
-  if (childStrand.path !== "content") {
-    childStrand = strand.children[0] = {
-      ...inheritStrand(strand),
-      path: "content",
-      localScope: parameters ? strand.localScope : {},
-    };
-  }
+  debug("Path", labelName);
 
   // More weird logic, if we're trying to resolve a label it means local scope is also still in play.
   // TODO: Make a proper inheriting object (in some optimal way) and have it on the StrandContext so
@@ -320,6 +316,20 @@ const resolveLabelPath = (
   // TODO: Some reliable test for "is this something executable like a label or another story?"
   // ...Answer is have a better managed `scope` which knows what type each thing is...
   if (typeof found === "object" && found.type) {
+    // Logic getting insanely convoluted until this mess is sorted out ...
+    // Here we have to drop the localScope *only* if we're about to resolve a label
+    // with no function parameters (and it's not an external).
+    // executionFunctionNodeInvocation will handle the
+    // function scope (it still needs local scope to evaluate params).
+    // This really all should be a lot cleamer.
+    if (childStrand.path !== "content") {
+      childStrand = strand.children[0] = {
+        ...inheritStrand(strand),
+        path: "content",
+        localScope: parameters || found.external ? strand.localScope : {},
+      };
+    }
+
     return [
       labelName,
       found,
@@ -338,6 +348,8 @@ const executeFunctionNodeInvocation = (
   context: ExecutionContext,
   strand: ExecutionStrand
 ): NodeExecutionResult => {
+  debug("Invoking function", node.name, parameters);
+
   if (node.type !== "label") {
     throw new Error(
       "Function invocation must be performed on label, found: " +
@@ -384,6 +396,10 @@ const executeFunctionNodeInvocation = (
     }
   }
 
+  if (context.suspend) {
+    return parameterValues[i];
+  }
+
   // TODO: Also changes with named params
   // TODO: Buffer in internal state?
   const localScope = node.signature.reduce((acc, param, i) => {
@@ -407,6 +423,7 @@ const executeSubstitutionNode = (
   context: ExecutionContext,
   strand: ExecutionStrand
 ): NodeExecutionResult => {
+  debug("Substituting", node.path);
   let i = 0;
   let resolveParent: any =
     typeof strand.internalState === "undefined"
@@ -445,6 +462,7 @@ const executeSubstitutionNode = (
   if (!context.suspend) {
     result = [resolveParent];
   }
+  debug("Substitution", node.path, result);
   return result;
 };
 
@@ -482,6 +500,7 @@ const executeExternalNode = (
   context: ExecutionContext,
   strand: ExecutionStrand
 ) => {
+  debug("Executing external");
   const childStrand = strand.children[0] || {
     ...inheritStrand(strand),
     // NOT persisted to any subsequent children (unlikely to use it tho), although it
@@ -490,11 +509,9 @@ const executeExternalNode = (
   };
   strand.children = [childStrand];
   // TODO: Properly convert primitives in ScopeValue objects
-  const result = node.callback(
-    { ...context.state, ...strand.localScope },
-    context,
-    childStrand
-  );
+  const externalScope = { ...context.state, ...strand.localScope };
+  console.log(externalScope);
+  const result = node.callback(externalScope, context, childStrand);
   // Be forgiving with external function results
   return Array.isArray(result) ? result : [result];
 };
@@ -509,6 +526,7 @@ const executeInputNode = (
   // TODO: Using internalState works, but should use yieldValue prop instead?
   if (typeof inputStrand.internalState !== "undefined") {
     // Might not be a string; could be entity, object etc
+    debug("Received input", inputStrand.internalState);
     return [inputStrand.internalState as string];
   }
   // TODO: strand context should be suspended instead

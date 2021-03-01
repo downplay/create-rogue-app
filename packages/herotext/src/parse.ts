@@ -34,42 +34,41 @@ const createChoicesFromObject = (
 };
 
 // TODO: This should in fact be used in a modified form, but it'll be more like `createScopeFromValues`
-const createLabelsFromObject = (labels: Record<string, LabelAST>) =>
-  Object.entries(labels).map<LabelAST>(([key, value]) => {
-    let content: ContentAST;
-    if (value === null || typeof value === "undefined") {
-      content = { type: "text", text: "" } as ContentTextAST;
-    } else if (typeof value === "string") {
-      content = { type: "text", text: value } as ContentTextAST;
-    } else if (typeof value === "number" || typeof value === "boolean") {
-      content = {
-        type: "text",
-        text: (value as number).toString(),
-      } as ContentTextAST;
-    } else if (Array.isArray(value)) {
-      // TODO: Might make more sense to just render all sequentially?
-      content = createChoicesFromObject(value);
-    } else if (isFunction(value)) {
-      content = {
-        type: "external",
-        callback: value,
-      } as ExternalAST;
-    } else {
-      content = {
-        type: "text",
-        text: `Cannot handle external type (${typeof value}): ${value.toString()}`,
-      } as ContentTextAST;
-    }
-    return {
-      type: "label",
-      mode: "label",
-      name: key,
-      external: true,
-      merge: false,
-      content,
-      signature: [],
-    };
-  });
+const createLabelFromObject = (key: string, value: any): LabelAST => {
+  let content: ContentAST;
+  if (value === null || typeof value === "undefined") {
+    content = { type: "text", text: "" } as ContentTextAST;
+  } else if (typeof value === "string") {
+    content = { type: "text", text: value } as ContentTextAST;
+  } else if (typeof value === "number" || typeof value === "boolean") {
+    content = {
+      type: "text",
+      text: (value as number).toString(),
+    } as ContentTextAST;
+  } else if (Array.isArray(value)) {
+    // TODO: Might make more sense to just render all sequentially?
+    content = createChoicesFromObject(value);
+  } else if (isFunction(value)) {
+    content = {
+      type: "external",
+      callback: value,
+    } as ExternalAST;
+  } else {
+    content = {
+      type: "text",
+      text: `Cannot handle external type (${typeof value}): ${value.toString()}`,
+    } as ContentTextAST;
+  }
+  return {
+    type: "label",
+    mode: "label",
+    name: key,
+    external: true,
+    merge: false,
+    content,
+    signature: [],
+  };
+};
 
 export const parse = (input: string): MainAST => {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
@@ -169,7 +168,7 @@ export const text = (
         }
         const labelName = "OUT" + externalIndex;
         externalIndex++;
-        externals[labelName] = external;
+        externals[labelName] = createLabelFromObject(labelName, external);
         return `${fragment}[$${labelName}]`;
       }
       return fragment;

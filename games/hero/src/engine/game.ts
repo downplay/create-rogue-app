@@ -4,7 +4,7 @@ import { produce } from "immer";
 
 export const REAL_TIME_SPEED = 50;
 export const wait = (ms: number) =>
-  new Promise(resolve => setTimeout(resolve, ms));
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 type Turn = {
   entity: EntityContext;
@@ -45,16 +45,16 @@ export const gameMutations = {
     const time = game.time + delta;
     const newTurn = { time, entity };
 
-    const insertIndex = game.turnQueue.findIndex(turn => turn.time > time);
+    const insertIndex = game.turnQueue.findIndex((turn) => turn.time > time);
     return [
-      produce(game, game => {
+      produce(game, (game) => {
         if (insertIndex === -1) {
           game.turnQueue.push(newTurn);
         } else {
           game.turnQueue.splice(insertIndex, 0, newTurn);
         }
       }),
-      undefined
+      undefined,
     ];
   },
   shiftTurn: () => (game: GameState): [GameState, any] => {
@@ -62,35 +62,35 @@ export const gameMutations = {
       throw new Error("Out of turns!");
     }
     return [
-      produce(game, game => {
+      produce(game, (game) => {
         game.turnQueue.shift();
       }),
-      undefined
+      undefined,
     ];
   },
   advanceTime: (delta: number) => (game: GameState): [GameState, any] => {
     return [
-      produce(game, game => {
+      produce(game, (game) => {
         game.time += delta;
       }),
-      undefined
+      undefined,
     ];
   },
   setPlayerTurn: (playerTurn: boolean) => (
     game: GameState
   ): [GameState, any] => {
     return [
-      produce(game, game => {
+      produce(game, (game) => {
         game.playerTurn = playerTurn;
       }),
-      undefined
+      undefined,
     ];
-  }
+  },
 };
 
 export const gameQueries = {
   findTurn: (entity: EntityContext) => (game: GameState) => {
-    return game.turnQueue.find(turn => turn.entity.id === entity.id);
+    return game.turnQueue.find((turn) => turn.entity.id === entity.id);
   },
   nextTurn: () => (game: GameState) => {
     console.log(game);
@@ -98,7 +98,7 @@ export const gameQueries = {
   },
   isPlayerTurn: () => (game: GameState) => {
     return game.playerTurn;
-  }
+  },
 };
 
 export const onTurn = (handler: (event: TurnEvent) => void) => {

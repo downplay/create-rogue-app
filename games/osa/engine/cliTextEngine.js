@@ -40,30 +40,39 @@ export const cliTextEngine = () => {
           break;
         }
         default:
-          console.log(JSON.stringify(result, null, "  "));
+          console.log(
+            "Unknown result type",
+            JSON.stringify(result, null, "  ")
+          );
       }
     }
   };
 
   const engine = {
     go: (locationName) => {
+      console.log("GOING", locationName);
       const location = context.state.locations[locationName];
       if (!location) {
         throw new Error(`Unknown location: ${locationName}`);
       }
-      nextLocation = locationName;
+      nextLocation = location;
     },
     play: (story, state) => {
       const mainLoop = async () => {
-        const [results, newContext] = stream(story, rng, state, context);
+        const [results, newContext] = currentLocation
+          ? stream(currentLocation.main, rng, currentLocation.state, context)
+          : stream(story, rng, state, context);
         // eslint-disable-next-line no-param-reassign
         context = newContext;
         for (const result of results) {
           await renderResult(result, context);
         }
-        console.log(context);
+        if (nextLocation) {
+          currentLocation = nextLocation;
+          context = undefined;
+        }
         // Either we're waiting for an input, or the game has finished
-        if (!context.finished) {
+        if (!context || !context.finished) {
           mainLoop();
         }
       };
