@@ -176,7 +176,7 @@ const functionCallContent = (label, parameters) => {
       label = label.text;
     }
   }
-  return { type: "call", path: label, parameters };
+  return { type: "invoke", path: label, parameters };
 };
 
 const assignContent = (variable, content) => {

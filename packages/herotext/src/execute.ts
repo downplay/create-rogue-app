@@ -8,6 +8,7 @@ import {
   ChoiceAST,
   LabelAST,
   ContentSubstitutionAST,
+  FunctionInvocationAST,
   ContentAssignmentAST,
   NodeExecutionResult,
   ExecutionResultItem,
@@ -20,7 +21,7 @@ import {
 } from "./types";
 import { RNG } from "./rng";
 import { ExecutionContext } from "./ExecutionContext";
-import { stringifyResult } from "./parse";
+import { stringifyResult, coalesceResult } from "./parse";
 
 type ExecutionOptions = {
   rng?: RNG;
@@ -240,10 +241,14 @@ const resolveLabelPath = (
   context: ExecutionContext,
   strand: ExecutionStrand,
   resolveParent: any,
-  resolveLabels?: Record<string, LabelAST>
+  resolveLabels?: Record<string, LabelAST>,
+  parameters?: ContentAST[]
+  // TODO: returning the label name and `foudn`
 ): [string, any, NodeExecutionResult] => {
   let found;
 
+  // TODO: There's a obug in using childStrand for path ... or maybe in using strand for
+  // internalState ... not sure but both should be the same, seems weird
   const childStrand = strand.children[0] || {
     ...baseStrand(),
     path: "label",
@@ -294,12 +299,88 @@ const resolveLabelPath = (
   // TODO: Some reliable test for "is this something executable like a label or another story?"
   // ...Answer is have a better managed `scope` which knows what type each thing is...
   return typeof found === "object" && found.type
-    ? [labelName, found, executeNode(found, context, childStrand)]
+    ? [
+        labelName,
+        found,
+        parameters
+          ? executeFunctionNodeInvocation(
+              found,
+              parameters,
+              context,
+              childStrand
+            )
+          : executeNode(found, context, childStrand),
+      ]
     : [labelName, found, [found as string]];
 };
 
+const executeFunctionNodeInvocation = (
+  node: LabelAST,
+  parameters: ContentAST[],
+  context: ExecutionContext,
+  strand: ExecutionStrand
+): NodeExecutionResult => {
+  if (node.type !== "label") {
+    throw new Error(
+      "Function invocation must be performed on label, found: " +
+        JSON.stringify(node, null, "  ")
+    );
+  }
+
+  // TODO: If default values are implemented this check will be different
+  if (node.signature.length > parameters.length) {
+    throw new Error(
+      "Label " +
+        node.name +
+        " requires parameter $" +
+        node.signature[parameters.length].name
+    );
+  }
+
+  // Evaluate parameters
+  const parameterValues: NodeExecutionResult[] = strand.internalState || [];
+  let i = 0;
+  let invoke = false;
+  if (strand.children.length) {
+    // Has already executed
+    if (strand.children[0].path === "invoke") {
+      invoke = true;
+    } else {
+      i = strand.children[0].path as number;
+    }
+  }
+  if (!invoke) {
+    while (i < parameters.length) {
+      const paramNode = parameters[i];
+      parameterValues[i] = parameterValues[i] || [];
+      if (!strand.children[0] || strand.children[0].path !== i) {
+        strand.children = [{ ...baseStrand(), path: i }];
+      }
+
+      const result = executeNode(paramNode, context, strand.children[0]);
+      parameterValues[i].push(...result);
+      if (context.suspend) {
+        break;
+      }
+      i++;
+    }
+  }
+
+  // TODO: Also changes with named params
+  const localScope = node.signature.reduce((acc, param, i) => {
+    acc[param.name] = coalesceResult(parameterValues[i]);
+    return acc;
+  }, {} as Record<string, any>);
+
+  if (!invoke) {
+    strand.children[0] = { ...baseStrand(), path: "invoke", localScope };
+  }
+
+  return executeNode(node, context, strand.children[0]);
+};
+
 const executeSubstitutionNode = (
-  node: ContentSubstitutionAST,
+  node: ContentSubstitutionAST | FunctionInvocationAST,
   context: ExecutionContext,
   strand: ExecutionStrand
 ): NodeExecutionResult => {
@@ -324,7 +405,10 @@ const executeSubstitutionNode = (
       context,
       strand.children[0],
       resolveParent,
-      i === 0 ? context.main.labels : undefined
+      i === 0 ? context.main.labels : undefined,
+      i === node.path.length - 1 && node.type === "invoke"
+        ? (node as FunctionInvocationAST).parameters
+        : undefined
     );
     result = results;
     resolveParent = strand.internalState = nextParent;
@@ -439,7 +523,7 @@ executeNode = (
       }
       case "label": {
         // TODO: This is actually ExecuteLabelNode
-        // TODO: Create a new thread context when pathing into label.
+        // TODO: Create a new thread context with scope when pathing into label.
         const label = node as LabelAST;
         if ((label.content as ContentItemAST).type === "choices") {
           if (
@@ -477,6 +561,7 @@ executeNode = (
         }
       }
       case "substitution":
+      case "invoke":
         return executeSubstitutionNode(
           node as ContentSubstitutionAST,
           context,

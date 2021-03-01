@@ -32,6 +32,7 @@ const createChoicesFromObject = (
   } as ContentChoiceAST;
 };
 
+// TODO: This should in fact be used in a modified form, but it'll be more like `createScopeFromValues`
 const createLabelsFromObject = (labels: Record<string, LabelAST>) =>
   Object.entries(labels).map<LabelAST>(([key, value]) => {
     let content: ContentAST;
@@ -65,6 +66,7 @@ const createLabelsFromObject = (labels: Record<string, LabelAST>) =>
       external: true,
       merge: false,
       content,
+      signature: [],
     };
   });
 
@@ -102,15 +104,11 @@ export const stringifyResult = (elements: ExecutionResultItem[]): string => {
   return elements.map(stringifyResultItem).join("");
 };
 
-const matchPreconditions = (
-  choice: ChoiceAST,
-  context: ExecutionContext
-  // TODO: Default positional parameters (from func signature)
-): boolean => {
-  for (const pre of choice.preconditions) {
-    // TODO: Actually check them
-  }
-  return true;
+// TODO: Figure out how scope values work and start supporting non-strings
+export const coalesceResult = (
+  elements: ExecutionResultItem[]
+): string /*| ScopeValue*/ => {
+  return elements.map(stringifyResultItem).join("");
 };
 
 const ParsedTextTemplateIdentifier = Symbol("ParsedTextTemplate");

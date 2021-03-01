@@ -4,6 +4,7 @@ export interface ContentItemAST {
   type:
     | "text"
     | "substitution"
+    | "invoke"
     | "main"
     | "label"
     | "assignment"
@@ -74,7 +75,8 @@ export type FunctionAST = Omit<LabelAST, "type"> & {
 };
 
 export type FunctionInvocationAST = Omit<ContentSubstitutionAST, "type"> & {
-  parameters: Record<string, ContentItemAST>;
+  type: "invoke";
+  parameters: ContentAST[];
 };
 
 export type ExternalAST = ContentItemAST & {
@@ -97,6 +99,12 @@ export type MainAST = {
   labels: Record<string, LabelAST>;
 };
 
+export type SignatureParameterAST = {
+  type: "parameter";
+  name: string;
+  defaultValue?: any;
+};
+
 export type LabelAST = Omit<ContentItemAST, "type"> & {
   type: "label";
   name: string;
@@ -104,6 +112,7 @@ export type LabelAST = Omit<ContentItemAST, "type"> & {
   mode: "label" | "set" | "all";
   merge: boolean;
   content: ContentAST | null;
+  signature: SignatureParameterAST[];
 };
 
 export type ReturnCommand = {

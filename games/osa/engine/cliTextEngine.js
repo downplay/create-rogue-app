@@ -50,7 +50,7 @@ export const cliTextEngine = () => {
       }
       nextLocation = locationName;
     },
-    play: (story, state, context) => {
+    play: (story, state) => {
       const mainLoop = async () => {
         const [results, newContext] = stream(story, rng, state, context);
         // eslint-disable-next-line no-param-reassign
@@ -58,6 +58,7 @@ export const cliTextEngine = () => {
         for (const result of results) {
           await renderResult(result, context);
         }
+        console.log(context);
         // Either we're waiting for an input, or the game has finished
         if (!context.finished) {
           mainLoop();
