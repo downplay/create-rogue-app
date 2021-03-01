@@ -6,7 +6,7 @@ const start = () => {
   const engine = cliTextEngine();
   const baseState = {
     engine,
-    locations: locationInstances,
+    locations: locationInstances(),
   };
   engine.play(Intro, baseState);
 };

@@ -39,8 +39,9 @@ const pickWeighted = <T>(
       return item;
     }
   }
-  // TODO: Is this really expected behaviour?
-  return items[0];
+  // TODO: Not always expected behaviour ... it's a short-term hack for switch-style
+  // lists where the final one is default if none match
+  return items[items.length - 1];
 };
 
 export const createRng = (getter: () => number = () => Math.random()): RNG => {

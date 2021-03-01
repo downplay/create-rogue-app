@@ -1,5 +1,10 @@
 import { text, merge } from "herotext";
 import { baseCommands } from "./commands/baseCommands";
+import {
+  LOCATION_ALLEY,
+  LOCATION_BANK,
+  LOCATION_PIESHOP,
+} from "./locations/locationNames";
 
 const Derek = "Derek";
 const Biscuits = "Biscuits";
@@ -27,9 +32,9 @@ $BeginGame($?)
 ]
 
 BeginGame: ($choice)
-{=1}[$player=${Derek}]$goto(Bedroom)
-{=2}[$player=${Gilly}]$goto(Bar)
-{=3}[$player=${Biscuits}]$goto(Alley)
+{=1}[$player=${Derek}]$goto(${LOCATION_BANK})
+{=2}[$player=${Gilly}]$goto(${LOCATION_PIESHOP})
+{=3}[$player=${Biscuits}]$goto(${LOCATION_ALLEY})
 {0%}Invalid choice, please pick again...$ChooseCharacter
 `
 );

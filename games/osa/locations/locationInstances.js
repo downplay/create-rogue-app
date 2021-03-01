@@ -28,7 +28,7 @@ export const locationInstances = () =>
     location(HighStreetNorth),
     location(HighStreetSouth),
     location(PieShop),
-  ].reduce((loc, acc) => {
+  ].reduce((acc, loc) => {
     acc[loc.name] = loc;
     return acc;
   }, {});

@@ -283,7 +283,9 @@ const resolveLabelPath = (
   }
 
   // Don't try to run labels again next time if something else suspends now...
-  childStrand.path = "labelDone";
+  if (childStrand.path === "label") {
+    childStrand.path = "labelDone";
+  }
 
   const labelName = strand.internalState
     ? (strand.internalState as string)
@@ -310,12 +312,13 @@ const resolveLabelPath = (
     }
   }
 
-  if (found === null || typeof found !== "object") {
+  if (found === null || typeof found === "undefined") {
     return [labelName, found, []];
   }
   // TODO: Some reliable test for "is this something executable like a label or another story?"
   // ...Answer is have a better managed `scope` which knows what type each thing is...
-  if (typeof found === "object" && found.type) {
+  // ...isArray is very broken here as we might just want to have an array...
+  if ((typeof found === "object" && found.type) || Array.isArray(found)) {
     // Logic getting insanely convoluted until this mess is sorted out ...
     // Here we have to drop the localScope *only* if we're about to resolve a label
     // with no function parameters (and it's not an external).
@@ -329,14 +332,11 @@ const resolveLabelPath = (
         localScope: parameters || found.external ? strand.localScope : {},
       };
     }
-
-    return [
-      labelName,
-      found,
-      parameters
-        ? executeFunctionNodeInvocation(found, parameters, context, childStrand)
-        : executeNode(found, context, childStrand),
-    ];
+    console.log("FOUND", found);
+    found = parameters
+      ? executeFunctionNodeInvocation(found, parameters, context, childStrand)
+      : executeNode(found, context, childStrand);
+    return [labelName, found, found];
   } else {
     return [labelName, found, [found as string]];
   }
@@ -436,9 +436,11 @@ const executeSubstitutionNode = (
   }
   while (i < node.path.length) {
     const path = node.path[i];
+
     if (!strand.children[0] || strand.children[0].path !== i) {
       strand.children = [{ ...inheritStrand(strand), path: i }];
     }
+
     const [labelName, nextParent, results] = resolveLabelPath(
       path,
       context,
@@ -510,7 +512,6 @@ const executeExternalNode = (
   strand.children = [childStrand];
   // TODO: Properly convert primitives in ScopeValue objects
   const externalScope = { ...context.state, ...strand.localScope };
-  console.log(externalScope);
   const result = node.callback(externalScope, context, childStrand);
   // Be forgiving with external function results
   return Array.isArray(result) ? result : [result];

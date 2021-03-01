@@ -93,7 +93,6 @@ export const gameQueries = {
     return game.turnQueue.find((turn) => turn.entity.id === entity.id);
   },
   nextTurn: () => (game: GameState) => {
-    console.log(game);
     return game.turnQueue[0];
   },
   isPlayerTurn: () => (game: GameState) => {
