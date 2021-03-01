@@ -54,7 +54,7 @@ const lexer = moo.states({
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },
-    string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|:]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r:|\[\]\{\}])+/,
+    string: /(?:\$\$|\\[\\\[\]\{\}\$|:]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r:|\[\]\{\}])+/,
     newline,
     space,
     "{": { match: "{", push: "precondition" },
@@ -63,30 +63,30 @@ const lexer = moo.states({
     "|": "|",
   },
   group: {
-    string: {
-      match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$|\[\]])+/,
-      lineBreaks: true,
-    },
     assign,
     bassign,
     sub,
     bsub,
     input,
+    string: {
+      match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$|\[\]])+/,
+      lineBreaks: true,
+    },
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     "]": { match: "]", pop: 1 },
     "|": "|",
   },
   nospace: {
-    string: {
-      match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/,
-      lineBreaks: true,
-    },
     assign,
     bassign,
     sub,
     bsub,
     input,
+    string: {
+      match: /(?:\$\$|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/,
+      lineBreaks:false,
+    },
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     "|": "|",
@@ -107,7 +107,7 @@ const lexer = moo.states({
   },
   subpath: {
     path: { match: /\.[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
-    bpath: { match: /\.\[/, push: "sublabel" },
+    bpath: { match: /\.\[/, next: "sublabel" },
     "(": { match: "(", next: "funcparams" },
     pathend: { match: /(?=[^])/, pop: 1, lineBreaks: true }
   },
@@ -119,12 +119,12 @@ const lexer = moo.states({
     bsub,
     input,
     "[": { match: "[", push: "group" },
-    "]": { match: "]", pop: 1 },
+    "]": { match: "]", next: "subpath" },
     "|": "|",
   },
   funcparams: {
     string: {
-      match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
+      match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
       lineBreaks: true,
     },
     sub,
@@ -139,7 +139,7 @@ const lexer = moo.states({
     space,
     number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
     compare: /(?:[<>=!]=?|~=?)/,   
-    string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,=<>!\\\{\}\$\n\r|\[\]])+/,
+    string: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,=<>!\\\{\}\$\n\r|\[\]])+/,
     sub,
     bsub,
     "[": { match: "[", push: "group" },
@@ -178,8 +178,7 @@ const assignContent = (variable, content) => {
 };
 
 const choices = (items) => {
-  if (items.length === 1) {
-    // TODO: Unless some precondition
+  if (items.length === 1 && items[0].preconditions && items[0].preconditions.length === 0) {
     return items[0].content;
   }
   if (items.length === 0) {
@@ -294,8 +293,7 @@ main              -> _ content _                    {% d => main(d[1], []) %}
                   | _ content _ labels _           {% d => main(d[1], d[3]) %}
                   | _ labels _                     {% d => main([], d[1]) %}
 
-labels           -> labelledContent                {% d => [d[0]] %}    
-                  | labels labelledContent         {% d => [...d[0], d[1]] %}
+labels           -> labelledContent:+                {% id %}
 
 labelledContent  -> label _ content _          {% d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3]) %}
 
@@ -368,9 +366,7 @@ substitutionPath  -> %sub                           {% d => [d[0].value] %}
                    | %bsub choices "]" substitutionPathParts
                         {% d => [choices(d[1]), ...d[3]] %}
 
-substitutionPathParts -> substitutionPathPart      {% d => [d[0]] %}  
-                   | substitutionPathParts substitutionPathPart
-                                                    {% d => [...d[0], d[1]] %}
+substitutionPathParts -> substitutionPathPart:+     {% id %}
 
 substitutionPathPart -> %path                       {% d => d[0].value %}
                    | %bpath choices "]"             {% d => choices(d[1]) %}
@@ -383,9 +379,6 @@ parameter         -> choices                        {% d => choices(d[0]) %}
 
 input             -> %input                         {% d => inputContent() %}
 
-_                 -> whitespace | null              {% empty %} 
+_                 -> whitespace:*                   {% empty %} 
 
-whitespace        -> whitespace %newline
-                   | whitespace %space
-                   | %newline
-                   | %space
+whitespace        -> (%newline | %space)            {% empty %}

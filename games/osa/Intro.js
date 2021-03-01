@@ -1,10 +1,13 @@
-import { text } from "herotext";
+import { text, merge } from "herotext";
+import { baseCommands } from "./commands/baseCommands";
 
 const Derek = "Derek";
 const Biscuits = "Biscuits";
 const Gilly = "Gilly";
 
-export const Intro = text`[
+export const Intro = merge(
+  baseCommands,
+  text`[
 O.S.A.: OLD SCHOOL ADVENTURE
 ============================
 
@@ -25,11 +28,12 @@ $BeginGame
 ]
 
 BeginGame:
-{$choice=1}$player=${Derek}$goto(Bedroom)
-{$choice=2}$player=${Gilly}$goto(Bar)
-{$choice=3}$player=${Biscuits}$goto(Alley)
+{$choice=1}[$player=${Derek}]$goto(Bedroom)
+{$choice=2}[$player=${Gilly}]$goto(Bar)
+{$choice=3}[$player=${Biscuits}]$goto(Alley)
 {0%}Invalid choice, please pick again...$ChooseCharacter
-`;
+`
+);
 console.log(JSON.stringify(Intro, null, "  "));
 // $<OPTION([1. Derek, the Mild Mannered Office Worker],[$player=${Derek}]${(
 //   _,

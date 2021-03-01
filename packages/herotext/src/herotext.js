@@ -58,7 +58,7 @@ const lexer = moo.states({
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },
-    string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|:]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r:|\[\]\{\}])+/,
+    string: /(?:\$\$|\\[\\\[\]\{\}\$|:]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r:|\[\]\{\}])+/,
     newline,
     space,
     "{": { match: "{", push: "precondition" },
@@ -67,30 +67,30 @@ const lexer = moo.states({
     "|": "|",
   },
   group: {
-    string: {
-      match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$|\[\]])+/,
-      lineBreaks: true,
-    },
     assign,
     bassign,
     sub,
     bsub,
     input,
+    string: {
+      match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$|\[\]])+/,
+      lineBreaks: true,
+    },
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     "]": { match: "]", pop: 1 },
     "|": "|",
   },
   nospace: {
-    string: {
-      match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/,
-      lineBreaks: true,
-    },
     assign,
     bassign,
     sub,
     bsub,
     input,
+    string: {
+      match: /(?:\$\$|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/,
+      lineBreaks:false,
+    },
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     "|": "|",
@@ -111,7 +111,7 @@ const lexer = moo.states({
   },
   subpath: {
     path: { match: /\.[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
-    bpath: { match: /\.\[/, push: "sublabel" },
+    bpath: { match: /\.\[/, next: "sublabel" },
     "(": { match: "(", next: "funcparams" },
     pathend: { match: /(?=[^])/, pop: 1, lineBreaks: true }
   },
@@ -123,12 +123,12 @@ const lexer = moo.states({
     bsub,
     input,
     "[": { match: "[", push: "group" },
-    "]": { match: "]", pop: 1 },
+    "]": { match: "]", next: "subpath" },
     "|": "|",
   },
   funcparams: {
     string: {
-      match: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
+      match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
       lineBreaks: true,
     },
     sub,
@@ -143,7 +143,7 @@ const lexer = moo.states({
     space,
     number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
     compare: /(?:[<>=!]=?|~=?)/,   
-    string: /(?:\$\$|\[\[|\]\]|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,=<>!\\\{\}\$\n\r|\[\]])+/,
+    string: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,=<>!\\\{\}\$\n\r|\[\]])+/,
     sub,
     bsub,
     "[": { match: "[", push: "group" },
@@ -182,8 +182,7 @@ const assignContent = (variable, content) => {
 };
 
 const choices = (items) => {
-  if (items.length === 1) {
-    // TODO: Unless some precondition
+  if (items.length === 1 && items[0].preconditions && items[0].preconditions.length === 0) {
     return items[0].content;
   }
   if (items.length === 0) {
@@ -296,8 +295,9 @@ var grammar = {
     {"name": "main", "symbols": ["_", "content", "_"], "postprocess": d => main(d[1], [])},
     {"name": "main", "symbols": ["_", "content", "_", "labels", "_"], "postprocess": d => main(d[1], d[3])},
     {"name": "main", "symbols": ["_", "labels", "_"], "postprocess": d => main([], d[1])},
-    {"name": "labels", "symbols": ["labelledContent"], "postprocess": d => [d[0]]},
-    {"name": "labels", "symbols": ["labels", "labelledContent"], "postprocess": d => [...d[0], d[1]]},
+    {"name": "labels$ebnf$1", "symbols": ["labelledContent"]},
+    {"name": "labels$ebnf$1", "symbols": ["labels$ebnf$1", "labelledContent"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "labels", "symbols": ["labels$ebnf$1"], "postprocess": id},
     {"name": "labelledContent", "symbols": ["label", "_", "content", "_"], "postprocess": d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3])},
     {"name": "label$ebnf$1", "symbols": [(lexer.has("space") ? {type: "space"} : space)], "postprocess": id},
     {"name": "label$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
@@ -349,20 +349,21 @@ var grammar = {
     {"name": "substitutionPath", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", {"literal":"]"}], "postprocess": d => [choices(d[1])]},
     {"name": "substitutionPath", "symbols": [(lexer.has("sub") ? {type: "sub"} : sub), "substitutionPathParts"], "postprocess": d => [d[0].value, ...d[1]]},
     {"name": "substitutionPath", "symbols": [(lexer.has("bsub") ? {type: "bsub"} : bsub), "choices", {"literal":"]"}, "substitutionPathParts"], "postprocess": d => [choices(d[1]), ...d[3]]},
-    {"name": "substitutionPathParts", "symbols": ["substitutionPathPart"], "postprocess": d => [d[0]]},
-    {"name": "substitutionPathParts", "symbols": ["substitutionPathParts", "substitutionPathPart"], "postprocess": d => [...d[0], d[1]]},
+    {"name": "substitutionPathParts$ebnf$1", "symbols": ["substitutionPathPart"]},
+    {"name": "substitutionPathParts$ebnf$1", "symbols": ["substitutionPathParts$ebnf$1", "substitutionPathPart"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "substitutionPathParts", "symbols": ["substitutionPathParts$ebnf$1"], "postprocess": id},
     {"name": "substitutionPathPart", "symbols": [(lexer.has("path") ? {type: "path"} : path)], "postprocess": d => d[0].value},
     {"name": "substitutionPathPart", "symbols": [(lexer.has("bpath") ? {type: "bpath"} : bpath), "choices", {"literal":"]"}], "postprocess": d => choices(d[1])},
     {"name": "parameters", "symbols": ["parameter"], "postprocess": d => [d[0]]},
     {"name": "parameters", "symbols": ["parameters", {"literal":","}, "parameter"], "postprocess": d => [...d[0], d[2]]},
     {"name": "parameter", "symbols": ["choices"], "postprocess": d => choices(d[0])},
     {"name": "input", "symbols": [(lexer.has("input") ? {type: "input"} : input)], "postprocess": d => inputContent()},
-    {"name": "_", "symbols": ["whitespace"]},
-    {"name": "_", "symbols": [], "postprocess": empty},
-    {"name": "whitespace", "symbols": ["whitespace", (lexer.has("newline") ? {type: "newline"} : newline)]},
-    {"name": "whitespace", "symbols": ["whitespace", (lexer.has("space") ? {type: "space"} : space)]},
-    {"name": "whitespace", "symbols": [(lexer.has("newline") ? {type: "newline"} : newline)]},
-    {"name": "whitespace", "symbols": [(lexer.has("space") ? {type: "space"} : space)]}
+    {"name": "_$ebnf$1", "symbols": []},
+    {"name": "_$ebnf$1", "symbols": ["_$ebnf$1", "whitespace"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "_", "symbols": ["_$ebnf$1"], "postprocess": empty},
+    {"name": "whitespace$subexpression$1", "symbols": [(lexer.has("newline") ? {type: "newline"} : newline)]},
+    {"name": "whitespace$subexpression$1", "symbols": [(lexer.has("space") ? {type: "space"} : space)]},
+    {"name": "whitespace", "symbols": ["whitespace$subexpression$1"], "postprocess": empty}
 ]
   , ParserStart: "main"
 }

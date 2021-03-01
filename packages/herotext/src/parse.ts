@@ -169,6 +169,7 @@ export const text = (
           return fragment;
         }
         const labelName = "OUT" + externalIndex;
+        externalIndex++;
         externals[labelName] = external;
         return `${fragment}[$${labelName}]`;
       }
