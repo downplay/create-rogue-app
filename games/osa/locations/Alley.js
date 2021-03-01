@@ -10,7 +10,7 @@ You find yourself in a dark and dingy alleyway in the bad part of town. [{$playe
 you are very much accustomed to calling "home".]
 
 ShortDescription:
-A dark, (smelly|dank|filthy) alleyway.
+A dark, [smelly|dank|filthy|rubbish-filled] alleyway.
 
 LOOK WEST:
 To the West you hear the familiar bustle of the High Street.

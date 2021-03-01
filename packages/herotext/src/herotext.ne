@@ -69,7 +69,6 @@ const lexer = moo.states({
     },
     assign,
     bassign,
-    // func,
     sub,
     bsub,
     input,
@@ -90,9 +89,8 @@ const lexer = moo.states({
     input,
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
-    "]": { match: "]", pop: 1 },
     "|": "|",
-    space: { match: /(?=[ \t\r\n])/, lineBreaks: true, pop: 1 },
+    nospaceend: { match: /(?=[^])/, lineBreaks: true, pop: 1 },
   },
   labelend: {
     newline: { ...newline, pop: 1 },
@@ -356,10 +354,10 @@ part              -> string                         {% d => textContent(d[0]) %}
 
 string            -> %string                        {% d => d[0].value %}
 
-assignment        -> %assign choices %space         {% d => assignContent(d[0].value, d[1]) %}
-                   | %bassign choices %space        {% d => assignContent(d[0].value, d[1]) %}
+assignment        -> %assign choices %nospaceend    {% d => assignContent(d[0].value, d[1]) %}
+                   | %bassign choices %nospaceend   {% d => assignContent(d[0].value, d[1]) %}
 
-substitution      -> substitutionPath %pathend             {% d => subContent(d[0]) %}
+substitution      -> substitutionPath %pathend      {% d => subContent(d[0]) %}
 
 functionCall      -> substitutionPath "(" parameters ")"   {% d => functionCallContent(d[0], d[2]) %}
 
