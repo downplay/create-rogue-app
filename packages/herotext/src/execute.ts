@@ -133,6 +133,9 @@ const matchPreconditions = (
   context: ExecutionContext,
   strand: ExecutionStrand
 ) => {
+  if (choice.preconditions.length === 0) {
+    return true;
+  }
   // TODO: Gets a bit more complicated if suspensions are allowed inside expression values
   // TODO: Way more things to consider like AND/OR, math, all sorts
   for (const pre of choice.preconditions) {
@@ -180,6 +183,7 @@ const matchPreconditions = (
       return true;
     }
   }
+  return false;
 };
 
 const executeChoicesNode = (
@@ -192,20 +196,26 @@ const executeChoicesNode = (
   if (strand.children[0]) {
     chosen = choices[strand.children[0].path as number];
   } else {
-    chosen = context.rng.pick<ChoiceAST>(choices, (choice) =>
-      // TODO: Logic might need to be a bit more intricate than this; some weird
-      // cases might be afoot. Failing precondition maybe means item should be excluded from list
-      // altogether.
-      matchPreconditions(choice, context, strand) ? choice.weight : 0
+    // Check all preconditions first to find a filtered list
+    const filtered = choices.filter((choice) =>
+      matchPreconditions(choice, context, strand)
     );
-    strand.children = [
-      {
-        ...inheritStrand(strand),
-        path: choices.indexOf(chosen), // TODO: indexOf doesn't scale
-      },
-    ];
+    if (filtered.length === 1) {
+      chosen = filtered[0];
+    } else if (filtered.length > 1) {
+      // TODO: preconditions could optionally modify weight, leave that for another day
+      chosen = context.rng.pick<ChoiceAST>(filtered, "weight");
+    }
+    if (chosen) {
+      strand.children = [
+        {
+          ...inheritStrand(strand),
+          path: choices.indexOf(chosen), // TODO: indexOf doesn't scale so great
+        },
+      ];
+    }
   }
-  return executeNode(chosen.content, context, strand.children[0]);
+  return chosen ? executeNode(chosen.content, context, strand.children[0]) : [];
 };
 
 const executeChoicesNodeAll = (
@@ -332,7 +342,6 @@ const resolveLabelPath = (
         localScope: parameters || found.external ? strand.localScope : {},
       };
     }
-    console.log("FOUND", found);
     found = parameters
       ? executeFunctionNodeInvocation(found, parameters, context, childStrand)
       : executeNode(found, context, childStrand);
@@ -397,7 +406,7 @@ const executeFunctionNodeInvocation = (
   }
 
   if (context.suspend) {
-    return parameterValues[i];
+    return [parameterValues[i][parameterValues[i].length - 1]];
   }
 
   // TODO: Also changes with named params

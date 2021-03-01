@@ -97,6 +97,12 @@ const stringifyResultItem = (element: string | ReturnCommand): string => {
   if (typeof element === "string") {
     return element;
   }
+  if (typeof element === "number" || typeof element === "boolean") {
+    return (element as number).toString();
+  }
+  if (Array.isArray(element)) {
+    return element.map(stringifyResultItem).join("");
+  }
   return "?";
 };
 

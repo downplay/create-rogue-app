@@ -3,13 +3,13 @@ import { parse } from "../index";
 it("Parses simple string", () => {
   expect(parse("Quick brown fox")).toEqual({
     content: { text: "Quick brown fox", type: "text" },
-    labels: [],
+    labels: {},
     type: "main",
   });
 
   expect(parse("Quick (brown) fox")).toEqual({
     content: { text: "Quick (brown) fox", type: "text" },
-    labels: [],
+    labels: {},
     type: "main",
   });
 });
@@ -17,7 +17,7 @@ it("Parses simple string", () => {
 it("Parses group", () => {
   expect(parse("[Group]")).toEqual({
     content: { text: "Group", type: "text" },
-    labels: [],
+    labels: {},
     type: "main",
   });
 
@@ -26,7 +26,7 @@ it("Parses group", () => {
       { text: "Text ", type: "text" },
       { text: "Group", type: "text" },
     ],
-    labels: [],
+    labels: {},
     type: "main",
   });
 });
@@ -50,7 +50,7 @@ it("Parses choices", () => {
       ],
       type: "choices",
     },
-    labels: [],
+    labels: {},
     type: "main",
   });
 });
@@ -65,15 +65,16 @@ hello world
 `)
   ).toEqual({
     content: { text: "main content", type: "text" },
-    labels: [
-      {
+    labels: {
+      label: {
         content: { text: "hello world", type: "text" },
         name: "label",
         type: "label",
         merge: false,
+        signature: [],
         mode: "label",
       },
-    ],
+    },
     type: "main",
   });
   expect(

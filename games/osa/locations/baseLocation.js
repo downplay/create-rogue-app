@@ -1,7 +1,8 @@
 import { text } from "herotext";
 
-export const baseLocation = text`You are in a buggy place.
-{0%}Buggy place.
+export const baseLocation = text`
+{$visitedBefore!=true}$LongDescription[$visitedBefore=true]
+{$visitedBefore=true}$ShortDescription
 
 Name:
 Bugged

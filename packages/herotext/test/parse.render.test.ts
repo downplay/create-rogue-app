@@ -1,16 +1,19 @@
-import { text } from "../index";
+import { text, render } from "../index";
 import { mockRng } from "./testUtils";
 
 it("Renders simple string", () => {
   const rng = mockRng();
-  expect(text`Quick brown fox`.render(rng)).toEqual("Quick brown fox");
-  expect(text`[Quick brown fox]`.render(rng)).toEqual("Quick brown fox");
+  expect(render(text`Quick brown fox`, rng)).toEqual("Quick brown fox");
+  expect(render(text`[Quick brown fox]`, rng)).toEqual("Quick brown fox");
   expect(
-    text`[Quick
+    render(
+      text`[Quick
 brown
-fox]`.render(rng)
+fox]`,
+      rng
+    )
   ).toEqual("Quick\nbrown\nfox");
-  expect(text`Quick [brown] fox`.render(rng)).toEqual("Quick brown fox");
+  expect(render(text`Quick [brown] fox`, rng)).toEqual("Quick brown fox");
 });
 
 it("Renders simple choices", () => {
@@ -18,8 +21,8 @@ it("Renders simple choices", () => {
   let parsed = text`[You win|You lose]`;
   // TODO: figure out nospace word choices? (no preconds)
   // let parsed = text`You win|lose`;
-  expect(parsed.render(rng)).toEqual("You lose");
-  expect(parsed.render(rng)).toEqual("You win");
+  expect(render(parsed, rng)).toEqual("You lose");
+  expect(render(parsed, rng)).toEqual("You win");
   parsed = text`
 [Group
 multi|choice
@@ -28,9 +31,9 @@ list]
 multi|line
 list]
 `;
-  expect(parsed.render(rng)).toEqual("Second\nmulti");
+  expect(render(parsed, rng)).toEqual("Second\nmulti");
   rng.raw();
-  expect(parsed.render(rng)).toEqual("choice\nlist");
+  expect(render(parsed, rng)).toEqual("choice\nlist");
 });
 
 it("Renders grouped choices", () => {
@@ -144,23 +147,29 @@ it("Assigns variables", () => {
 it("Assigns variables with label syntax", () => {
   const rng = mockRng([0.25, 0.75]);
   expect(
-    text`Call a $tool a $tool
+    render(
+      text`Call a $tool a $tool
 
 tool:=
 spade
-hammer`.render(rng)
+hammer`,
+      rng
+    )
   ).toEqual("Call a spade a spade");
 });
 
 it("Executes all with + and ~ labels", () => {
   const rng = mockRng([0.25, 0.75]);
   expect(
-    text`$countdown
+    render(
+      text`$countdown
 
 countdown:+
 3...
 2...
-1...`.render(rng)
+1...`,
+      rng
+    )
   ).toEqual("3...2...1...");
 });
 
@@ -174,10 +183,10 @@ demo:
 {80%}More likely
 {10%}Doesn't actually have to add up to 100...
 `;
-  expect(fixture.render(rng)).toEqual("Only 20% chance");
-  expect(fixture.render(rng)).toEqual("Only 20% chance");
-  expect(fixture.render(rng)).toEqual("More likely");
-  expect(fixture.render(rng)).toEqual(
+  expect(render(fixture, rng)).toEqual("Only 20% chance");
+  expect(render(fixture, rng)).toEqual("Only 20% chance");
+  expect(render(fixture, rng)).toEqual("More likely");
+  expect(render(fixture, rng)).toEqual(
     "Doesn't actually have to add up to 100..."
   );
 });
@@ -185,7 +194,11 @@ demo:
 it("Performs substitution inside label names", () => {
   const rng = mockRng([0.25, 0.75, 0.75, 0.25]);
 
-  const fixture = text`The $animal=cat|dog goes $[[$animal]Noise]
+  const fixture = text`The $animal goes $[[$animal]Noise]
+
+animal:=
+cat
+dog
 
 catNoise:
 meow
@@ -195,41 +208,47 @@ dogNoise:
 woof
 bark`;
 
-  expect(fixture.render(rng)).toEqual("The cat goes purr");
-  expect(fixture.render(rng)).toEqual("The dog goes woof");
+  expect(render(fixture, rng)).toEqual("The cat goes purr");
+  expect(render(fixture, rng)).toEqual("The dog goes woof");
 });
 
 it("Interpolates external variables", () => {
   const rng = mockRng();
   const color = "brown";
-  expect(text`Quick ${color} fox`.render(rng)).toEqual("Quick brown fox");
+  expect(render(text`Quick ${color} fox`, rng)).toEqual("Quick brown fox");
   const answer = 42;
-  expect(text`The answer is ${answer}`.render(rng)).toEqual("The answer is 42");
+  expect(render(text`The answer is ${answer}`, rng)).toEqual(
+    "The answer is 42"
+  );
 });
 
-type RepeatProps = {
-  count: number;
-};
+// type RepeatProps = {
+//   count: number;
+// };
 
-it.skip("Calls label functions", () => {
+it("Calls label functions", () => {
   const rng = mockRng();
   expect(
-    text`
+    render(
+      text`
 $repeat(NaN) Batman!
 
-repeat: (word)
+repeat: ($word)
 $word$word$word$word$word$word$word$word
-`.render(rng)
+`,
+      rng
+    )
   ).toEqual("NaNNaNNaNNaNNaNNaNNaNNaN Batman!");
 
-  expect(
-    text`
-$repeat(NaN,<8>) Batman!
+  // TODO: Almost...
+  //   expect(
+  //     text`
+  // $repeat(NaN,<8>) Batman!
 
-repeat: (word,count)
-{count>0}$word$repeat($word,<${({ count }: RepeatProps) => count - 1}>)
-`.render(rng)
-  ).toEqual("NaNNaNNaNNaNNaNNaNNaNNaN Batman!");
+  // repeat: (word,count)
+  // {count>0}$word$repeat($word,<${({ count }: RepeatProps) => count - 1}>)
+  // `.render(rng)
+  //   ).toEqual("NaNNaNNaNNaNNaNNaNNaNNaN Batman!");
 });
 
 type FooProps = {
@@ -240,7 +259,9 @@ it("Calls external functions", () => {
   const rng = mockRng();
   const capitalize = (text: string) => text.toLocaleUpperCase();
   expect(
-    text`$foo=bar ${({ foo }: FooProps) => capitalize(foo)} black sheep`.render(
+    render(
+      text`[$foo=bar]$foo ${({ foo }: FooProps) =>
+        capitalize(foo)} black sheep`,
       rng
     )
   ).toEqual("bar BAR black sheep");

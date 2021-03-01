@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { buildRng, RNG } from "herotext";
+import { createRng, RNG } from "herotext";
 
 export const useRng = (): RNG => {
   // Some reqs.
@@ -9,6 +9,6 @@ export const useRng = (): RNG => {
   //  - Good algo
   // Cheating: for now just Math.random()
   return useMemo<RNG>(() => {
-    return buildRng();
+    return createRng();
   }, []);
 };

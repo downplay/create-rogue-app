@@ -27,7 +27,8 @@ export const cliTextEngine = () => {
       return;
     }
     if (typeof result === "string") {
-      process.stdout.write(result);
+      // process.stdout.write(result);
+      console.log(result);
     } else {
       switch (result.type) {
         case "input": {
@@ -50,7 +51,6 @@ export const cliTextEngine = () => {
 
   const engine = {
     go: (locationName) => {
-      console.log(context.state.locations);
       const location = context.state.locations[locationName];
       if (!location) {
         throw new Error(`Unknown location: ${locationName}`);
@@ -59,9 +59,6 @@ export const cliTextEngine = () => {
     },
     play: (story, state) => {
       const mainLoop = async () => {
-        if (currentLocation) {
-          console.log("LOCATION: ", currentLocation.name);
-        }
         const [results, newContext] = currentLocation
           ? stream(currentLocation.main, rng, currentLocation.state, context)
           : stream(story, rng, state, context);

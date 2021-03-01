@@ -1,4 +1,4 @@
-import { RNG, buildRng } from "../src/rng";
+import { RNG, createRng } from "../src/rng";
 export const mockRng = (
   sequence: number[] = [0, 0.25, 0.5, 0.75, 0.9999]
 ): RNG => {
@@ -8,5 +8,5 @@ export const mockRng = (
     pos = (pos + 1) % sequence.length;
     return result;
   };
-  return buildRng(next);
+  return createRng(next);
 };
