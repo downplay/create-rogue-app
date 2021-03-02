@@ -16,6 +16,7 @@ import {
   ScopeValue,
 } from "./types";
 import grammar from "./herotext";
+import { ComplexValue } from "./types";
 
 const errorMain = (message: string): MainAST => ({
   type: "main",
@@ -35,12 +36,13 @@ const createChoicesFromObject = (
 
 // TODO: This should in fact be used in a modified form, but it'll be more like `createScopeFromValues`
 const createLabelFromObject = (key: string, value: any): LabelAST => {
-  let content: ContentAST;
+  let content: ContentAST | ScopeValue;
   if (value === null || typeof value === "undefined") {
     content = { type: "text", text: "" } as ContentTextAST;
   } else if (typeof value === "string") {
     content = { type: "text", text: value } as ContentTextAST;
   } else if (typeof value === "number" || typeof value === "boolean") {
+    // TODO: Should be primitive scope types
     content = {
       type: "text",
       text: (value as number).toString(),
@@ -56,11 +58,15 @@ const createLabelFromObject = (key: string, value: any): LabelAST => {
   } else if (value.type) {
     // TODO: More thorough checks whether it's a valid AST or ScopeValue
     content = value as ContentAST;
-  } else {
+  } else if (typeof value === "object") {
     content = {
-      type: "text",
-      text: `Cannot handle external type (${typeof value}): ${value.toString()}`,
-    } as ContentTextAST;
+      type: "complex",
+      value,
+    } as ComplexValue;
+  } else {
+    throw new Error(
+      `Cannot handle external type (${typeof value}): ${JSON.stringify(value)}`
+    );
   }
   return {
     type: "label",
@@ -113,6 +119,12 @@ const stringifyResultItem = (element: ExecutionResultItem): string => {
   if (Array.isArray(element)) {
     return element.map(stringifyResultItem).join("");
   }
+  if (element.type) {
+    switch (element.type) {
+      case "complex":
+        return JSON.stringify(element.value);
+    }
+  }
   return `<Error: Not stringifiable ${JSON.stringify(element, null, "  ")}>`;
 };
 
@@ -122,6 +134,28 @@ export const stringifyResult = (elements: ExecutionResultItem[]): string => {
 
 // TODO: Figure out how scope values work and start supporting non-strings
 export const coalesceResult = (elements: ExecutionResultItem[]): ScopeValue => {
+  const flattened: ScopeValue[] = [];
+  for (const element of elements) {
+    if (Array.isArray(element)) {
+      const sub = coalesceResult(element as ExecutionResultItem[]);
+      flattened.push(sub);
+    } else if (
+      typeof element === "string" ||
+      typeof element === "number" ||
+      typeof element === "boolean"
+    ) {
+      flattened.push(element);
+    } else if (element && element.type && element.type !== "input") {
+      flattened.push(element.value as ScopeValue);
+    } else {
+      flattened.push(stringifyResultItem(element));
+    }
+  }
+  if (flattened.length === 1) {
+    return flattened[0];
+  }
+  // Multiple results, all that really makes sense is stringifying
+  // TODO: (well... maybe we actually want to return a list, if it was an array *primitive*
   return elements.map(stringifyResultItem).join("");
 };
 

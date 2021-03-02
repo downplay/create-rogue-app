@@ -91,9 +91,9 @@ export const cliTextEngine = () => {
           // TODO: Display a close/restart window
           process.exit(0);
         } else {
-          const input = (await ui.readChars()).toUpperCase();
-          if (input && currentLocation.main.labels[input]) {
-            nextMove = input;
+          const input = await ui.readChars();
+          if (input && currentLocation.main.labels[input.toUpperCase()]) {
+            nextMove = input.toUpperCase();
           } else {
             nextMove = undefined;
             ui.write(

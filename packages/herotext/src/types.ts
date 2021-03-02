@@ -79,31 +79,34 @@ export type StoryInstance = {
   globalScope: Record<string, ScopeValue>;
 };
 
+// TODO: Passing around stories by reference (e.g. for an instance spawner)
 export type PrimitiveValue = {
-  type:
-    | "string"
-    | "number"
-    | "boolean"
-    | "array"
-    | "object"
-    | "story"
-    | "instance";
+  type: "string" | "number" | "boolean" | "array" | /*| "story"*/ "instance";
   value:
     | string
     | number
     | boolean
     | PrimitiveValue[]
     | Record<string, PrimitiveValue>
-    | MainAST
+    // | MainAST
     | StoryInstance;
 };
 
+export type ComplexValue = {
+  type: "complex";
+  value: Record<string, ScopeValue>;
+};
+
 export type ScopeValue =
+  | null
   | string
   | number
   | boolean
+  | StoryInstance
+  | ComplexValue
   | PrimitiveValue
   | ScopeValue[];
+// | Record<string, ScopeValue>;
 
 export type ExternalAST = ContentItemAST & {
   type: "external";
@@ -138,7 +141,7 @@ export type LabelAST = Omit<ContentItemAST, "type"> & {
   external: boolean;
   mode: "label" | "set" | "all";
   merge: boolean;
-  content: ContentAST | null;
+  content: ContentAST | ScopeValue | null;
 };
 
 export type ReturnCommand = {
@@ -159,7 +162,14 @@ export type ExecutionStrand = {
   internalState?: any;
 };
 
-export type ExecutionResultItem = null | ScopeValue | ReturnCommand;
+export type ExecutionResultItem =
+  | null
+  | string
+  | number
+  | boolean
+  | PrimitiveValue
+  | ComplexValue
+  | ReturnCommand;
 
 export type ExecutionResult = [NodeExecutionResult, ExecutionContext];
 

@@ -1,5 +1,6 @@
 import { text } from "herotext";
 import {
+  LOCATION_ALLEY,
   LOCATION_HIGHSTREETNORTH,
   LOCATION_HIGHSTREETSOUTH,
 } from "./locationNames";
@@ -17,6 +18,9 @@ The bottom end of the High St.
 
 GO NORTH:
 $goto(${LOCATION_HIGHSTREETNORTH})
+
+GO EAST:
+$goto(${LOCATION_ALLEY})
 
 GO SOUTH:
 The wall is too high.

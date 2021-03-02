@@ -22,7 +22,7 @@ import {
 import { RNG } from "./rng";
 import { ExecutionContext } from "./ExecutionContext";
 import { stringifyResult, coalesceResult } from "./parse";
-import { FunctionAST } from "./types";
+import { FunctionAST, ComplexValue, PrimitiveValue } from "./types";
 
 // TODO: command line param
 const debug = (...parts: any) => {};
@@ -330,6 +330,7 @@ const resolveLabelPath = (
   if (found === null || typeof found === "undefined") {
     return [labelName, found, []];
   }
+
   // TODO: Some reliable test for "is this something executable like a label or another story?"
   // ...Answer is have a better managed `scope` which knows what type each thing is...
   // ...isArray is very broken here as we might just want to have an array...
@@ -481,7 +482,12 @@ const executeSubstitutionNode = (
     }
     resolveParent = strand.internalState = nextParent;
     if (i < node.path.length - 1 && typeof resolveParent !== "object") {
-      throw new Error(`Label path ${labelName} not found`);
+      // TODO: Resolve the whole path so we can say what the next path is
+      throw new Error(
+        `Label path ${labelName}:${typeof resolveParent} has no child properties: ${JSON.stringify(
+          resolveParent
+        )}`
+      );
     }
     i++;
   }
@@ -506,16 +512,19 @@ const executeAssignmentNode = (
   // TODO: Variable could also be content that needs resolving
   if (context.suspend) {
     const command = result[result.length - 1];
-    strand.internalState =
-      (strand.internalState || "") +
-      stringifyResult(result.slice(0, result.length - 1));
+    strand.internalState = [
+      ...(strand.internalState || []),
+      ...result.slice(0, result.length - 1),
+    ];
     return [command];
   } else {
     // TODO: We won't always want to stringify the result. Could assign a number, an entity,
     // a label ref, etc etc. Just automatically stringify if there are any text components,
     // maybe have an &= operator for storing references specifically.
-    context.state[node.variable] =
-      (strand.internalState || "") + stringifyResult(result);
+    context.state[node.variable] = coalesceResult([
+      ...(strand.internalState || []),
+      ...result,
+    ]);
     return [context.state[node.variable]];
   }
 };
@@ -565,7 +574,7 @@ const executeInputNode = (
 };
 
 executeNode = (
-  node: ContentAST | null,
+  node: ContentAST | PrimitiveValue | ComplexValue | null,
   context: ExecutionContext,
   strand: ExecutionStrand
 ): NodeExecutionResult => {
@@ -585,6 +594,8 @@ executeNode = (
     switch (node.type) {
       case "text":
         return executeTextNode(node as ContentTextAST);
+      case "complex":
+        return [(node as unknown) as ComplexValue];
       case "choices":
         return executeChoicesNode(node as ContentChoiceAST, context, strand);
       case "main": {
@@ -630,7 +641,7 @@ executeNode = (
             return results;
           }
         } else {
-          return executeNode(label.content, context, strand);
+          return executeNode(label.content as ContentAST, context, strand);
         }
       }
       case "substitution":

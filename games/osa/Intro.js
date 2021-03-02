@@ -6,9 +6,9 @@ import {
   LOCATION_PIESHOP,
 } from "./locations/locationNames";
 
-const Derek = "Derek";
-const Biscuits = { name: "Biscuits" };
-const Gilly = "Gilly";
+const Derek = { name: "Derek", gender: "male" };
+const Biscuits = { name: "Biscuits", gender: "neutral" };
+const Gilly = { name: "Gilly", gender: "female" };
 
 export const Intro = merge(
   baseCommands,

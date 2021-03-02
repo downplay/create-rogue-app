@@ -12,7 +12,7 @@ Bugged
 
 Description:
 {$visitedBefore!=true}$LongDescription$null($visitedBefore=true)
-{$visitedBefore=true}$ShortDescription
+{$visitedBefore==true}$ShortDescription
 
 LongDescription:
 You are in a very buggy place.
