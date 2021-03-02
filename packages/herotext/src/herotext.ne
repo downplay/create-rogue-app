@@ -1,6 +1,6 @@
 @{%
 
-//const moo = require("moo");
+const moo = require("moo");
 
 const assign = {
   match: /\$[a-zA-Z0-9]+=/,
