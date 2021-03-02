@@ -43,6 +43,7 @@ export type PreconditionAST = {
   // TODO: Cna generate this list automatically from `operators` const?
   operator:
     | "eq"
+    | "eqeq"
     | "gt"
     | "gteq"
     | "lt"

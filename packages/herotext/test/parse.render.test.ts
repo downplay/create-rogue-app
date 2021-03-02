@@ -1,7 +1,7 @@
 import { text, render } from "../index";
 import { mockRng } from "./testUtils";
 
-it.only("Renders simple string", () => {
+it("Renders simple string", () => {
   const rng = mockRng();
   expect(render(text`Quick brown fox`, rng)).toEqual("Quick brown fox");
   expect(render(text`[Quick brown fox]`, rng)).toEqual("Quick brown fox");
@@ -31,7 +31,7 @@ it.skip("Renders blank lines", () => {
   ).toEqual("");
 });
 
-it.only("Renders simple choices", () => {
+it("Renders simple choices", () => {
   const rng = mockRng([0.75, 0.25]);
   let parsed = text`[You win|You lose]`;
   // TODO: figure out nospace word choices? (no preconds)
@@ -51,7 +51,7 @@ list]
   expect(render(parsed, rng)).toEqual("choice\nlist");
 });
 
-it.only("Renders grouped choices", () => {
+it("Renders grouped choices", () => {
   const rng = mockRng([0.5, 0.67, 0.6, 0, 0, 0, 0.9, 0.5, 0.39]);
   const parsed = text`[Quick|Slow] [brown|blue|paisley] [fox|rabbit|dog|cat|mouse]`;
   expect(render(parsed, rng)).toEqual("Slow paisley cat");
@@ -59,7 +59,7 @@ it.only("Renders grouped choices", () => {
   expect(render(parsed, rng)).toEqual("Slow blue rabbit");
 });
 
-it.only("Picks from list", () => {
+it("Picks from list", () => {
   const rng = mockRng([0.5, 0.8]);
   const parsed = text`
 foo
@@ -79,8 +79,8 @@ foo
 two:
 bar
 `;
-  expect(parsed.render(rng, undefined, "one")).toEqual("foo");
-  expect(parsed.render(rng, undefined, "two")).toEqual("bar");
+  expect(render(parsed, rng, undefined, "one")).toEqual("foo");
+  expect(render(parsed, rng, undefined, "two")).toEqual("bar");
 });
 
 it("Substitutes labels", () => {
@@ -90,25 +90,30 @@ it("Substitutes labels", () => {
 bar:
 Baz
 Barry`;
-  expect(parsed.render(rng)).toEqual("Foo Baz");
+  expect(render(parsed, rng)).toEqual("Foo Baz");
   parsed = text`Foo $[foo bar]
 
 foo bar:
 Baz
 Barry`;
-  expect(parsed.render(rng)).toEqual("Foo Baz");
+  expect(render(parsed, rng)).toEqual("Foo Baz");
 });
 
 it("Performs label substitution", () => {
   const rng = mockRng();
   expect(
-    text`Hello $planet
+    render(
+      text`Hello $planet
   
 planet:
-world`.render(rng)
+world`,
+      rng
+    )
   ).toEqual("Hello world");
 });
 
+// TODO: Should be in a separate parse.merge.test.ts ?
+// (Also test labels merging together instead of overriding)
 it("Merges labels from other templates", () => {
   const rng = mockRng();
   const baseLabels = text`
@@ -119,13 +124,13 @@ this is a test
 
 ${baseLabels}`;
 
-  expect(mainText.render(rng)).toEqual("this is a test");
+  expect(render(mainText, rng)).toEqual("this is a test");
 
   const overrideLabels = text`
 test:
 this is another test
 `;
-  expect(text`$test${baseLabels}${overrideLabels}`.render(rng)).toEqual(
+  expect(render(text`$test${baseLabels}${overrideLabels}`, rng)).toEqual(
     "this is another test"
   );
 
@@ -135,25 +140,27 @@ ${baseLabels}
 
 test:
 the final test`;
-  expect(overrideText.render(rng)).toEqual("the final test");
+  expect(render(overrideText, rng)).toEqual("the final test");
 });
 
 it("Assigns variables", () => {
   const rng = mockRng([0.75, 0.25]);
   // TODO: Test context from stream contains variable
   expect(
-    text`The $animal=dog was a good $animal`.render(rng, { animal: "" })
+    render(text`The $animal=dog was a good $animal`, rng, { animal: "" })
   ).toEqual("The dog was a good dog");
   expect(
-    text`The $animal=kitty|mouse|badger was a bad $animal`.render(rng)
+    render(text`The $animal=kitty|mouse|badger was a bad $animal`, rng)
   ).toEqual("The badger was a bad badger");
   expect(
-    text`The $animal=[naughty kitty|tiny mouse|bad badger] was a very $animal`.render(
+    render(
+      text`The $animal=[naughty kitty|tiny mouse|bad badger] was a very $animal`,
       rng
     )
   ).toEqual("The naughty kitty was a very naughty kitty");
   expect(
-    text`See $[animal name]=Spot|Cosmonaught|Shablongy run. Run $[animal name] run.`.render(
+    render(
+      text`See $[animal name]=Spot|Cosmonaught|Shablongy run. Run $[animal name] run.`,
       rng
     )
   ).toEqual("See Shablongy run. Run Shablongy run.");
@@ -175,17 +182,14 @@ hammer`,
 
 it("Executes all with + and ~ labels", () => {
   const rng = mockRng([0.25, 0.75]);
-  expect(
-    render(
-      text`$countdown
+  // TODO: implement ~ label
+  const fixture = text`$countdown
 
 countdown:+
 3...
 2...
-1...`,
-      rng
-    )
-  ).toEqual("3...2...1...");
+1...`;
+  expect(render(fixture, rng)).toEqual("3...2...1...");
 });
 
 it("Honours preconditions", () => {
@@ -227,7 +231,7 @@ bark`;
   expect(render(fixture, rng)).toEqual("The dog goes woof");
 });
 
-it.only("Interpolates external variables", () => {
+it("Interpolates external variables", () => {
   const rng = mockRng();
   const color = "brown";
   expect(render(text`Quick ${color} fox`, rng)).toEqual("Quick brown fox");
@@ -241,7 +245,7 @@ it.only("Interpolates external variables", () => {
 //   count: number;
 // };
 
-it.only("Calls label functions", () => {
+it("Calls label functions", () => {
   const rng = mockRng();
   expect(
     render(
@@ -270,13 +274,12 @@ type FooProps = {
   foo: string;
 };
 
-it.only("Calls external functions", () => {
+it("Calls external functions", () => {
   const rng = mockRng();
   const capitalize = (text: string) => text.toLocaleUpperCase();
   expect(
     render(
-      text`[$foo=bar]$foo ${({ foo }: FooProps) =>
-        capitalize(foo)} black sheep`,
+      text`[$foo=bar] ${({ foo }: FooProps) => capitalize(foo)} black sheep`,
       rng
     )
   ).toEqual("bar BAR black sheep");

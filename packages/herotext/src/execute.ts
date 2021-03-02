@@ -152,10 +152,12 @@ const matchPreconditions = (
     const rightValue = valueOfExpression(pre.right, context, strand);
     let passed = false;
     switch (pre.operator) {
+      // TODO: Not sure if this is the best way to handle coersion ... would be better with no difference
       case "eq":
-        // TODO: Consider difference of === or ==. = and == ?
-        // TODO: Cheap hack for now using == to get around string/number difference
         passed = leftValue == rightValue;
+        break;
+      case "eqeq":
+        passed = leftValue === rightValue;
         break;
       case "noteq":
         passed = leftValue != rightValue;
@@ -236,6 +238,7 @@ const executeChoicesNodeAll = (
     if (!strand.children[0] || strand.children[0].path !== i) {
       strand.children = [{ ...inheritStrand(strand), path: i }];
     }
+
     // TODO: We might even need to suspend during precondition matching. Or could
     // just throw an error? Gets super messy otherwise...
     if (!matchPreconditions(choice, context, strand.children[0])) {
@@ -247,6 +250,7 @@ const executeChoicesNodeAll = (
     if (context.suspend) {
       break;
     }
+    i++;
   }
   return results;
 };
@@ -423,7 +427,7 @@ const executeFunctionNodeInvocation = (
     if (typeof parameterValues[i] !== "undefined") {
       acc[param.name] = coalesceResult(parameterValues[i]);
     }
-    debug("Parameter", param.name, acc[param.name]);
+    debug("Parameter", param.name, acc[param.name], node.name);
     return acc;
   }, {} as Record<string, any>);
 
@@ -512,8 +516,7 @@ const executeAssignmentNode = (
     // maybe have an &= operator for storing references specifically.
     context.state[node.variable] =
       (strand.internalState || "") + stringifyResult(result);
-    // Return nothing after completed assignment
-    return [];
+    return [context.state[node.variable]];
   }
 };
 

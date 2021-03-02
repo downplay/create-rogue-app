@@ -27,13 +27,16 @@ plural: ($word)
 ${({ word }: AProps) => pluralise(word)}
 
 slice: ($word,$start?,$end?)
-${({ word, start, end }: AProps) => word.slice(start, end)}
+${({ word, start, end }: AProps) => {
+  const result = word.slice(
+    typeof start === "undefined" ? undefined : Number(start),
+    typeof end === "undefined" ? undefined : Number(end)
+  );
+  return result;
+}}
 
 null:
-{10%}[|]
+{}
 `;
-
 // ^ weird hack to allow a null entry.
-// didn't even work.
 // TODO: Implement comments
-// TODO: Also implement a way to intentionally have an empty label.

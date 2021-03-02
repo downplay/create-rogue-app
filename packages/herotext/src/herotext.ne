@@ -219,7 +219,7 @@ const choice = (content, preconditions) => {
 };
 
 const operators = {
-  "==": "eq",
+  "==": "eqeq",
   "=": "eq",
   ">": "gt",
   ">=": "gteq",
