@@ -1,18 +1,6 @@
-// import chalk from "chalk";
-import { stream, createRng } from "herotext";
-import { gui } from "./gui";
+import { stream, createRng, render, text } from "herotext";
 
-// const inputChars = (prompt = "?") =>
-//   new Promise((resolve) => {
-//     const rl = readline.createInterface({
-//       input: process.stdin,
-//       output: process.stdout,
-//     });
-//     rl.question(prompt, (answer) => {
-//       rl.close();
-//       resolve(answer.trim());
-//     });
-//   });
+import { gui } from "./gui";
 
 export const cliTextEngine = () => {
   const ui = gui();
@@ -75,6 +63,7 @@ export const cliTextEngine = () => {
           : stream(story, rng, state, context);
         // eslint-disable-next-line no-param-reassign
         context = newContext;
+        nextMove = undefined;
         if (currentLocation) {
           currentLocation.state = context.state;
         } else {
@@ -103,11 +92,17 @@ export const cliTextEngine = () => {
           process.exit(0);
         } else {
           const input = (await ui.readChars()).toUpperCase();
-          if (currentLocation.main.labels[input]) {
+          if (input && currentLocation.main.labels[input]) {
             nextMove = input;
           } else {
             nextMove = undefined;
-            ui.write("I don't know how to do that $player.name");
+            ui.write(
+              render(
+                text`I don't know how to do that, $player.name.`,
+                rng,
+                baseState
+              )
+            );
           }
           mainLoop();
         }
