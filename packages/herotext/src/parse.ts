@@ -53,6 +53,9 @@ const createLabelFromObject = (key: string, value: any): LabelAST => {
       type: "external",
       callback: value,
     } as ExternalAST;
+  } else if (value.type) {
+    // TODO: More thorough checks whether it's a valid AST or ScopeValue
+    content = value as ContentAST;
   } else {
     content = {
       type: "text",

@@ -128,13 +128,15 @@ const lexer = moo.states({
     "|": "|",
   },
   funcparams: {
+    //assign,
+    //bassign,
+    sub,
+    bsub,
+    input,
     string: {
       match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
       lineBreaks: true,
     },
-    sub,
-    bsub,
-    input,
     ",": ",",
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },

@@ -6,7 +6,7 @@ Name:
 ${LOCATION_ALLEY}
 
 LongDescription:
-You find yourself in a dark and dingy alleyway in the bad part of town. [{$player.name==Disco}An alleyway
+You find yourself in a dark and dingy alleyway in the bad part of town. [{$player.name==Biscuits}An alleyway
 you are very much accustomed to calling "home".]
 
 ShortDescription:

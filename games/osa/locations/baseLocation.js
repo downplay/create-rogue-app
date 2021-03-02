@@ -1,15 +1,18 @@
 import { text } from "herotext";
 
+// TODO: Support truthy clauses...
+// {!$visited}$LongDescription[$visited=true]
+// {0%}$ShortDescription
+
 export const baseLocation = text`
-{$visitedBefore!=true}$LongDescription[$visitedBefore=true]
-{$visitedBefore=true}$ShortDescription
+$Description
 
 Name:
 Bugged
 
 Description:
-{!$visited}$LongDescription[$visited=true]
-{0%}$ShortDescription
+{$visitedBefore!=true}$LongDescription$null($visitedBefore=true)
+{$visitedBefore=true}$ShortDescription
 
 LongDescription:
 You are in a very buggy place.

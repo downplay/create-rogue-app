@@ -7,7 +7,7 @@ import {
 } from "./locations/locationNames";
 
 const Derek = "Derek";
-const Biscuits = "Biscuits";
+const Biscuits = { name: "Biscuits" };
 const Gilly = "Gilly";
 
 export const Intro = merge(
@@ -28,14 +28,15 @@ ChooseCharacter:
 1. Derek, the Mild Mannered Office Worker
 2. Gilly "the Grass Snake", a Rogue and a Wanderer
 3. Biscuits, a Street Cat
-$BeginGame($?)
-]
+$BeginGame($?)]
 
 BeginGame: ($choice)
-{=1}[$player=${Derek}]$goto(${LOCATION_BANK})
-{=2}[$player=${Gilly}]$goto(${LOCATION_PIESHOP})
-{=3}[$player=${Biscuits}]$goto(${LOCATION_ALLEY})
-{0%}Invalid choice, please pick again...$ChooseCharacter
+{1}$null([$player=${Derek}])$goto(${LOCATION_BANK})
+{2}$null([$player=${Gilly}])$goto(${LOCATION_PIESHOP})
+{3}[$player=${Biscuits}]$goto(${LOCATION_ALLEY})
+{0%}[
+I don't know that option...
+$ChooseCharacter]
 `
 );
 
