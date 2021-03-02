@@ -66,7 +66,6 @@ const createLabelFromObject = (key: string, value: any): LabelAST => {
     external: true,
     merge: false,
     content,
-    signature: [],
   };
 };
 
@@ -81,7 +80,9 @@ export const parse = (input: string): MainAST => {
     console.error(error);
     throw new Error("Unparseable text");
   }
-  const main = (parsed.results[0] as unknown) as MainAST;
+  const main: MainAST = parsed.results[0]
+    ? ((parsed.results[0] as unknown) as MainAST)
+    : { type: "main", content: null, labels: {} };
   if (Object.keys(main.labels).some((name) => name.startsWith("OUT"))) {
     console.error("Labels beginning with OUT are reserved for external calls:");
     console.error(input);
@@ -93,7 +94,13 @@ export const parse = (input: string): MainAST => {
   return main;
 };
 
-const stringifyResultItem = (element: string | ReturnCommand): string => {
+const stringifyResultItem = (element: ExecutionResultItem): string => {
+  if (element === null) {
+    return "";
+  }
+  if (typeof element === "undefined") {
+    return "<undefined>";
+  }
   if (typeof element === "string") {
     return element;
   }
@@ -103,7 +110,7 @@ const stringifyResultItem = (element: string | ReturnCommand): string => {
   if (Array.isArray(element)) {
     return element.map(stringifyResultItem).join("");
   }
-  return "?";
+  return `<Error: Not stringifiable ${JSON.stringify(element, null, "  ")}>`;
 };
 
 export const stringifyResult = (elements: ExecutionResultItem[]): string => {

@@ -1,7 +1,7 @@
 import { text, render } from "../index";
 import { mockRng } from "./testUtils";
 
-it("Renders simple string", () => {
+it.only("Renders simple string", () => {
   const rng = mockRng();
   expect(render(text`Quick brown fox`, rng)).toEqual("Quick brown fox");
   expect(render(text`[Quick brown fox]`, rng)).toEqual("Quick brown fox");
@@ -16,7 +16,22 @@ fox]`,
   expect(render(text`Quick [brown] fox`, rng)).toEqual("Quick brown fox");
 });
 
-it("Renders simple choices", () => {
+it.skip("Renders blank lines", () => {
+  const rng = mockRng();
+  expect(render(text``, rng)).toEqual("");
+  expect(render(text`{}`, rng)).toEqual("");
+  expect(
+    render(
+      text`$blank
+  
+  blank:
+  []`,
+      rng
+    )
+  ).toEqual("");
+});
+
+it.only("Renders simple choices", () => {
   const rng = mockRng([0.75, 0.25]);
   let parsed = text`[You win|You lose]`;
   // TODO: figure out nospace word choices? (no preconds)
@@ -36,23 +51,23 @@ list]
   expect(render(parsed, rng)).toEqual("choice\nlist");
 });
 
-it("Renders grouped choices", () => {
+it.only("Renders grouped choices", () => {
   const rng = mockRng([0.5, 0.67, 0.6, 0, 0, 0, 0.9, 0.5, 0.39]);
   const parsed = text`[Quick|Slow] [brown|blue|paisley] [fox|rabbit|dog|cat|mouse]`;
-  expect(parsed.render(rng)).toEqual("Slow paisley cat");
-  expect(parsed.render(rng)).toEqual("Quick brown fox");
-  expect(parsed.render(rng)).toEqual("Slow blue rabbit");
+  expect(render(parsed, rng)).toEqual("Slow paisley cat");
+  expect(render(parsed, rng)).toEqual("Quick brown fox");
+  expect(render(parsed, rng)).toEqual("Slow blue rabbit");
 });
 
-it("Picks from list", () => {
+it.only("Picks from list", () => {
   const rng = mockRng([0.5, 0.8]);
   const parsed = text`
 foo
 bar
 baz
   `;
-  expect(parsed.render(rng)).toEqual("bar");
-  expect(parsed.render(rng)).toEqual("baz");
+  expect(render(parsed, rng)).toEqual("bar");
+  expect(render(parsed, rng)).toEqual("baz");
 });
 
 it("Renders labels", () => {

@@ -104,6 +104,7 @@ const lexer = moo.states({
   labelparams: {
     // TODO: support spaces in var names
     varname: { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1)},
+    "?": "?",
     ",": ",",
     ")": { match: ")", pop: 1 },
     space,
@@ -271,7 +272,7 @@ const label = (name, items, mode, merge = false, signature = []) => ({
   signature,
 });
 
-const signatureParam = (name, defaultValue) => ({ type: "param", name, defaultValue });
+const signatureParam = (name, optional, defaultValue) => ({ type: "param", name, optional, defaultValue });
 
 const inputContent = (value) => ({ type: "input" });
 
@@ -316,8 +317,11 @@ var grammar = {
     {"name": "labelType", "symbols": [(lexer.has("labelmerge") ? {type: "labelmerge"} : labelmerge)], "postprocess": d => [d[0].value, "label", true]},
     {"name": "labelType", "symbols": [(lexer.has("labeleqmerge") ? {type: "labeleqmerge"} : labeleqmerge)], "postprocess": d => [d[0].value, "set", true]},
     {"name": "labelType", "symbols": [(lexer.has("labelplusmerge") ? {type: "labelplusmerge"} : labelplusmerge)], "postprocess": d => [d[0].value, "all", true]},
-    {"name": "signature", "symbols": [(lexer.has("varname") ? {type: "varname"} : varname)], "postprocess": d => [signatureParam(d[0].value)]},
-    {"name": "signature", "symbols": ["signature", "_", {"literal":","}, "_", (lexer.has("varname") ? {type: "varname"} : varname)], "postprocess": d => [...d[0], signatureParam(d[4].value)]},
+    {"name": "signature", "symbols": ["signatureParam"], "postprocess": d => [d[0]]},
+    {"name": "signature", "symbols": ["signature", "_", {"literal":","}, "_", "signatureParam"], "postprocess": d => [...d[0], d[4]]},
+    {"name": "signatureParam$ebnf$1", "symbols": [{"literal":"?"}], "postprocess": id},
+    {"name": "signatureParam$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "signatureParam", "symbols": [(lexer.has("varname") ? {type: "varname"} : varname), "signatureParam$ebnf$1"], "postprocess": d => signatureParam(d[0].value, d[1] && true)},
     {"name": "content$ebnf$1", "symbols": ["line"]},
     {"name": "content$ebnf$1", "symbols": ["content$ebnf$1", "line"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "content", "symbols": ["content$ebnf$1"], "postprocess": id},

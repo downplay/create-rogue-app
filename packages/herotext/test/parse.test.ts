@@ -1,5 +1,13 @@
 import { parse } from "../index";
 
+it("Parses empty string", () => {
+  expect(parse("")).toEqual({
+    content: null,
+    labels: {},
+    type: "main",
+  });
+});
+
 it("Parses simple string", () => {
   expect(parse("Quick brown fox")).toEqual({
     content: { text: "Quick brown fox", type: "text" },

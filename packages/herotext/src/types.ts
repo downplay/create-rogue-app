@@ -64,14 +64,8 @@ export type ContentChoiceAST = {
   content: ChoiceAST[];
 };
 
-export type FunctionASTParameter = {
-  name: string;
-  defaultValue: ContentItemAST;
-};
-
-export type FunctionAST = Omit<LabelAST, "type"> & {
-  type: "function";
-  parameters: FunctionASTParameter[];
+export type FunctionAST = LabelAST & {
+  signature: SignatureParameterAST[];
 };
 
 export type FunctionInvocationAST = Omit<ContentSubstitutionAST, "type"> & {
@@ -134,6 +128,7 @@ export type SignatureParameterAST = {
   type: "parameter";
   name: string;
   defaultValue?: any;
+  optional: boolean;
 };
 
 export type LabelAST = Omit<ContentItemAST, "type"> & {
@@ -143,7 +138,6 @@ export type LabelAST = Omit<ContentItemAST, "type"> & {
   mode: "label" | "set" | "all";
   merge: boolean;
   content: ContentAST | null;
-  signature: SignatureParameterAST[];
 };
 
 export type ReturnCommand = {
@@ -164,7 +158,7 @@ export type ExecutionStrand = {
   internalState?: any;
 };
 
-export type ExecutionResultItem = string | ReturnCommand;
+export type ExecutionResultItem = null | ScopeValue | ReturnCommand;
 
 export type ExecutionResult = [NodeExecutionResult, ExecutionContext];
 

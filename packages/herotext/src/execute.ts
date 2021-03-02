@@ -22,6 +22,7 @@ import {
 import { RNG } from "./rng";
 import { ExecutionContext } from "./ExecutionContext";
 import { stringifyResult, coalesceResult } from "./parse";
+import { FunctionAST } from "./types";
 
 // TODO: command line param
 const debug = (...parts: any) => {};
@@ -178,12 +179,12 @@ const matchPreconditions = (
         passed = !matchValue(leftValue, rightValue);
         break;
     }
-    if (passed) {
-      // First level preconditions are OR for now, return immediately on first pass
-      return true;
+    if (!passed) {
+      // First level preconditions are AND for now, return immediately on first pass
+      return false;
     }
   }
-  return false;
+  return true;
 };
 
 const executeChoicesNode = (
@@ -352,7 +353,7 @@ const resolveLabelPath = (
 };
 
 const executeFunctionNodeInvocation = (
-  node: LabelAST,
+  node: FunctionAST,
   parameters: ContentAST[],
   context: ExecutionContext,
   strand: ExecutionStrand
@@ -366,14 +367,21 @@ const executeFunctionNodeInvocation = (
     );
   }
 
-  // TODO: If default values are implemented this check will be different
-  if (node.signature.length > parameters.length) {
+  if (!node.signature || node.signature.length === 0) {
     throw new Error(
       "Label " +
         node.name +
-        " requires parameter $" +
-        node.signature[parameters.length].name
+        " has no parameters so cannot be called as a function"
     );
+  }
+
+  // TODO: Still need to implement actual default values
+  for (const i in node.signature) {
+    if (!node.signature[i].optional && typeof parameters[i] === "undefined") {
+      throw new Error(
+        "Label " + node.name + " requires parameter $" + node.signature[i].name
+      );
+    }
   }
 
   // Evaluate parameters
@@ -412,7 +420,10 @@ const executeFunctionNodeInvocation = (
   // TODO: Also changes with named params
   // TODO: Buffer in internal state?
   const localScope = node.signature.reduce((acc, param, i) => {
-    acc[param.name] = coalesceResult(parameterValues[i]);
+    if (typeof parameterValues[i] !== "undefined") {
+      acc[param.name] = coalesceResult(parameterValues[i]);
+    }
+    debug("Parameter", param.name, acc[param.name]);
     return acc;
   }, {} as Record<string, any>);
 

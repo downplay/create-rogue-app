@@ -100,6 +100,7 @@ const lexer = moo.states({
   labelparams: {
     // TODO: support spaces in var names
     varname: { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1)},
+    "?": "?",
     ",": ",",
     ")": { match: ")", pop: 1 },
     space,
@@ -267,7 +268,7 @@ const label = (name, items, mode, merge = false, signature = []) => ({
   signature,
 });
 
-const signatureParam = (name, defaultValue) => ({ type: "param", name, defaultValue });
+const signatureParam = (name, optional, defaultValue) => ({ type: "param", name, optional, defaultValue });
 
 const inputContent = (value) => ({ type: "input" });
 
@@ -298,7 +299,7 @@ main              -> _ content _           {% d => main(d[1], []) %}
 
 labels           -> labelledContent:+      {% id %}
 
-labelledContent  -> label _ content _        {% d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3]) %}
+labelledContent  -> label _ content _      {% d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3]) %}
 
 # TODO: Shouldn't allow a signature on label types that don't support (e.g. eq)
 label             -> labelType %space:? %newline                {% id %}
@@ -312,8 +313,11 @@ labelType         -> %label                {% d => [d[0].value, "label"] %}
                    | %labelplusmerge       {% d => [d[0].value, "all", true] %}
 
 # TODO: Default values
-signature         -> %varname                       {% d => [signatureParam(d[0].value)] %}
-                   | signature _ "," _ %varname     {% d => [...d[0], signatureParam(d[4].value)] %}
+signature         -> signatureParam        {% d => [d[0]] %}
+                   | signature _ "," _ signatureParam 
+                                           {% d => [...d[0], d[4]] %}
+
+signatureParam    -> %varname "?":?        {% d => signatureParam(d[0].value, d[1] && true) %}
 
 content           -> line:+                         {% id %}
 
