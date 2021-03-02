@@ -212,7 +212,7 @@ bark`;
   expect(render(fixture, rng)).toEqual("The dog goes woof");
 });
 
-it("Interpolates external variables", () => {
+it.only("Interpolates external variables", () => {
   const rng = mockRng();
   const color = "brown";
   expect(render(text`Quick ${color} fox`, rng)).toEqual("Quick brown fox");
@@ -226,7 +226,7 @@ it("Interpolates external variables", () => {
 //   count: number;
 // };
 
-it("Calls label functions", () => {
+it.only("Calls label functions", () => {
   const rng = mockRng();
   expect(
     render(
@@ -255,7 +255,7 @@ type FooProps = {
   foo: string;
 };
 
-it("Calls external functions", () => {
+it.only("Calls external functions", () => {
   const rng = mockRng();
   const capitalize = (text: string) => text.toLocaleUpperCase();
   expect(

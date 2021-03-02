@@ -11,14 +11,20 @@ it("Streams simple string", () => {
       suspend: false,
       error: false,
       state: {},
+      rng,
       main,
+      root: {
+        children: [],
+        localScope: {},
+        path: "",
+      },
     }),
   ]);
 });
 
 it.skip("Accepts input", () => {
   const rng = mockRng();
-  const main = text`Input something\: $input=$?`;
+  const main = text`[Input something: $input=$?]`;
   const bailResult = stream(main, rng);
   expect(bailResult).toEqual([
     [

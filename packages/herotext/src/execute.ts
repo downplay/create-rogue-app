@@ -24,8 +24,8 @@ import { ExecutionContext } from "./ExecutionContext";
 import { stringifyResult, coalesceResult } from "./parse";
 
 // TODO: command line param
-// const debug = (...parts: any) => {};
-const debug = (...parts: any) => console.log(...parts);
+const debug = (...parts: any) => {};
+// const debug = (...parts: any) => console.log(...parts);
 
 type ExecutionOptions = {
   rng?: RNG;

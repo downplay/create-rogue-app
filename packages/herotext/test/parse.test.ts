@@ -93,37 +93,41 @@ merge label
 
 `)
   ).toEqual({
-    content: { text: "", type: "text" },
-    labels: [
-      {
+    content: null,
+    labels: {
+      label1: {
         content: { text: "normal label", type: "text" },
         name: "label1",
         type: "label",
         mode: "label",
         merge: false,
+        signature: [],
       },
-      {
+      label2: {
         content: { text: "setter label", type: "text" },
         name: "label2",
         type: "label",
         mode: "set",
         merge: false,
+        signature: [],
       },
-      {
+      label3: {
         content: { text: "all label", type: "text" },
         name: "label3",
         type: "label",
         mode: "all",
         merge: false,
+        signature: [],
       },
-      {
+      label4: {
         content: { text: "merge label", type: "text" },
         name: "label4",
         type: "label",
         mode: "label",
         merge: true,
+        signature: [],
       },
-    ],
+    },
     type: "main",
   });
 });

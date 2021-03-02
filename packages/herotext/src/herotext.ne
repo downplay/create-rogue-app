@@ -1,6 +1,6 @@
 @{%
 
-const moo = require("moo");
+//const moo = require("moo");
 
 const assign = {
   match: /\$[a-zA-Z0-9]+=/,
@@ -179,11 +179,11 @@ const assignContent = (variable, content) => {
 };
 
 const choices = (items) => {
+  if (!items || items.length === 0) {
+    return null;
+  }
   if (items.length === 1 && items[0].preconditions && items[0].preconditions.length === 0) {
     return items[0].content;
-  }
-  if (items.length === 0) {
-    return null;
   }
   return { type: "choices", content: items };
 };
@@ -203,15 +203,17 @@ const main = (content, labels) => ({
   labels: labelsObject(labels),
 });
 
-const choice = (content, preconditions = []) => {
+const choice = (content, preconditions) => {
   const result = { type: "choice", content, weight: 10, preconditions: [] };
-  preconditions.forEach((cond) => {
-    if (/*cond.type === "number" || */ cond.type === "percent") {
-      result.weight = cond.value;
-    } else {
-      result.preconditions.push(cond);
-    }
-  });
+  if (preconditions) {
+    preconditions.forEach((cond) => {
+      if (/*cond.type === "number" || */ cond.type === "percent") {
+        result.weight = cond.value;
+      } else {
+        result.preconditions.push(cond);
+      }
+    });
+  }
   return result;
 };
 
@@ -290,13 +292,13 @@ const flatParts = (a) => (a.length === 1 ? a[0] : a);
 
 @lexer lexer
 
-main              -> _ content _                    {% d => main(d[1], []) %}
-                  | _ content _ labels _           {% d => main(d[1], d[3]) %}
-                  | _ labels _                     {% d => main([], d[1]) %}
+main              -> _ content _           {% d => main(d[1], []) %}
+                  | _ content _ labels     {% d => main(d[1], d[3]) %}
+                  | _ labels               {% d => main([], d[1]) %}
 
-labels           -> labelledContent:+                {% id %}
+labels           -> labelledContent:+      {% id %}
 
-labelledContent  -> label _ content _          {% d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3]) %}
+labelledContent  -> label _ content _        {% d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3]) %}
 
 # TODO: Shouldn't allow a signature on label types that don't support (e.g. eq)
 label             -> labelType %space:? %newline                {% id %}
@@ -313,20 +315,20 @@ labelType         -> %label                {% d => [d[0].value, "label"] %}
 signature         -> %varname                       {% d => [signatureParam(d[0].value)] %}
                    | signature _ "," _ %varname     {% d => [...d[0], signatureParam(d[4].value)] %}
 
-content           -> line                           {% d => [d[0]] %}
-                   | content line                   {% d => [...d[0], d[1]] %}
+content           -> line:+                         {% id %}
 
-line              -> choice %newline                {% id %}
+# Lines can be observed as empty only if they begin will an (allowably empty) precondition
+line              -> preconditions parts %newline  {% d => choice(d[1], d[0]) %}
+                   | requiredParts %newline         {% d => choice(d[0]) %}
 
 group             -> "[" choices "]"                {% d => choices(d[1]) %}
 
 choices           -> choice                         {% d => [d[0]] %}                         
                     | choices "|" choice            {% d => [...d[0], d[2]] %}
 
-choice            -> preconditions flatParts        {% d => choice(d[1], d[0]) %}
-                   | flatParts                      {% d => choice(d[0]) %}
+choice            -> preconditions:? parts      {% d => choice(d[1], d[0]) %}
 
-preconditions     -> "{" conditions "}"             {% d => d[1] %}
+preconditions     -> "{" conditions:? "}"             {% d => d[1] || [] %}
 
 conditions        -> condition                      {% d => [d[0]] %}                     
                    | conditions "," condition       {% d => [...d[0], d[2]] %}
@@ -337,12 +339,11 @@ condition         -> conditionValue                 {% d => soloValueComparison(
                                                     {% d => preComparison(d[0], d[1].value, d[2]) %}
 
 conditionValue    -> %number                        {% d => numberValue(d[0].value) %}
-                   | parts                          {% d => compoundValue(d[0]) %}
+                   | requiredParts                  {% d => compoundValue(d[0]) %}
 
-flatParts         -> parts                          {% d => flatParts(d[0]) %}
+parts             -> part:*                         {% d => flatParts(d[0] || []) %}
 
-parts             -> part                           {% d => [d[0]] %}
-                   | parts part                     {% d => [...d[0], d[1]] %}
+requiredParts     -> part:+                         {% d => flatParts(d[0]) %}
 
 part              -> string                         {% d => textContent(d[0]) %}
                    | assignment                     {% id %}

@@ -183,11 +183,11 @@ const assignContent = (variable, content) => {
 };
 
 const choices = (items) => {
+  if (!items || items.length === 0) {
+    return null;
+  }
   if (items.length === 1 && items[0].preconditions && items[0].preconditions.length === 0) {
     return items[0].content;
-  }
-  if (items.length === 0) {
-    return null;
   }
   return { type: "choices", content: items };
 };
@@ -207,13 +207,15 @@ const main = (content, labels) => ({
   labels: labelsObject(labels),
 });
 
-const choice = (content, preconditions = []) => {
+const choice = (content, preconditions) => {
   const result = { type: "choice", content, weight: 10, preconditions: [] };
-  preconditions.forEach((cond) => {
-    if (/*cond.type === "number" || */ cond.type === "percent") {
-      result.weight = cond.value;
-    } else {
-      result.preconditions.push(cond);
+  if (preconditions) {
+    preconditions.forEach((cond) => {
+      if (/*cond.type === "number" || */ cond.type === "percent") {
+        result.weight = cond.value;
+      } else {
+        result.preconditions.push(cond);
+      }
     }
   });
   return result;
@@ -299,7 +301,7 @@ var grammar = {
     {"name": "labels$ebnf$1", "symbols": ["labelledContent"]},
     {"name": "labels$ebnf$1", "symbols": ["labels$ebnf$1", "labelledContent"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "labels", "symbols": ["labels$ebnf$1"], "postprocess": id},
-    {"name": "labelledContent", "symbols": ["label", "_", "content", "_"], "postprocess": d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3])},
+    {"name": "labelledContent", "symbols": ["label", "content", "_"], "postprocess": d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3])},
     {"name": "label$ebnf$1", "symbols": [(lexer.has("space") ? {type: "space"} : space)], "postprocess": id},
     {"name": "label$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "label", "symbols": ["labelType", "label$ebnf$1", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": id},
@@ -318,12 +320,14 @@ var grammar = {
     {"name": "signature", "symbols": ["signature", "_", {"literal":","}, "_", (lexer.has("varname") ? {type: "varname"} : varname)], "postprocess": d => [...d[0], signatureParam(d[4].value)]},
     {"name": "content", "symbols": ["line"], "postprocess": d => [d[0]]},
     {"name": "content", "symbols": ["content", "line"], "postprocess": d => [...d[0], d[1]]},
-    {"name": "line", "symbols": ["choice", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": id},
+    {"name": "line", "symbols": ["preconditions", "parts", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => choice(d[1], d[0])},
+    {"name": "line", "symbols": ["requiredParts", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => choice(d[0])},
     {"name": "group", "symbols": [{"literal":"["}, "choices", {"literal":"]"}], "postprocess": d => choices(d[1])},
     {"name": "choices", "symbols": ["choice"], "postprocess": d => [d[0]]},
     {"name": "choices", "symbols": ["choices", {"literal":"|"}, "choice"], "postprocess": d => [...d[0], d[2]]},
-    {"name": "choice", "symbols": ["preconditions", "flatParts"], "postprocess": d => choice(d[1], d[0])},
-    {"name": "choice", "symbols": ["flatParts"], "postprocess": d => choice(d[0])},
+    {"name": "choice$ebnf$1", "symbols": ["preconditions"], "postprocess": id},
+    {"name": "choice$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "choice", "symbols": ["choice$ebnf$1", "parts"], "postprocess": d => choice(d[1], d[0])},
     {"name": "preconditions", "symbols": [{"literal":"{"}, "conditions", {"literal":"}"}], "postprocess": d => d[1]},
     {"name": "conditions", "symbols": ["condition"], "postprocess": d => [d[0]]},
     {"name": "conditions", "symbols": ["conditions", {"literal":","}, "condition"], "postprocess": d => [...d[0], d[2]]},
@@ -332,9 +336,12 @@ var grammar = {
     {"name": "condition", "symbols": ["conditionValue", (lexer.has("compare") ? {type: "compare"} : compare), "conditionValue"], "postprocess": d => preComparison(d[0], d[1].value, d[2])},
     {"name": "conditionValue", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": d => numberValue(d[0].value)},
     {"name": "conditionValue", "symbols": ["parts"], "postprocess": d => compoundValue(d[0])},
-    {"name": "flatParts", "symbols": ["parts"], "postprocess": d => flatParts(d[0])},
-    {"name": "parts", "symbols": ["part"], "postprocess": d => [d[0]]},
-    {"name": "parts", "symbols": ["parts", "part"], "postprocess": d => [...d[0], d[1]]},
+    {"name": "parts$ebnf$1", "symbols": []},
+    {"name": "parts$ebnf$1", "symbols": ["parts$ebnf$1", "part"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "parts", "symbols": ["parts$ebnf$1"], "postprocess": d => flatParts(d[0] || [])},
+    {"name": "requiredParts$ebnf$1", "symbols": ["part"]},
+    {"name": "requiredParts$ebnf$1", "symbols": ["requiredParts$ebnf$1", "part"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "requiredParts", "symbols": ["requiredParts$ebnf$1"], "postprocess": d => flatParts(d[0] || [])},
     {"name": "part", "symbols": ["string"], "postprocess": d => textContent(d[0])},
     {"name": "part", "symbols": ["assignment"], "postprocess": id},
     {"name": "part", "symbols": ["substitution"], "postprocess": id},
