@@ -1,5 +1,5 @@
 import { text } from "herotext";
-import { LOCATION_PIESHOP } from "./locationNames";
+import { LOCATION_HIGHSTREETMID, LOCATION_PIESHOP } from "./locationNames";
 
 export const PieShop = text`
 Name:
@@ -13,5 +13,5 @@ ShortDescription:
 "Pie Are Squared" - home of the square pie.
 
 GO WEST:
-$goto(${LOCATION_PIESHOP})
+$goto(${LOCATION_HIGHSTREETMID})
 `;

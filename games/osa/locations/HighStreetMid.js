@@ -1,5 +1,11 @@
 import { text } from "herotext";
-import { LOCATION_HIGHSTREETMID } from "./locationNames";
+import {
+  LOCATION_BANK,
+  LOCATION_HIGHSTREETMID,
+  LOCATION_HIGHSTREETNORTH,
+  LOCATION_HIGHSTREETSOUTH,
+  LOCATION_PIESHOP,
+} from "./locationNames";
 
 export const HighStreetMid = text`
 Name:
@@ -14,14 +20,14 @@ ShortDescription:
 {0}The middle of the High St.
 
 GO NORTH:
-$goto(HighStreetNorth)
+$goto(${LOCATION_HIGHSTREETNORTH})
 
 GO SOUTH:
-$goto(HighStreetSouth)
+$goto(${LOCATION_HIGHSTREETSOUTH})
 
 GO WEST:
-$goto(Bank)
+$goto(${LOCATION_BANK})
 
 GO EAST:
-$goto(PieShop)
+$goto(${LOCATION_PIESHOP})
 `;

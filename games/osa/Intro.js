@@ -26,7 +26,7 @@ Choose your character! $ChooseCharacter
 ChooseCharacter:
 [
 1. Derek, the Mild Mannered Office Worker
-2. Gilly "the Grass Snake", a Rogue and a Wanderer
+2. Gilly "the Grass Fox", a Rogue and a Wanderer
 3. Biscuits, a Street Cat
 $BeginGame($?)]
 

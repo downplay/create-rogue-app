@@ -17,6 +17,7 @@ import {
 } from "./types";
 import grammar from "./herotext";
 import { ComplexValue } from "./types";
+import { stringify } from "flatted";
 
 const errorMain = (message: string): MainAST => ({
   type: "main",
@@ -122,10 +123,10 @@ const stringifyResultItem = (element: ExecutionResultItem): string => {
   if (element.type) {
     switch (element.type) {
       case "complex":
-        return JSON.stringify(element.value);
+        return stringify(element, null, "  ");
     }
   }
-  return `<Error: Not stringifiable ${JSON.stringify(element, null, "  ")}>`;
+  return `<Error: Not stringifiable ${stringify(element, null, "  ")}>`;
 };
 
 export const stringifyResult = (elements: ExecutionResultItem[]): string => {
