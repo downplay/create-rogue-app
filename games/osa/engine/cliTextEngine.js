@@ -22,6 +22,8 @@ export const cliTextEngine = () => {
   let currentLocation;
   let nextLocation;
   let context;
+  let nextMove;
+  const global = {};
 
   const renderResult = async (result) => {
     if (typeof result === "undefined" || result === null) {
@@ -67,7 +69,8 @@ export const cliTextEngine = () => {
               // TODO: We really need a $global e.g. $global.player, so every location gets the object
               // and we don't have to mess around merging states like this (also, we won't be able to set anything on baseState)
               { ...currentLocation.state, ...baseState },
-              context
+              context,
+              nextMove
             )
           : stream(story, rng, state, context);
         // eslint-disable-next-line no-param-reassign
@@ -75,12 +78,12 @@ export const cliTextEngine = () => {
         if (currentLocation) {
           currentLocation.state = context.state;
         } else {
-          if (nextLocation) {
-            console.log(
-              "STATE",
-              JSON.stringify(context.state.player, null, "  ")
-            );
-          }
+          // if (nextLocation) {
+          //   console.log(
+          //     "STATE",
+          //     JSON.stringify(context.state.player, null, "  ")
+          //   );
+          // }
           // process.exit(0);
           baseState = context.state;
         }
@@ -95,8 +98,18 @@ export const cliTextEngine = () => {
         // Either we're waiting for an input, or the game has finished
         if (!context || !context.finished) {
           mainLoop();
-        } else {
+        } else if (global.gameOver) {
           // TODO: Display a close/restart window
+          process.exit(0);
+        } else {
+          const input = (await ui.readChars()).toUpperCase();
+          if (currentLocation.main.labels[input]) {
+            nextMove = input;
+          } else {
+            nextMove = undefined;
+            ui.write("I don't know how to do that $player.name");
+          }
+          mainLoop();
         }
       };
       mainLoop();
