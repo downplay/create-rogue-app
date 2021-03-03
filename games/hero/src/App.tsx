@@ -1,9 +1,8 @@
-import React from "react";
 import { RogueProvider, initializeState } from "./engine/RogueContext";
 import { Global } from "./ui/Global";
 import { Layout } from "./ui/Layout";
 import { Game } from "./game/Game";
-import { Player } from "./game/Player";
+// import { Player } from "./game/Player";
 
 import "modern-css-reset/dist/reset.min.css";
 import "./ui/Card.css";
@@ -16,7 +15,7 @@ const App = () => {
       <Global />
       <Layout />
       <Game />
-      <Player />
+      {/* <Player /> */}
     </RogueProvider>
   );
 };
