@@ -4,6 +4,7 @@
   "private": true,
   "workspaces": [
     "packages/herotext",
+    "packages/heromap",
     "games/osa",
     "games/hero"
   ],

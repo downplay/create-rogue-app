@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useRef,
   useEffect,
-  useLayoutEffect
+  useLayoutEffect,
 } from "react";
 import {
   SeenCell,
@@ -14,7 +14,7 @@ import {
   GridLayers,
   ShowCardEventKey,
   HideCardEventKey,
-  useGrid
+  useGrid,
 } from "../../engine/grid";
 import styled from "styled-components";
 import { CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
@@ -24,7 +24,7 @@ import {
   Vector,
   VECTOR_ORIGIN,
   multiply,
-  add
+  add,
 } from "../../engine/vector";
 import { getPosition, PositionProps } from "../../engine/hasPosition";
 
@@ -173,7 +173,7 @@ export const Map = memo(() => {
         const mapCell = gridState.map[cell.position.y][cell.position.x];
         if (cell.fromCell !== mapCell) {
           // TODO: Could optimise if multiple cells are being changed
-          newRow = newRow.map(oldCell =>
+          newRow = newRow.map((oldCell) =>
             oldCell === cell
               ? { ...oldCell, tiles: mapCell.tiles, fromCell: mapCell }
               : oldCell
@@ -182,7 +182,7 @@ export const Map = memo(() => {
       }
       if (row !== newRow) {
         // TODO: Could optimise if multiple rows are being changed
-        newGrid = newGrid.map(oldRow => (oldRow === row ? newRow : oldRow));
+        newGrid = newGrid.map((oldRow) => (oldRow === row ? newRow : oldRow));
       }
     }
     if (newGrid !== gridState.seen) {
