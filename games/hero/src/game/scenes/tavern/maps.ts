@@ -1,3 +1,5 @@
+import { map } from "heromap";
+
 export const interior1 = () => {
   return map`
 ###########

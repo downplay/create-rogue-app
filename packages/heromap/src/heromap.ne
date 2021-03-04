@@ -48,17 +48,19 @@ const heromapSymbol = Symbol("heromap");
 const mapNode = ({ map, legend }) => ({
     type: "Heromap::MapNode",
     map,
-    legend
+    legend,
+    externals: []
 })
 
-const brushOperationNode = ({ glyph, brushes }) => ({
-    type: "Heromap::BrushOperationNode",
-    glyph,
-    brushes
+const brushOpNode = ({ target, brushes, op = "apply" }) => ({
+    type: "Heromap::BrushOpNode",
+    target,
+    brushes,
+    op
 })
 
 const operationGroupNode = (operations, quanitifer) => ({
-    type: "Heromap::GroupOperationNode",
+    type: "Heromap::OperationGroupNode",
     operations,
     quanitifer
 })
@@ -68,8 +70,19 @@ const operationSwitchNode = (switches) => ({
     switches
 })
 
-const brushesNode = (brushes) => ({
-    type: "Heromap::GroupBrushNode",
+const brushNode = (node, quantifier) => ({
+    type: "Heromap::BrushNode",
+    brush: node,
+    quantifier
+})
+
+const andBrushesNode = (brushes) => ({
+    type: "Heromap::AndBrushesNode",
+    brushes
+})
+
+const orBrushesNode = (brushes) => ({
+    type: "Heromap::OrBrushesNode",
     brushes
 })
 
@@ -102,7 +115,7 @@ op          -> applyOp                                    {% id %}
              | groupOps                                   {% d => operationSwitchNode(d[0]) %}
 
 applyOp     -> __ stuff __ "=" __ brushes            
-               {% d => brushOperationNode({glyph: d[1], brushes: brushesNode(d[5]) }) %} 
+               {% d => brushOpNode({target: d[1], brush: brushNode(andBrushesNode(d[5])) }) %} 
 
 groupOps    -> groupOp                                    {% d => [d[0]] %}
              | groupOps __ "|" groupOp                    {% d => [...d[0], d[2]] %}
@@ -110,16 +123,16 @@ groupOps    -> groupOp                                    {% d => [d[0]] %}
 # TODO: COULD make spaces inside the brackets optional here, with a special version of legend/op/applyOp
 groupOp     -> __ "(" legend _ ")" quantifier:?           {% d => operationGroupNode(d[1], d[6]) %}
 
-brushes     -> brush                                      {% d => [d[0]] %}
-             | brushes __ "+" __ brush                    {% d => [...d[0], d[4]] %}
+brushes     -> brush                                      {% d => [brushNode(d[0])] %}
+             | brushes __ "+" __ brush                    {% d => [...d[0], brushNode(d[4])] %}
 
-brush       -> switch                                     {% d => ({ switch: d[0] }) %} 
-             | group                                      {% ([group]) => ({ group }) %}
+brush       -> switch                                     {% ([switch]) => orBrushesNode(switch) %} 
+             | group                                      {% ([group]) => group %}
 
 switch      -> option                                     {% d => [d[0]] %}
              | switch __ "|" __ option                    {% d => [...d[0], d[4]] %}
 
-option      -> (stuff | group) quantifier:?               {% ([option, quantifier]) => ({ option, quantifier }) %}
+option      -> (stuff | group) quantifier:?               {% ([brush, quantifier]) => brushNode({ brush, quantifier }) %}
 
 quantifier  -> ":" numeric                                {% d => d[1] %}
 
@@ -130,11 +143,11 @@ numeric     -> %number                                    {% d => integerValue(N
 # TODO: decimals too
 percentage  -> %number "%"                                {% d => percentageValue(Number(d[0])) %}
 
-group       -> "(" _ brushes _ ")"                        {% d => brushesNode(d[2]) %}
+group       -> "(" _ brushes _ ")"                        {% d => andBrushesNode(d[2]) %}
 
-stuff       -> glyphs                                     {% d => ({ glyphs: d[0] }) %}
-             | %word                                      {% d => ({ word: d[0].value }) %}
-             | glyph                                      {% d => ({ glyph: d[0] }) %}
+stuff       -> glyphs                                     {% d => glyphsNode(d[0]) %}
+             | %word                                      {% d => wordNode(d[0].value) %}
+             | glyph                                      {% d => glyphNode(d[0]) %}
 
 # Technically we could allow spaces in a glyph group; probably not wise tho
 

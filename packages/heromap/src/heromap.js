@@ -62,7 +62,7 @@ const brushOperationNode = ({ glyph, brushes }) => ({
 })
 
 const operationGroupNode = (operations, quanitifer) => ({
-    type: "Heromap::GroupOperationNode",
+    type: "Heromap::OperationGroupNode",
     operations,
     quanitifer
 })

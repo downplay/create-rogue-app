@@ -5,7 +5,8 @@ export type MapNode = {
   externals: Record<string, any>;
 };
 
-export type OperationNode = GlyphOperationNode | OperationGroupNode;
+type OperationNode = BrushOpNode | OrOpsNode;
+/* | InvocationNode */
 
 // export type ExternalNode = {
 //   type: "Heromap::ExternalNode";
@@ -13,59 +14,86 @@ export type OperationNode = GlyphOperationNode | OperationGroupNode;
 //   value: any;
 // };
 
-export type GlyphOperationNode = {
-  type: "Heromap::GlyphOperationNode";
-  glyph: string;
-  operation: "apply" | "remove";
+type OrOpsNode = {
+  type: "Heromap::OrOpsNode";
+  quanitifier: QuantifierNode;
+  ops: OperationNode[];
+};
+
+type BrushOpNode = {
+  type: "Heromap::BrushOpNode";
+  op: "apply" | "remove";
+  target: GlyphNode | GlyphsNode | WordNode;
   brush: BrushNode;
 };
 
-export type BrushNode = {
+type BrushNode = {
   type: "Heromap::BrushNode";
-  brushes: BrushSwitchNode[];
+  brush: GlyphNode | GlyphsNode | WordNode | AndBrushesNode | OrBrushesNode;
+  /* | InvocationNode */
+  quantifier?: QuantifierNode;
 };
 
-export type BrushSwitchNode = {
-  type: "Heromap::BrushSwitchNode";
+type QuantifierNode = NumberNode | FractionNode;
+
+type GlyphNode = {
+  type: "Heromap::GlyphNode";
+  glyph: string;
 };
 
-export type OperationGroupNode = MatchGroupNode;
-
-export type MatchGroupNode = {
-  type: "Heromap::MatchGroupNode";
-  expression: MatchExpressionNode;
+type GlyphsNode = {
+  type: "Heromap::GlyphsNode";
+  glyphs: [];
 };
 
-export type MatchExpressionNode = {
-  left: ValueNode;
-  right: ValueNode;
-  // TODO: Cna generate this list automatically from `operators` const?
-  operator:
-    | "eq"
-    | "eqeq"
-    | "gt"
-    | "gteq"
-    | "lt"
-    | "lteq"
-    | "match"
-    | "noteq"
-    | "notmatch";
+type WordNode = {
+  type: "Heromap::GlyphsNode";
+  path: string[];
 };
+
+type AndBrushesNode = {
+  type: "Heromap::OrBrushesNode";
+  brushes: BrushNode[];
+};
+
+type OrBrushesNode = {
+  type: "Heromap::AndBrushesNode";
+  brushes: BrushNode[];
+};
+
+// type MatchExpressionNode = {
+//   left: ValueNode;
+//   right: ValueNode;
+//   // TODO: Cna generate this list automatically from `operators` const?
+//   operator:
+//     | "eq"
+//     | "eqeq"
+//     | "gt"
+//     | "gteq"
+//     | "lt"
+//     | "lteq"
+//     | "match"
+//     | "noteq"
+//     | "notmatch";
+// };
 
 export type ValueNode = StringNode | NumberNode | FractionNode;
 
 export type StringNode = {
-  type: "string";
+  type: "Heromap::StringValue";
   value: string;
 };
 
 export type NumberNode = {
-  type: "integer" | "decimal" | "percentage";
+  type:
+    | "Heromap::IntegerValue"
+    | "Heromap::DecimalValue"
+    | "Heromap::PercentageValue";
   value: number;
 };
 
 export type FractionNode = {
-  type: "fraction";
+  type: "Heromap::FractionValue";
   numerator: number;
   denominator: number;
 };
