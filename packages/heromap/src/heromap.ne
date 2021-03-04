@@ -1,6 +1,6 @@
 @{%
 
-//const moo = require("moo");
+const moo = require("moo");
 const newline = { match: /\n/, lineBreaks: true };
 const space = { match: /[^\S\n]+/, lineBreaks: false };
 

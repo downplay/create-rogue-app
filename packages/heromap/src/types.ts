@@ -2,16 +2,16 @@ export type MapNode = {
   type: "Heromap::MapNode";
   map: String[][];
   legend: OperationNode[];
-  externals: Record<string, ExternalNode>[];
+  externals: Record<string, any>;
 };
 
 export type OperationNode = GlyphOperationNode | OperationGroupNode;
 
-export type ExternalNode = {
-  type: "Heromap::ExternalNode";
-  id: string;
-  value: any;
-};
+// export type ExternalNode = {
+//   type: "Heromap::ExternalNode";
+//   id: string;
+//   value: any;
+// };
 
 export type GlyphOperationNode = {
   type: "Heromap::GlyphOperationNode";
@@ -21,12 +21,12 @@ export type GlyphOperationNode = {
 };
 
 export type BrushNode = {
-  type: "Heromap::GlyphBrushNode";
-  brushes: 
+  type: "Heromap::BrushNode";
+  brushes: BrushSwitchNode[];
 };
 
 export type BrushSwitchNode = {
-    type: "Heromap::GlyphBrushNode";
+  type: "Heromap::BrushSwitchNode";
 };
 
 export type OperationGroupNode = MatchGroupNode;
@@ -50,4 +50,22 @@ export type MatchExpressionNode = {
     | "match"
     | "noteq"
     | "notmatch";
+};
+
+export type ValueNode = StringNode | NumberNode | FractionNode;
+
+export type StringNode = {
+  type: "string";
+  value: string;
+};
+
+export type NumberNode = {
+  type: "integer" | "decimal" | "percentage";
+  value: number;
+};
+
+export type FractionNode = {
+  type: "fraction";
+  numerator: number;
+  denominator: number;
 };

@@ -14,36 +14,34 @@ t...O.rrrr.#
 t..O....r..#
 #t#t#tt#t#t#
 
-${environment}?
-dark: {
-    . = Floor
-    t = Wall
-}
-flooded: {
-    . = Water
-    t = Wall
-}
-torch-lit: {
-    . = Floor
-    t = Torch:30%
-}
-[^#^] = Floor
+match(${environment})
+    dark:
+        . = Floor
+        t = Wall
+    flooded:
+        . = Water
+        t = Wall
+    torch-lit:
+        . = Floor
+        t = Torch:1/3 | Wall
+
+** = Floor
 # = Wall
 r = Rat:50%
 // Boss rat(s)
 BR = [RB] | [BR]  // Shuffle
-B = Rat(size:5,name:Rat King)
-R = Rat(size:4,name:Rat Queen):50%
+B = Rat(size:5,name:"Boss Rat")
+R = Rat(size:4,name:"Queen Rat"):50%
 ^ = ${stairs}
-o = ${decor}
+O = ${decor}
 `;
 };
 
 const basementStory = text`
-You walk down the steps into the $environment basement. 
+You walk down the steps into the $environment basement. $plural($decor) are strewn around the place.
 
-map:
-${basementMap}
+setup:
+$map(${basementMap})
 
 decor:=
 Barrel
