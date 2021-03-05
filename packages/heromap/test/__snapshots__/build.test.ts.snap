@@ -1,0 +1,202 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`applies elements to cells 1`] = `
+Object {
+  "bounds": Object {
+    "height": 1,
+    "rows": Array [
+      Array [
+        ".",
+        "#",
+      ],
+    ],
+    "width": 2,
+    "x": 0,
+    "y": 0,
+  },
+  "cells": Array [
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Floor",
+        },
+      ],
+      "x": 0,
+      "y": 0,
+    },
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Wall",
+        },
+      ],
+      "x": 1,
+      "y": 0,
+    },
+  ],
+}
+`;
+
+exports[`applies multiple elements to cells 1`] = `
+Object {
+  "bounds": Object {
+    "height": 1,
+    "rows": Array [
+      Array [
+        ".",
+      ],
+    ],
+    "width": 1,
+    "x": 0,
+    "y": 0,
+  },
+  "cells": Array [
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Floor",
+        },
+        Object {
+          "params": Object {},
+          "type": "Rat",
+        },
+      ],
+      "x": 0,
+      "y": 0,
+    },
+  ],
+}
+`;
+
+exports[`applies nothing on remaining fraction 1`] = `
+Object {
+  "bounds": Object {
+    "height": 1,
+    "rows": Array [
+      Array [
+        ".",
+        ".",
+        ".",
+        ".",
+      ],
+    ],
+    "width": 4,
+    "x": 0,
+    "y": 0,
+  },
+  "cells": Array [
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Wall",
+        },
+      ],
+      "x": 0,
+      "y": 0,
+    },
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Wall",
+        },
+      ],
+      "x": 2,
+      "y": 0,
+    },
+  ],
+}
+`;
+
+exports[`applies probability-based brushes to cells 1`] = `
+Object {
+  "bounds": Object {
+    "height": 1,
+    "rows": Array [
+      Array [
+        ".",
+        ".",
+        ".",
+        ".",
+        ".",
+      ],
+    ],
+    "width": 5,
+    "x": 0,
+    "y": 0,
+  },
+  "cells": Array [
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Rat",
+        },
+      ],
+      "x": 0,
+      "y": 0,
+    },
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Floor",
+        },
+      ],
+      "x": 1,
+      "y": 0,
+    },
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Floor",
+        },
+      ],
+      "x": 2,
+      "y": 0,
+    },
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Wall",
+        },
+      ],
+      "x": 3,
+      "y": 0,
+    },
+    Object {
+      "cells": Array [
+        Object {
+          "params": Object {},
+          "type": "Wall",
+        },
+      ],
+      "x": 4,
+      "y": 0,
+    },
+  ],
+}
+`;
+
+exports[`builds a map 1`] = `
+Object {
+  "bounds": Object {
+    "height": 1,
+    "rows": Array [
+      Array [
+        "#",
+      ],
+    ],
+    "width": 1,
+    "x": 0,
+    "y": 0,
+  },
+  "cells": Array [],
+}
+`;

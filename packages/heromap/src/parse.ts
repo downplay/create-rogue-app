@@ -6,7 +6,7 @@ export const parse = (input: string): MapNode => {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
   let parsed;
   try {
-    parsed = parser.feed(input.trim() + "\n");
+    parsed = parser.feed(input);
   } catch (error) {
     console.error("Unparseable text:");
     console.error(input);
@@ -61,6 +61,7 @@ export const map = (
       externals,
     };
   } catch (e) {
-    return errorMain(e.message);
+    console.error("<Error: Parser syntax error>");
+    throw e;
   }
 };

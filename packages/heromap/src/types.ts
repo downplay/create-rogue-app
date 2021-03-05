@@ -1,11 +1,11 @@
 export type MapNode = {
   type: "Heromap::MapNode";
-  map: String[][];
+  lines: String[];
   legend: OperationNode[];
   externals: Record<string, any>;
 };
 
-type OperationNode = BrushOpNode | OrOpsNode;
+export type OperationNode = BrushOpNode | OrOpsNode | AndOpsNode;
 /* | InvocationNode */
 
 // export type ExternalNode = {
@@ -14,50 +14,62 @@ type OperationNode = BrushOpNode | OrOpsNode;
 //   value: any;
 // };
 
-type OrOpsNode = {
+export type OrOpsNode = {
   type: "Heromap::OrOpsNode";
+  ops: OperationNode[];
+};
+
+export type AndOpsNode = {
+  type: "Heromap::AndOpsNode";
   quanitifier: QuantifierNode;
   ops: OperationNode[];
 };
 
-type BrushOpNode = {
+export type BrushOpNode = {
   type: "Heromap::BrushOpNode";
   op: "apply" | "remove";
   target: GlyphNode | GlyphsNode | WordNode;
   brush: BrushNode;
 };
 
-type BrushNode = {
+export type BrushNodes =
+  | GlyphNode
+  | GlyphsNode
+  | WordNode
+  | AndBrushesNode
+  | OrBrushesNode;
+
+export type BrushNode = {
   type: "Heromap::BrushNode";
-  brush: GlyphNode | GlyphsNode | WordNode | AndBrushesNode | OrBrushesNode;
+  brush: BrushNodes;
   /* | InvocationNode */
   quantifier?: QuantifierNode;
 };
 
 type QuantifierNode = NumberNode | FractionNode;
 
-type GlyphNode = {
+export type GlyphNode = {
   type: "Heromap::GlyphNode";
   glyph: string;
 };
 
-type GlyphsNode = {
+export type GlyphsNode = {
   type: "Heromap::GlyphsNode";
-  glyphs: [];
+  glyphs: string[];
 };
 
-type WordNode = {
-  type: "Heromap::GlyphsNode";
+export type WordNode = {
+  type: "Heromap::WordNode";
   path: string[];
 };
 
-type AndBrushesNode = {
-  type: "Heromap::OrBrushesNode";
+export type AndBrushesNode = {
+  type: "Heromap::AndBrushesNode";
   brushes: BrushNode[];
 };
 
-type OrBrushesNode = {
-  type: "Heromap::AndBrushesNode";
+export type OrBrushesNode = {
+  type: "Heromap::OrBrushesNode";
   brushes: BrushNode[];
 };
 

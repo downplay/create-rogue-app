@@ -1,0 +1,342 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parses a map 1`] = `
+Object {
+  "externals": Object {},
+  "legend": Array [
+    Object {
+      "brush": Object {
+        "brush": Object {
+          "brushes": Array [
+            Object {
+              "brush": Object {
+                "brushes": Array [
+                  Object {
+                    "brush": Object {
+                      "path": Array [
+                        "Bar",
+                      ],
+                      "type": "Heromap::WordNode",
+                    },
+                    "quantifier": null,
+                    "type": "Heromap::BrushNode",
+                  },
+                ],
+                "type": "Heromap::OrBrushesNode",
+              },
+              "quantifier": undefined,
+              "type": "Heromap::BrushNode",
+            },
+          ],
+          "type": "Heromap::AndBrushesNode",
+        },
+        "quantifier": undefined,
+        "type": "Heromap::BrushNode",
+      },
+      "op": "apply",
+      "target": Object {
+        "path": Array [
+          "Foo",
+        ],
+        "type": "Heromap::WordNode",
+      },
+      "type": "Heromap::BrushOpNode",
+    },
+    Object {
+      "brush": Object {
+        "brush": Object {
+          "brushes": Array [
+            Object {
+              "brush": Object {
+                "brushes": Array [
+                  Object {
+                    "brush": Object {
+                      "path": Array [
+                        "Baz",
+                      ],
+                      "type": "Heromap::WordNode",
+                    },
+                    "quantifier": null,
+                    "type": "Heromap::BrushNode",
+                  },
+                ],
+                "type": "Heromap::OrBrushesNode",
+              },
+              "quantifier": undefined,
+              "type": "Heromap::BrushNode",
+            },
+          ],
+          "type": "Heromap::AndBrushesNode",
+        },
+        "quantifier": undefined,
+        "type": "Heromap::BrushNode",
+      },
+      "op": "apply",
+      "target": Object {
+        "glyph": "a",
+        "type": "Heromap::GlyphNode",
+      },
+      "type": "Heromap::BrushOpNode",
+    },
+    Object {
+      "brush": Object {
+        "brush": Object {
+          "brushes": Array [
+            Object {
+              "brush": Object {
+                "brushes": Array [
+                  Object {
+                    "brush": Object {
+                      "glyphs": Array [
+                        "a",
+                        ",",
+                        "b",
+                      ],
+                      "type": "Heromap::GlyphsNode",
+                    },
+                    "quantifier": null,
+                    "type": "Heromap::BrushNode",
+                  },
+                ],
+                "type": "Heromap::OrBrushesNode",
+              },
+              "quantifier": undefined,
+              "type": "Heromap::BrushNode",
+            },
+          ],
+          "type": "Heromap::AndBrushesNode",
+        },
+        "quantifier": undefined,
+        "type": "Heromap::BrushNode",
+      },
+      "op": "apply",
+      "target": Object {
+        "glyphs": Array [
+          "b",
+          ",",
+          "c",
+        ],
+        "type": "Heromap::GlyphsNode",
+      },
+      "type": "Heromap::BrushOpNode",
+    },
+    Object {
+      "brush": Object {
+        "brush": Object {
+          "brushes": Array [
+            Object {
+              "brush": Object {
+                "brushes": Array [
+                  Object {
+                    "brush": Object {
+                      "path": Array [
+                        "Sheep",
+                      ],
+                      "type": "Heromap::WordNode",
+                    },
+                    "quantifier": null,
+                    "type": "Heromap::BrushNode",
+                  },
+                  Object {
+                    "brush": Object {
+                      "path": Array [
+                        "Cow",
+                      ],
+                      "type": "Heromap::WordNode",
+                    },
+                    "quantifier": Object {
+                      "type": "Heromap::PercentageValue",
+                      "value": 0.3,
+                    },
+                    "type": "Heromap::BrushNode",
+                  },
+                ],
+                "type": "Heromap::OrBrushesNode",
+              },
+              "quantifier": undefined,
+              "type": "Heromap::BrushNode",
+            },
+            Object {
+              "brush": Object {
+                "brushes": Array [
+                  Object {
+                    "brush": Object {
+                      "path": Array [
+                        "Rat",
+                      ],
+                      "type": "Heromap::WordNode",
+                    },
+                    "quantifier": Object {
+                      "type": "Heromap::IntegerValue",
+                      "value": 2,
+                    },
+                    "type": "Heromap::BrushNode",
+                  },
+                  Object {
+                    "brush": Object {
+                      "brushes": Array [
+                        Object {
+                          "brush": Object {
+                            "brushes": Array [
+                              Object {
+                                "brush": Object {
+                                  "path": Array [
+                                    "Bat",
+                                  ],
+                                  "type": "Heromap::WordNode",
+                                },
+                                "quantifier": null,
+                                "type": "Heromap::BrushNode",
+                              },
+                            ],
+                            "type": "Heromap::OrBrushesNode",
+                          },
+                          "quantifier": undefined,
+                          "type": "Heromap::BrushNode",
+                        },
+                        Object {
+                          "brush": Object {
+                            "brushes": Array [
+                              Object {
+                                "brush": Object {
+                                  "path": Array [
+                                    "Cat",
+                                  ],
+                                  "type": "Heromap::WordNode",
+                                },
+                                "quantifier": null,
+                                "type": "Heromap::BrushNode",
+                              },
+                            ],
+                            "type": "Heromap::OrBrushesNode",
+                          },
+                          "quantifier": undefined,
+                          "type": "Heromap::BrushNode",
+                        },
+                      ],
+                      "type": "Heromap::AndBrushesNode",
+                    },
+                    "quantifier": Object {
+                      "denominator": 3,
+                      "numerator": 2,
+                      "type": "Heromap::FractionValue",
+                    },
+                    "type": "Heromap::BrushNode",
+                  },
+                ],
+                "type": "Heromap::OrBrushesNode",
+              },
+              "quantifier": undefined,
+              "type": "Heromap::BrushNode",
+            },
+          ],
+          "type": "Heromap::AndBrushesNode",
+        },
+        "quantifier": undefined,
+        "type": "Heromap::BrushNode",
+      },
+      "op": "apply",
+      "target": Object {
+        "glyph": "b",
+        "type": "Heromap::GlyphNode",
+      },
+      "type": "Heromap::BrushOpNode",
+    },
+    Object {
+      "switches": Array [
+        Object {
+          "operations": Array [
+            Object {
+              "brush": Object {
+                "brush": Object {
+                  "brushes": Array [
+                    Object {
+                      "brush": Object {
+                        "brushes": Array [
+                          Object {
+                            "brush": Object {
+                              "glyph": "b",
+                              "type": "Heromap::GlyphNode",
+                            },
+                            "quantifier": null,
+                            "type": "Heromap::BrushNode",
+                          },
+                        ],
+                        "type": "Heromap::OrBrushesNode",
+                      },
+                      "quantifier": undefined,
+                      "type": "Heromap::BrushNode",
+                    },
+                  ],
+                  "type": "Heromap::AndBrushesNode",
+                },
+                "quantifier": undefined,
+                "type": "Heromap::BrushNode",
+              },
+              "op": "apply",
+              "target": Object {
+                "glyph": "a",
+                "type": "Heromap::GlyphNode",
+              },
+              "type": "Heromap::BrushOpNode",
+            },
+          ],
+          "quantifier": null,
+          "type": "Heromap::AndOpsNode",
+        },
+        Object {
+          "operations": Array [
+            Object {
+              "brush": Object {
+                "brush": Object {
+                  "brushes": Array [
+                    Object {
+                      "brush": Object {
+                        "brushes": Array [
+                          Object {
+                            "brush": Object {
+                              "path": Array [
+                                "Rat",
+                              ],
+                              "type": "Heromap::WordNode",
+                            },
+                            "quantifier": null,
+                            "type": "Heromap::BrushNode",
+                          },
+                        ],
+                        "type": "Heromap::OrBrushesNode",
+                      },
+                      "quantifier": undefined,
+                      "type": "Heromap::BrushNode",
+                    },
+                  ],
+                  "type": "Heromap::AndBrushesNode",
+                },
+                "quantifier": undefined,
+                "type": "Heromap::BrushNode",
+              },
+              "op": "apply",
+              "target": Object {
+                "path": Array [
+                  "Cow",
+                ],
+                "type": "Heromap::WordNode",
+              },
+              "type": "Heromap::BrushOpNode",
+            },
+          ],
+          "quantifier": null,
+          "type": "Heromap::AndOpsNode",
+        },
+      ],
+      "type": "Heromap::OrOpsNode",
+    },
+  ],
+  "lines": Array [
+    "####",
+    "#..#",
+    "####",
+  ],
+  "type": "Heromap::MapNode",
+}
+`;
