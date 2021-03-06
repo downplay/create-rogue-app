@@ -12,7 +12,7 @@ import {
   VECTOR_SW,
   VECTOR_W,
   VECTOR_NW,
-} from "../../engine/vector";
+} from "../../math/vector";
 
 const moves = [
   VECTOR_ORIGIN,
