@@ -1,12 +1,12 @@
 import React, { useMemo, memo, PropsWithChildren } from "react";
-import { Vector, reduceQuad, sortCorners } from "../../engine/vector";
+import { Vector, reduceQuad, sortCorners } from "../../math/vector";
 import { Floor } from "./Floor";
 import { useRng } from "../../engine/useRng";
 import { Wall } from "./Wall";
 
 export enum CorridorOrientation {
   Horizontal,
-  Vertical
+  Vertical,
 }
 
 export type CorridorProps = {
@@ -33,7 +33,7 @@ export const Corridor = memo(
       // There is a "kink" in the corridor since it's not usually a straight line, this can
       // occur anywhere along the axis of orientation
       const kink = rng.integer(cornerA[axes[1]], cornerB[axes[1]]);
-      return reduceQuad(quadA, quadB, value =>
+      return reduceQuad(quadA, quadB, (value) =>
         // Note: This logic heavily assumes that start and end go either N->S or W->E despite the
         // corner normalisation, will break if used carelessly!
         (value[axes[0]] === start[axes[0]] && value[axes[1]] < kink) ||

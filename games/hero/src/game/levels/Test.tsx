@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { vector } from "../../engine/vector";
+import { vector } from "../../math/vector";
 import { Room } from "./Room";
 import { Rat } from "../monsters/Rat";
 import { useRng } from "../../engine/useRng";

@@ -1,4 +1,4 @@
-import { Vector } from "../../../engine/vector";
+import { Vector } from "../../../math/vector";
 
 export const TavernStateKey = Symbol("TavernScene");
 
@@ -13,10 +13,10 @@ export type TavernState = {
 
 export enum TavernScene {
   Exterior,
-  Interior
+  Interior,
 }
 
 export enum TavernType {
   Brawl,
-  Rest
+  Rest,
 }

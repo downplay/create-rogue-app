@@ -3,7 +3,7 @@ import { hasTile, TileProps } from "../../engine/hasTile";
 import { entity } from "../../engine/entity";
 import { PositionProps, hasPosition } from "../../engine/hasPosition";
 import { Emoji } from "../../ui/Typography";
-import { onInteract, InteractEvent } from "../../engine/canInteractWith";
+import { onInteract, InteractEvent } from "../../mechanics/canInteractWith";
 import { Handler } from "../../engine/useEntitiesState";
 
 export const DoorTile = () => <Emoji>🚪</Emoji>;

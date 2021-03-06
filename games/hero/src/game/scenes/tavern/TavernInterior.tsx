@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect } from "react";
 import { Room } from "../../levels/Room";
-import { multiply, subtract } from "../../../engine/vector";
+import { multiply, subtract } from "../../../math/vector";
 import { TavernState } from "./types";
 import { useTerminal } from "../../../engine/terminal";
 import { tavernInteriorDescription } from "./text";

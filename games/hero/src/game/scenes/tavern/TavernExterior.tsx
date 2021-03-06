@@ -6,7 +6,7 @@ import { PositionProps } from "../../../engine/hasPosition";
 import { useEntityState } from "../../../engine/useEntityState";
 import { TavernState, TavernScene, TavernStateKey } from "./types";
 import { Roof } from "../../levels/Roof";
-import { vector, add, subtract } from "../../../engine/vector";
+import { vector, add, subtract } from "../../../math/vector";
 import { Sign } from "./Sign";
 
 export const TavernEntrance = ({ ...rest }: PositionProps) => {
@@ -15,7 +15,7 @@ export const TavernEntrance = ({ ...rest }: PositionProps) => {
   const handleEnterInterior = useCallback(() => {
     setState({
       ...state,
-      scene: TavernScene.Interior
+      scene: TavernScene.Interior,
     });
   }, [state]);
 
@@ -33,7 +33,7 @@ export const TavernExterior = ({ state }: Props) => {
         ? [
             [state.door],
             subtract(state.spawn, state.door),
-            add(state.spawn, vector(1, 1))
+            add(state.spawn, vector(1, 1)),
           ]
         : [],
     [state.door, state.spawn]

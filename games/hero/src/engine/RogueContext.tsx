@@ -8,28 +8,28 @@ import {
   gridMutations,
   gridQueries,
   GridProvider,
-  GridStateProvider
+  GridStateProvider,
 } from "./grid";
 import {
   EntitiesProvider,
   EntitiesStateProvider,
   entitiesMutations,
-  entitiesQueries
+  entitiesQueries,
 } from "./useEntitiesState";
 import {
   terminalMutations,
   terminalQueries,
   TerminalProvider,
-  TerminalStateProvider
+  TerminalStateProvider,
 } from "./terminal";
 import { useRef } from "react";
-import { ControlsProvider } from "./controls";
+import { ControlsProvider } from "../providers/controls";
 import { PlayerProvider } from "./player";
 import {
   gameMutations,
   gameQueries,
   GameProvider,
-  GameStateProvider
+  GameStateProvider,
 } from "./game";
 
 export const initializeState = (): RogueState => {
@@ -40,7 +40,7 @@ export const initializeState = (): RogueState => {
   const entities = { state: {} };
 
   const terminal = {
-    messages: []
+    messages: [],
   };
 
   return { game, grid, entities, terminal };
@@ -50,14 +50,14 @@ const mutations = {
   game: gameMutations,
   entities: entitiesMutations,
   grid: gridMutations,
-  terminal: terminalMutations
+  terminal: terminalMutations,
 };
 
 const queries = {
   game: gameQueries,
   entities: entitiesQueries,
   grid: gridQueries,
-  terminal: terminalQueries
+  terminal: terminalQueries,
 };
 
 type SetStateType = React.Dispatch<React.SetStateAction<RogueState>>;
@@ -128,7 +128,7 @@ const bindActions = (
           key as ContextKeys,
           stateRef,
           queries[key as ContextKeys]
-        )
+        ),
       };
 
       return acc;
@@ -148,7 +148,7 @@ export const RogueProvider = ({ initialState, children }: Props) => {
   const stateRef = useRef<RogueState>(null!);
 
   const boundActions = useMemo(() => bindActions(stateRef, setState), [
-    setState
+    setState,
   ]);
 
   const context = useMemo<RogueContext>(() => {
@@ -159,7 +159,7 @@ export const RogueProvider = ({ initialState, children }: Props) => {
             ? contextRef.current[key as ContextKeys]
             : {
                 ...state[key as ContextKeys],
-                ...boundActions[key as ContextKeys]
+                ...boundActions[key as ContextKeys],
               };
         return acc;
       },

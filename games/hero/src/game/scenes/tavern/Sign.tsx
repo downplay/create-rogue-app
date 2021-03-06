@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useRng } from "../../../engine/useRng";
 import { text } from "../../../engine/text/parse";
-import { onInteract } from "../../../engine/canInteractWith";
+import { onInteract } from "../../../mechanics/canInteractWith";
 import { hasTile } from "../../../engine/hasTile";
 import { Emoji } from "../../../ui/Typography";
 import { Scenery } from "../../meta/Scenery";

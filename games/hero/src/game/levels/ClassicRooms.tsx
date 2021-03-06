@@ -8,11 +8,11 @@ import {
   VECTOR_E,
   add,
   VECTOR_W,
-  VECTOR_S
-} from "../../engine/vector";
+  VECTOR_S,
+} from "../../math/vector";
 import { CorridorOrientation, CorridorProps, Corridor } from "./Corridor";
 import { omitUndefined } from "../../engine/helpers";
-import { VECTOR_N } from "../../engine/vector";
+import { VECTOR_N } from "../../math/vector";
 import { EntityGroup } from "../../engine/EntityGroup";
 
 const MAX_SIZE = 20;
@@ -22,7 +22,7 @@ enum Direction {
   North,
   East,
   South,
-  West
+  West,
 }
 
 type Connection = {
@@ -60,39 +60,39 @@ export const ClassicRooms = () => {
         // Making me think, should have: random vector methods; 2D iterators
         const origin = {
           x: x1 + x * MAX_SIZE,
-          y: y1 + y * MAX_SIZE
+          y: y1 + y * MAX_SIZE,
         };
         const size = {
           x: x2 - x1 + 1,
-          y: y2 - y1 + 1
+          y: y2 - y1 + 1,
         };
         const connections: Connections = {
           [Direction.North]: {
             to: vector(x, y - 1),
-            door: y > 0 ? vector(rng.integer(1, size.x - 1), 0) : undefined
+            door: y > 0 ? vector(rng.integer(1, size.x - 1), 0) : undefined,
           },
           [Direction.East]: {
             to: vector(x + 1, y),
             door:
               x < ROOM_COUNTS.x - 1
                 ? vector(size.x - 1, rng.integer(1, size.y - 1))
-                : undefined
+                : undefined,
           },
           [Direction.South]: {
             to: vector(x, y + 1),
             door:
               y < ROOM_COUNTS.y - 1
                 ? vector(rng.integer(1, size.x - 1), size.y - 1)
-                : undefined
+                : undefined,
           },
           [Direction.West]: {
             to: vector(x - 1, y),
-            door: x > 0 ? vector(0, rng.integer(1, size.y - 1)) : undefined
-          }
+            door: x > 0 ? vector(0, rng.integer(1, size.y - 1)) : undefined,
+          },
         };
 
         const doors = omitUndefined(
-          Object.values(connections).map(connection => connection.door)
+          Object.values(connections).map((connection) => connection.door)
         );
 
         rooms[x][y] = {
@@ -100,7 +100,7 @@ export const ClassicRooms = () => {
           size,
           doors,
           connections,
-          position: vector(x, y)
+          position: vector(x, y),
         };
 
         // Corridor to W room
@@ -114,7 +114,7 @@ export const ClassicRooms = () => {
               target.origin as Vector
             ),
             end: add(VECTOR_W, connection.door as Vector, origin),
-            orientation: CorridorOrientation.Horizontal
+            orientation: CorridorOrientation.Horizontal,
           });
         }
         // Corridor to N room
@@ -128,7 +128,7 @@ export const ClassicRooms = () => {
               target.origin as Vector
             ),
             end: add(VECTOR_N, connection.door as Vector, origin),
-            orientation: CorridorOrientation.Vertical
+            orientation: CorridorOrientation.Vertical,
           });
         }
       }

@@ -1,5 +1,5 @@
 import React, { useMemo, memo } from "react";
-import { reduceQuad, vector, vectorKey } from "../../../engine/vector";
+import { reduceQuad, vector, vectorKey } from "../../../math/vector";
 import { Floor } from "../../levels/Floor";
 import { useRng } from "../../../engine/useRng";
 import { Ascii } from "../../../ui/Typography";
@@ -16,7 +16,7 @@ const colors = [
   "#735A24",
   "#705223",
   "#6D4A22",
-  "#684321"
+  "#684321",
 ];
 
 export const RoadTile = () => {
@@ -41,7 +41,7 @@ export const RoadLayout = memo(() => {
   const topPos = Math.floor(40 + roadWidth / 2);
   return (
     <>
-      {reduceQuad(vector(20, 20), vector(60, 60), position => {
+      {reduceQuad(vector(20, 20), vector(60, 60), (position) => {
         const key = vectorKey(position);
         if (
           position.y >= bottomPos &&

@@ -4,12 +4,12 @@ import {
   VECTOR_ORIGIN,
   add,
   equals,
-  vectorKey
-} from "../../engine/vector";
+  vectorKey,
+} from "../../math/vector";
 import { Wall } from "./Wall";
 import { Floor } from "./Floor";
 import { Door, DoorProps } from "./Door";
-import { reduceQuad, VECTOR_NW } from "../../engine/vector";
+import { reduceQuad, VECTOR_NW } from "../../math/vector";
 import { PositionProps } from "../../engine/hasPosition";
 
 export type RoomProps = {
@@ -29,17 +29,17 @@ export const Room = memo(
     children,
     WallComponent = Wall,
     FloorComponent = Floor,
-    DoorComponent = Door
+    DoorComponent = Door,
   }: PropsWithChildren<RoomProps>) => {
     // TODO: Wall/Floor, to be overridable in props, but also can be derived from current biome
     const tiles = useMemo(() => {
       const tiles = reduceQuad<JSX.Element>(
         VECTOR_ORIGIN,
         add(size, VECTOR_NW),
-        position => {
+        (position) => {
           const { x, y } = position;
           const key = vectorKey(position);
-          const found = doors.find(door => equals(door, position));
+          const found = doors.find((door) => equals(door, position));
           if (found) {
             return <DoorComponent key={key} position={add(origin, position)} />;
           }

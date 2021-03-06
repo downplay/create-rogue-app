@@ -1,4 +1,4 @@
-import { Vector, vector } from "./vector";
+import { Vector, vector } from "../math/vector";
 import { v4 } from "uuid";
 
 import { createContext } from "../helpers/createContext";
@@ -12,7 +12,7 @@ export enum GridLayers {
   Item = 2,
   Actor = 3,
   Costume = 4,
-  Fx = 5
+  Fx = 5,
 }
 
 export type Tile = {
@@ -96,7 +96,7 @@ export const gridMutations = {
       layer,
       position,
       entity,
-      state
+      state,
     };
     // TODO: Following grid expansion code didn't work (because of immer proxy)
     // can be reinstated now but need to handle seen grid too
@@ -113,10 +113,10 @@ export const gridMutations = {
       throw new Error("No cell at " + position.x + ", " + position.y);
     }
     return [
-      produce(grid, grid => {
+      produce(grid, (grid) => {
         grid.map[position.y][position.x].tiles.push(tile);
       }),
-      tile
+      tile,
     ];
   },
   updateTileState: (handle: Tile, state: any) => (
@@ -128,7 +128,7 @@ export const gridMutations = {
     }
     // Slightly contorted map so we can retrieve the newly generated item to return as handle
     let newHandle: Tile | undefined;
-    const newTiles = tiles.map(tile => {
+    const newTiles = tiles.map((tile) => {
       // TODO: Can't remember why refs didn't work and id was needed...
       if (tile.id === handle.id) {
         newHandle = { ...tile, state };
@@ -137,7 +137,7 @@ export const gridMutations = {
       return tile;
     });
     if (newHandle) {
-      const newGrid = produce(grid, grid => {
+      const newGrid = produce(grid, (grid) => {
         grid.map[handle.position.y][handle.position.x].tiles = newTiles;
       });
       return [newGrid, newHandle! || handle];
@@ -146,13 +146,13 @@ export const gridMutations = {
   },
   removeTile: (handle: Tile) => (grid: GridState): [GridState, undefined] => {
     const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
-    const index = tiles?.findIndex(tile => tile.id === handle.id);
+    const index = tiles?.findIndex((tile) => tile.id === handle.id);
     if (index !== undefined && index >= 0) {
       return [
-        produce(grid, grid => {
+        produce(grid, (grid) => {
           grid.map[handle.position.y][handle.position.x].tiles.splice(index, 1);
         }),
-        undefined
+        undefined,
       ];
     }
     return [grid, undefined];
@@ -161,11 +161,11 @@ export const gridMutations = {
     return [
       {
         ...grid,
-        seen
+        seen,
       },
-      undefined
+      undefined,
     ];
-  }
+  },
 };
 
 export const gridQueries = {
@@ -182,7 +182,7 @@ export const gridQueries = {
     }
     return found;
   },
-  getCell: (at: Vector) => (grid: GridState): Cell => grid.map[at.y][at.x]
+  getCell: (at: Vector) => (grid: GridState): Cell => grid.map[at.y][at.x],
 };
 
 export const blankGrid = (width: number, height: number): Grid => {
@@ -207,7 +207,7 @@ export const blankSeenGrid = (width: number, height: number): SeenGrid => {
         position: vector(x, y),
         tiles: [],
         inView: false,
-        fromCell: { position: vector(x, y), tiles: [] }
+        fromCell: { position: vector(x, y), tiles: [] },
       });
     }
   }

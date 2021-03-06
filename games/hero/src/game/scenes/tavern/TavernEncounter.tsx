@@ -4,7 +4,7 @@ import { useRng } from "../../../engine/useRng";
 import { RoadLayout, FLAG_ROADSIDE } from "../../biomes/plains/RoadLayout";
 import { TavernExterior } from "./TavernExterior";
 import { useEntityState } from "../../../engine/useEntityState";
-import { vector } from "../../../engine/vector";
+import { vector } from "../../../math/vector";
 import { TavernScene, TavernType, TavernState, TavernStateKey } from "./types";
 import { tavernNameText } from "./text";
 import { TavernInterior } from "./TavernInterior";
@@ -27,7 +27,7 @@ export const TavernEncounter = entity(() => {
       type: rng.pick([TavernType.Brawl, TavernType.Rest]),
       name: tavernNameText(rng),
       size,
-      door
+      door,
     };
   }, []);
 
@@ -52,7 +52,7 @@ export const TavernEncounter = entity(() => {
         console.log(spawn);
         setState({
           ...state,
-          spawn
+          spawn,
         });
       } else {
         game.enqueueTurn(0.1, encounter);
