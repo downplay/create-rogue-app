@@ -6,22 +6,26 @@ import { Meter } from "./controls/Meter";
 import { getLife } from "../engine/hasLife";
 import { getInventory } from "../engine/hasInventory";
 
-export const Status = () => {
-  const player = usePlayer();
+type StatusProps = {
+  player: PlayerState;
+};
+
+export const Status = ({ player }) => {
+  const { mind, body, spirit,  
   const stats = getStats(player.current);
   const life = getLife(player.current);
   const inventory = getInventory(player.current);
 
   return (
     <>
-      <Line>
-        <Emoji>💪</Emoji> {stats?.str}
+    <Line>
+    <Emoji>🧠</Emoji> {mind}
+  </Line>
+  <Line>
+        <Emoji>💪</Emoji> {body}
       </Line>
       <Line>
-        <Emoji>🦵</Emoji> {stats?.dex}
-      </Line>
-      <Line>
-        <Emoji>🧠</Emoji> {stats?.int}
+        <Emoji>🦵</Emoji> {spirit}
       </Line>
       <Line>
         <Emoji>💓</Emoji>{" "}

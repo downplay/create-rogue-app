@@ -16,17 +16,23 @@ const Screen = styled.div`
   grid-template-rows: auto ${CHAR_HEIGHT * 8}px;
 `;
 
-export const Layout = () => {
+type AProps = {
+  player: PlayerState;
+  terminal: TerminalContent;
+  map: GridState;
+};
+
+export const Layout = ({ game, player, terminal, map }: AProps) => {
   return (
     <Screen>
       <Window>
-        <Map />
+        <Map map={map} player={player} />
       </Window>
       <Window>
-        <Status />
+        <Status player={player} game={game} />
       </Window>
       <Window>
-        <Terminal />
+        <Terminal terminal={terminal} game={game} />
       </Window>
     </Screen>
   );

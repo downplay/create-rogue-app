@@ -65,12 +65,12 @@ export const iterateQuad = (
 /**
  * Reduces all vectors inside quad bounded by corners (a,b) inclusive, resulting in an array of T
  */
-export const reduceQuad = <T,>(
+export const reduceQuad = <T>(
   a: Vector,
   b: Vector,
   callback: (value: Vector) => T
 ): T[] => {
   const output: T[] = [];
-  iterateQuad(a, b, value => output.push(callback(value)));
+  iterateQuad(a, b, (value) => output.push(callback(value)));
   return output;
 };

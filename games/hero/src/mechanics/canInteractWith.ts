@@ -1,4 +1,4 @@
-import { useEvent, EntityContext } from "./useEntitiesState";
+import { useEvent, EntityContext } from "../engine/useEntitiesState";
 
 const InteractEventKey = Symbol("Interact");
 

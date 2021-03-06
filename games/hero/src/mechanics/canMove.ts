@@ -30,7 +30,7 @@ export const canMove = () => {
       // we should check what's on the tile before we decide to move, and then call the appropriate
       // action instead (move, attack, open, etc.) - then different actions would trigger different
       // numbers of turns.
-      if (cell.tiles.find(tile => tile.entity?.getFlag(FLAG_SOLID))) {
+      if (cell.tiles.find((tile) => tile.entity?.getFlag(FLAG_SOLID))) {
         // TODO: animate bumping wall (how? - need to send some state to tile)
         return;
       }
@@ -38,7 +38,7 @@ export const canMove = () => {
       // TODO: and we should really just have a findEntity method on the cell ...
       if (actor.getFlag(FLAG_PLAYER)) {
         const monsterTile = cell.tiles.find(
-          tile => tile.entity?.getFlag(FLAG_MONSTER) && !getDeath(tile.entity)
+          (tile) => tile.entity?.getFlag(FLAG_MONSTER) && !getDeath(tile.entity)
         );
         if (monsterTile) {
           // IT'S COMBAT TIME
@@ -48,7 +48,7 @@ export const canMove = () => {
       }
       if (actor.getFlag(FLAG_MONSTER)) {
         const playerTile = cell.tiles.find(
-          tile => tile.entity?.getFlag(FLAG_PLAYER) && !getDeath(tile.entity)
+          (tile) => tile.entity?.getFlag(FLAG_PLAYER) && !getDeath(tile.entity)
         );
         if (playerTile) {
           // IT'S COMBAT TIME

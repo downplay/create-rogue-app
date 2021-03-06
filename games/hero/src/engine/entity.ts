@@ -5,12 +5,13 @@ import {
   EntityContext,
 } from "./useEntitiesState";
 
-// Note on memoisation here. The inner component (the entity definition) is memoised; we don't want
-// all entities and all their hooks re-running every time another entity is updated. Only this
-// outer shim will run, the entity will only update if its own context has changed or something
-// it directly depends on.
-export function entity<TProps>(
-  Component: React.ComponentType<TProps>
+type EntityFactoryProps<TState> = {
+  game: Game,
+  state: TState
+}
+
+export function entity<TState>(
+  factory: 
 ): React.ComponentType<
   TProps & { entityRef: React.MutableRefObject<EntityContext> }
 > {

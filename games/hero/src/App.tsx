@@ -6,16 +6,21 @@ import { Game } from "./game/Game";
 
 import "modern-css-reset/dist/reset.min.css";
 import "./ui/Card.css";
+import { Providers } from "./providers/Providers";
+import { useGame } from "./engine/game";
 
 const initialState = initializeState();
 
 const App = () => {
+  const { game, player, map } = useGame()
   return (
     <RogueProvider initialState={initialState}>
-      <Global />
-      <Layout />
-      <Game />
-      {/* <Player /> */}
+      <Providers>
+        <Global />
+        <Layout />
+        {/* <Game /> */}
+        {/* <Player /> */}
+      </Providers>
     </RogueProvider>
   );
 };

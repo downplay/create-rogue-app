@@ -9,11 +9,11 @@ import {
   VECTOR_NW,
   VECTOR_NE,
   VECTOR_SE,
-  VECTOR_SW
-} from "../engine/vector";
+  VECTOR_SW,
+} from "../math/vector";
 import { hasTile, tile } from "../engine/hasTile";
 import { entity } from "../engine/entity";
-import { useControls, Commands } from "../engine/controls";
+import { useControls, Commands } from "../providers/controls";
 import { canMove } from "../engine/canMove";
 import { hasStats, stats } from "../engine/hasStats";
 import { GridLayers, useGrid } from "../engine/grid";
@@ -27,7 +27,8 @@ import { Card, Description } from "../ui/Card";
 import { Name } from "./meta/Name";
 import { isPlayer, FLAG_PLAYER_SPAWN } from "../engine/flags";
 import { hasSpawnPosition } from "../engine/recipes/hasSpawnPosition";
-import { fireInteract } from "../engine/canInteractWith";
+import { fireInteract } from "../mechanics/canInteractWith";
+import { text } from "../../../../packages/herotext/src/parse";
 
 const PlayerTile = tile("🧙");
 
@@ -39,10 +40,14 @@ const commands = [
   Commands.MoveNW,
   Commands.MoveNE,
   Commands.MoveSE,
-  Commands.MoveSW
+  Commands.MoveSW,
 ];
 
-export const Player = entity(() => {
+export const Player = entity<PlayerState>(({ game, state }) => {
+  return text`
+
+  `;
+
   isPlayer();
   hasTile(PlayerTile, GridLayers.Actor);
   hasInventory({ gold: 0, items: [] });
@@ -181,7 +186,7 @@ export const Player = entity(() => {
           doneTick = true;
         } else {
           turn.entity.fireEvent<TurnEvent>(TurnEventKey, {
-            time: gameState.time
+            time: gameState.time,
           });
         }
       } else {
