@@ -1,4 +1,4 @@
-import { GridContext, GridActions, GridState } from "../engine/grid";
+import { GridContext, GridActions, Grid } from "../engine/grid";
 import { EntityStateRecord } from "../engine/useEntitiesState";
 import { GameState, GameActions, GameContext } from "../engine/game";
 
@@ -30,7 +30,7 @@ export type EntitiesContext = EntitiesState & EntitiesActions;
 
 export type RogueState = {
   game: GameState;
-  grid: GridState;
+  grid: Grid;
   entities: EntitiesState;
   terminal: TerminalState;
 };

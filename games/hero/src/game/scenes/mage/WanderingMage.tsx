@@ -45,7 +45,7 @@ export const WanderingMageEncounter = entity(() => {
       return "FFWOOOOARRRRRMMMM!!!";
     };
     return text`(<null($gender=$genders)>
-By the side of the track you see $a<$appearance> $(kind=$(gender)Kinds)),
+By the side of the track you see <$a($appearance)> $(kind=$(gender)Kinds)),
 accompanied by $a($appearance) $(familiar=$familiars). <title($subjectPronoun)> looks up as
 you approach, cocks $possessivePronoun head on one side, and $observes. The $familiar $familiarVerbs.
 (@aggressive?$title($subjectPronoun) $subjectVerb(attack) you!

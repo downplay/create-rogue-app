@@ -1,11 +1,11 @@
-import { Vector, vector } from "../math/vector";
+import { Vector, vector } from "herotext";
+import { virtualGrid } from "heromap";
 import { v4 } from "uuid";
 
 import { createContext } from "../helpers/createContext";
 import { EntityContext, useEvent } from "./useEntitiesState";
 import { produce } from "immer";
 
-// TODO: use this
 export enum GridLayers {
   Floor = 0,
   Trash = 1,
@@ -31,8 +31,6 @@ export type Cell = {
 
 export type Row = Cell[];
 
-export type Grid = Row[];
-
 export type TileFilterPredicate = (
   tile: Tile,
   cell: Cell
@@ -55,32 +53,32 @@ export type SeenCell = Cell & {
 };
 
 // TODO: Not so keen on "Seen" prefix ... "Known"? "Los"? "View"?
-export type SeenGrid = SeenCell[][];
+export type SeenRows = SeenCell[][];
 
-export type GridState = {
-  map: Grid;
-  seen: SeenGrid;
-};
+export type Grid = {
+  map: Row[];
+  seen: SeenRows;
+} & GridActions;
 
 export type GridActions = {
   addTile: <T extends {}, S>(
     position: Vector,
-    TileComponent: React.ComponentType<T>,
+    TileComponent: string | React.ComponentType<T>,
     layer?: GridLayers,
     entity?: EntityContext,
     state?: S
-  ) => Tile;
+  ) => string;
   updateTileState: (handle: Tile, state: any) => Tile;
-  removeTile: (handle: Tile) => void;
+  removeTile: (handle: string) => void;
   findTiles: (predicate: TileFilterPredicate) => Tile[];
   getCell: (at: Vector) => Cell;
-  updateSeen: (seen: SeenGrid) => void;
+  updateSeen: (seen: SeenRows) => void;
 };
 
-export type GridContext = GridState & GridActions;
+export type GridContext = Grid & GridActions;
 
 export const [useGrid, GridProvider] = createContext<GridActions>();
-export const [useGridState, GridStateProvider] = createContext<GridState>();
+export const [useGridState, GridStateProvider] = createContext<Grid>();
 
 export const gridMutations = {
   addTile: <T, S>(
@@ -89,7 +87,7 @@ export const gridMutations = {
     layer: GridLayers = GridLayers.Floor,
     entity?: EntityContext,
     state?: S
-  ) => (grid: GridState): [GridState, Tile] => {
+  ) => (grid: Grid): [Grid, Tile] => {
     const tile: Tile = {
       TileComponent,
       id: v4(),
@@ -98,17 +96,6 @@ export const gridMutations = {
       entity,
       state,
     };
-    // TODO: Following grid expansion code didn't work (because of immer proxy)
-    // can be reinstated now but need to handle seen grid too
-    // if (!original.map[position.y]) {
-    //   grid.map[position.y] = [];
-    // }
-    // if (!original.map[position.y]?.[position.x]) {
-    //   grid.map[position.y][position.x] = {
-    //     position: { ...position },
-    //     tiles: []
-    //   };
-    // }
     if (!grid.map[position.y]?.[position.x]) {
       throw new Error("No cell at " + position.x + ", " + position.y);
     }
@@ -119,9 +106,7 @@ export const gridMutations = {
       tile,
     ];
   },
-  updateTileState: (handle: Tile, state: any) => (
-    grid: GridState
-  ): [GridState, Tile] => {
+  updateTileState: (handle: Tile, state: any) => (grid: Grid): [Grid, Tile] => {
     const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
     if (!tiles) {
       return [grid, handle];
@@ -144,7 +129,7 @@ export const gridMutations = {
     }
     return [grid, handle];
   },
-  removeTile: (handle: Tile) => (grid: GridState): [GridState, undefined] => {
+  removeTile: (handle: Tile) => (grid: Grid): [Grid, undefined] => {
     const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
     const index = tiles?.findIndex((tile) => tile.id === handle.id);
     if (index !== undefined && index >= 0) {
@@ -157,7 +142,7 @@ export const gridMutations = {
     }
     return [grid, undefined];
   },
-  updateSeen: (seen: SeenGrid) => (grid: GridState): [GridState, undefined] => {
+  updateSeen: (seen: SeenRows) => (grid: Grid): [Grid, undefined] => {
     return [
       {
         ...grid,
@@ -169,7 +154,7 @@ export const gridMutations = {
 };
 
 export const gridQueries = {
-  findTiles: (predicate: TileFilterPredicate) => (grid: GridState): Tile[] => {
+  findTiles: (predicate: TileFilterPredicate) => (grid: Grid): Tile[] => {
     const found = [];
     for (const row of grid.map) {
       for (const cell of row) {
@@ -182,10 +167,10 @@ export const gridQueries = {
     }
     return found;
   },
-  getCell: (at: Vector) => (grid: GridState): Cell => grid.map[at.y][at.x],
+  getCell: (at: Vector) => (grid: Grid): Cell => grid.map[at.y][at.x],
 };
 
-export const blankGrid = (width: number, height: number): Grid => {
+export const blankGrid = (width: number, height: number): Row[] => {
   const grid = [];
   for (let y: number = 0; y < height; y++) {
     const row: Row = [];
@@ -197,7 +182,7 @@ export const blankGrid = (width: number, height: number): Grid => {
   return grid;
 };
 
-export const blankSeenGrid = (width: number, height: number): SeenGrid => {
+export const blankSeenGrid = (width: number, height: number): SeenRows => {
   const grid = [];
   for (let y: number = 0; y < height; y++) {
     const row: SeenCell[] = [];
@@ -220,4 +205,22 @@ export const HideCardEventKey = Symbol("HideCard");
 export const onCard = (show: () => void, hide: () => void) => {
   useEvent(ShowCardEventKey, show);
   useEvent(HideCardEventKey, hide);
+};
+
+export const grid = (): Grid => {
+  const map = virtualGrid<Cell>();
+  const seen = virtualGrid<Cell>();
+  const  addTile = <T = {}>(
+    position: Vector,
+    tile: string | React.ComponentType<T>,
+    layer: GridLayers = GridLayers.Floor,
+    entity?: EntityContext,
+  ) => {
+    map.
+  }
+
+  return {
+    map,
+    seen,
+  };
 };

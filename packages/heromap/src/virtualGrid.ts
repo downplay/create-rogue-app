@@ -14,8 +14,8 @@ type VirtualGridCell<T> = {
 };
 
 export const virtualGrid = <T>(
-  width: number,
-  height: number
+  width: number = 0,
+  height: number = 0
 ): VirtualGrid<T> => {
   const internalGrid: Record<number, Record<number, VirtualGridCell<T>>> = {};
 

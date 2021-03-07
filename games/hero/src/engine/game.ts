@@ -1,6 +1,7 @@
 import { createContext } from "../helpers/createContext";
 import { EntityContext, useEvent, useEntity } from "./useEntitiesState";
 import { produce } from "immer";
+import { Grid } from "./grid";
 
 export const REAL_TIME_SPEED = 50;
 export const wait = (ms: number) =>
@@ -21,6 +22,7 @@ export type GameState = {
   time: number;
   turnQueue: Turn[];
   playerTurn: boolean;
+  grid: Grid;
 };
 
 export type GameActions = {

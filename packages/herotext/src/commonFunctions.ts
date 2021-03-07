@@ -16,18 +16,18 @@ const titleCase = (word: string) => word[0].toLocaleUpperCase() + word.slice(1);
 const pluralise = (word: string) =>
   word[word.length - 1] === "s" ? word + "es" : word + "s";
 
-export const commonFunctions = text`
+export const commonFunctions = text<AProps>`
 a: ($word)
-${({ word }: AProps) => (usesAnForm(word) ? "an" : "a")} $word
+${({ word }) => (usesAnForm(word) ? "an" : "a")} $word
 
 title: ($word)
-${({ word }: AProps) => titleCase(word)}
+${({ word }) => titleCase(word)}
 
 plural: ($word)
-${({ word }: AProps) => pluralise(word)}
+${({ word }) => pluralise(word)}
 
 slice: ($word,$start?,$end?)
-${({ word, start, end }: AProps) => {
+${({ word, start, end }) => {
   const result = word.slice(
     typeof start === "undefined" ? undefined : Number(start),
     typeof end === "undefined" ? undefined : Number(end)

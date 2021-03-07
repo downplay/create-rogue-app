@@ -284,3 +284,16 @@ it("Calls external functions", () => {
     )
   ).toEqual("bar BAR black sheep");
 });
+
+it("Executes child AST trees", () => {
+  const rng = mockRng([0.25, 0.75]);
+  const child = text`[man|$animal]
+
+animal:
+mouse
+chicken
+`;
+  const main = text`Are you ${child} or ${child}?`;
+  console.log(JSON.stringify(main, null, "  "));
+  expect(render(main, rng)).toEqual("Are you man or mouse?");
+});

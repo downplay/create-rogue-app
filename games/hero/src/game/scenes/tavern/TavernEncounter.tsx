@@ -4,7 +4,7 @@ import { useRng } from "../../../engine/useRng";
 import { RoadLayout, FLAG_ROADSIDE } from "../../biomes/plains/RoadLayout";
 import { TavernExterior } from "./TavernExterior";
 import { useEntityState } from "../../../engine/useEntityState";
-import { vector } from "../../../math/vector";
+import { vector } from "herotext/src/vector";
 import { TavernScene, TavernType, TavernState, TavernStateKey } from "./types";
 import { tavernNameText } from "./text";
 import { TavernInterior } from "./TavernInterior";

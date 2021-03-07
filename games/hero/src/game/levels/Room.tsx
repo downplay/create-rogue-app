@@ -5,11 +5,11 @@ import {
   add,
   equals,
   vectorKey,
-} from "../../math/vector";
+} from "herotext/src/vector";
 import { Wall } from "./Wall";
 import { Floor } from "./Floor";
 import { Door, DoorProps } from "./Door";
-import { reduceQuad, VECTOR_NW } from "../../math/vector";
+import { reduceQuad, VECTOR_NW } from "herotext/src/vector";
 import { PositionProps } from "../../engine/hasPosition";
 
 export type RoomProps = {

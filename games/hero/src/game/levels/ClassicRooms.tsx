@@ -9,10 +9,10 @@ import {
   add,
   VECTOR_W,
   VECTOR_S,
-} from "../../math/vector";
+} from "herotext/src/vector";
 import { CorridorOrientation, CorridorProps, Corridor } from "./Corridor";
 import { omitUndefined } from "../../engine/helpers";
-import { VECTOR_N } from "../../math/vector";
+import { VECTOR_N } from "herotext/src/vector";
 import { EntityGroup } from "../../engine/EntityGroup";
 
 const MAX_SIZE = 20;

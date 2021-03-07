@@ -18,11 +18,11 @@ const Screen = styled.div`
 
 type AProps = {
   player: PlayerState;
-  terminal: TerminalContent;
+  content: TerminalContent;
   map: GridState;
 };
 
-export const Layout = ({ game, player, terminal, map }: AProps) => {
+export const Layout = ({ engine, player, content, map }: AProps) => {
   return (
     <Screen>
       <Window>
@@ -32,7 +32,7 @@ export const Layout = ({ game, player, terminal, map }: AProps) => {
         <Status player={player} game={game} />
       </Window>
       <Window>
-        <Terminal terminal={terminal} game={game} />
+        <Terminal content={content} engine={engine} />
       </Window>
     </Screen>
   );

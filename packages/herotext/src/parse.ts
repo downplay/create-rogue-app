@@ -3,7 +3,6 @@ import * as nearley from "nearley";
 import { RNG } from "./rng";
 import { ExecutionContext } from "./ExecutionContext";
 import {
-  ReturnCommand,
   ExecutionResult,
   ContentTextAST,
   ExternalAST,
@@ -16,8 +15,15 @@ import {
   ScopeValue,
 } from "./types";
 import grammar from "./herotext";
-import { ComplexValue } from "./types";
+import {
+  ComplexValue,
+  StateElement,
+  PrimitiveValue,
+  TypedValue,
+} from "./types";
 import { stringify } from "flatted";
+import { Vector, isVector } from "./vector";
+import { ContentItemAST } from "../dist/src/types";
 
 const errorMain = (message: string): MainAST => ({
   type: "main",
@@ -38,6 +44,7 @@ const createChoicesFromObject = (
 // TODO: This should in fact be used in a modified form, but it'll be more like `createScopeFromValues`
 const createLabelFromObject = (key: string, value: any): LabelAST => {
   let content: ContentAST | ScopeValue;
+
   if (value === null || typeof value === "undefined") {
     content = { type: "text", text: "" } as ContentTextAST;
   } else if (typeof value === "string") {
@@ -120,10 +127,15 @@ const stringifyResultItem = (element: ExecutionResultItem): string => {
   if (Array.isArray(element)) {
     return element.map(stringifyResultItem).join("");
   }
-  if (element.type) {
-    switch (element.type) {
+  if (isVector(element)) {
+    const { x, y } = element as Vector;
+    return "<" + x + "," + y + ">";
+  }
+  if (typeof element === "object") {
+    const typed = element as TypedValue;
+    switch (typed.type) {
       case "complex":
-        return stringify(element, null, "  ");
+        return stringify(typed.value, null, "  ");
     }
   }
   return `<Error: Not stringifiable ${stringify(element, null, "  ")}>`;
@@ -146,8 +158,10 @@ export const coalesceResult = (elements: ExecutionResultItem[]): ScopeValue => {
       typeof element === "boolean"
     ) {
       flattened.push(element);
-    } else if (element && element.type && element.type !== "input") {
-      flattened.push(element.value as ScopeValue);
+    } else if (isVector(element)) {
+      flattened.push(element as Vector);
+    } else if (element && (element as TypedValue).type !== "input") {
+      flattened.push((element as PrimitiveValue).value as ScopeValue);
     } else {
       flattened.push(stringifyResultItem(element));
     }
@@ -195,9 +209,16 @@ export const merge = (...mains: MainAST[]) => {
 
 let externalIndex = 0;
 
-export const text = (
+export const text = <T = Record<string, any>>(
   input: TemplateStringsArray,
-  ...interpolations: any[]
+  ...interpolations: (
+    | ((
+        state: T,
+        context: ExecutionContext
+      ) => ExecutionResultItem | ExecutionResultItem[] | void | undefined)
+    | StateElement
+    | MainAST
+  )[]
 ): MainAST => {
   const externals: Record<string, LabelAST> = {};
   const mergedTemplates: MainAST[] = [];
@@ -205,17 +226,27 @@ export const text = (
     .map((fragment, i) => {
       if (interpolations[i]) {
         const external = interpolations[i];
+        // TODO: Maybe do some more checking of types (like heromaps does) and inline strings
         if (
           // TODO: Hmm, not the best way to determine this. Could start using more complex strings
           // for types? e.g. "Herotext::MainAST". Also could still decorate all the ASTs with a symbol I guess...
           typeof external === "object" &&
-          external.type === "main"
+          (external as ContentItemAST).type === "main"
         ) {
-          mergedTemplates.push(external);
-          // TODO: If the template has a main, we should actually still render it. Perhaps merging the labels
-          // like this is not the way to go; if a template is merged mid-paragraph, the labels should only be applied
-          // there, and not merged at top level...
-          return fragment;
+          const main = external as MainAST;
+          mergedTemplates.push(main);
+          // TODO: if a template is merged mid-paragraph, the labels should stay
+          // there, and not merged at top level... really hard to do when the text hasn't been parsed yet ...
+          // unless we use Nearley's streaming parser which would actually help with some other contextual
+          // stuff as well. Actually could wait until *after* the parsing to then merge labels, will be
+          // able to tell if they're at root level. Later.
+          // If there is no content, don't bother embedding it.
+          if (
+            !main.content ||
+            (Array.isArray(main.content) && main.content.length === 0)
+          ) {
+            return fragment;
+          }
         }
         const labelName = "OUT" + externalIndex;
         externalIndex++;

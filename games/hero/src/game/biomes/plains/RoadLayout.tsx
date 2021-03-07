@@ -1,5 +1,5 @@
 import React, { useMemo, memo } from "react";
-import { reduceQuad, vector, vectorKey } from "../../../math/vector";
+import { reduceQuad, vector, vectorKey } from "herotext/src/vector";
 import { Floor } from "../../levels/Floor";
 import { useRng } from "../../../engine/useRng";
 import { Ascii } from "../../../ui/Typography";

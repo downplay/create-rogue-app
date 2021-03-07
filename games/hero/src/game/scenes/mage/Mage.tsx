@@ -1,4 +1,4 @@
-import { Monster } from "../../meta/Monster";
+import { text } from "herotext";
 import { entity } from "../../../engine/entity";
 
 // TODO: depending on biome ...
@@ -7,11 +7,14 @@ import { entity } from "../../../engine/entity";
 // building a snowman
 // ...snowmage!
 
-const maleVariants = ["🧙‍♂️", "🧙🏻‍♂️", "🧙🏼‍♂️", "🧙🏽‍♂️", "🧙🏾‍♂️", "🧙🏿‍♂️"];
+export const maleMageVariants = text`🧙‍♂️|🧙🏻‍♂️|🧙🏼‍♂️|🧙🏽‍♂️|🧙🏾‍♂️|🧙🏿‍♂️`;
 
-const femaleVariants = ["🧙‍♀️", "🧙🏻‍♀️", "🧙🏼‍♀️", "🧙🏽‍♀️", "🧙🏾‍♀️", "🧙🏿‍♀️"];
+export const femaleMageVariants = text`🧙‍♀️|🧙🏻‍♀️|🧙🏼‍♀️|🧙🏽‍♀️|🧙🏾‍♀️|🧙🏿‍♀️`;
 
-export const Mage = entity(() => {
-  // TODO: NPC
-  return <Monster></Monster>;
-});
+export const Mage = entity(text`
+Tile:=
+${maleMageVariants}
+${femaleMageVariants}
+
+${baseMonster}
+`);

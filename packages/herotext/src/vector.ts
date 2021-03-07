@@ -1,3 +1,5 @@
+// TODO: Move to a whole math package. Matrices & RNGs & crap.
+
 export type Vector = {
   x: number;
   y: number;
@@ -5,6 +7,14 @@ export type Vector = {
 
 export const vector = (x: number | Vector, y: number): Vector =>
   typeof x === "number" ? { x, y } : x;
+
+// TODO: 3D vectors
+export const isVector = (test: any) =>
+  Object.prototype.hasOwnProperty.call(test, "x") &&
+  Object.prototype.hasOwnProperty.call(test, "y") &&
+  Object.keys(test).length === 2 &&
+  typeof test.x === "number" &&
+  typeof test.y === "number";
 
 export const vectorKey = ({ x, y }: Vector) => `${x}_${y}`;
 

@@ -1,6 +1,5 @@
 import { stringify } from "flatted";
-import { RNG } from "herotext";
-import { createRng } from "../../herotext/src/rng";
+import { RNG, createRng } from "herotext";
 import { VirtualGrid, virtualGrid } from "./virtualGrid";
 import { BrushNode, BrushNodes } from "./types";
 import {

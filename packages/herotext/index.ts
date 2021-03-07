@@ -1,22 +1,29 @@
-import { text, parse, merge } from "./src/parse";
-import { render, stream, executeText } from "./src/execute";
-// import { commonFunctions } from './src/commonFunctions';
-import { RNG, createRng } from "./src/rng";
-import { ExecutionContext } from "./src/ExecutionContext";
-import { ReturnCommand } from "./src/types";
-import { commonFunctions } from "./src/commonFunctions";
-
+export { text, parse, merge, stringifyResult } from "./src/parse";
+export { render, stream, executeText } from "./src/execute";
+export { RNG, createRng } from "./src/rng";
+export { ExecutionContext } from "./src/ExecutionContext";
+export { MainAST, ReturnCommand, ExecutionResultItem } from "./src/types";
+export { commonFunctions } from "./src/commonFunctions";
 export {
-  text,
-  parse,
-  merge,
-  render,
-  stream,
-  executeText,
-  //   commonFunctions,
-  RNG,
-  createRng,
-  ExecutionContext,
-  ReturnCommand,
-  commonFunctions,
-};
+  vector,
+  Vector,
+  VECTOR_E,
+  VECTOR_NE,
+  VECTOR_ORIGIN,
+  VECTOR_N,
+  VECTOR_NW,
+  VECTOR_S,
+  VECTOR_SE,
+  VECTOR_SW,
+  VECTOR_W,
+  add,
+  addTwo,
+  equals,
+  iterateQuad,
+  multiply,
+  reduceQuad,
+  sortCorners,
+  subtract,
+  subtractTwo,
+  vectorKey,
+} from "./src/vector";

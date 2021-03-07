@@ -6,10 +6,11 @@ it("parses a map", () => {
     #..#
     ####
 
-    Foo = Bar
-    a = Baz
+    Foo  = Bar
+    a    = Baz
     [bc] = [ab]
-    b = Sheep | Cow:30% + Rat:2 | (Bat + Cat):2/3
+    b    = Sheep | Cow:30% + Rat:2 | (Bat + Cat):2/3
+    
     ( a = b ) | ( Cow = Rat )
     `;
 

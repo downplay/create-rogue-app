@@ -600,7 +600,10 @@ executeNode = (
         return executeChoicesNode(node as ContentChoiceAST, context, strand);
       case "main": {
         const result = executeNode((node as MainAST).content, context, strand);
-        if (!context.suspend) {
+        // TODO: Hmm, this could go wrong if MainASTs were embedded recursively,
+        // maybe there's a better way to know if we're at top level, maybe
+        // we should explicitly prevent recursive embeds.
+        if (!context.suspend && node === context.main) {
           context.finished = true;
         }
         return result;

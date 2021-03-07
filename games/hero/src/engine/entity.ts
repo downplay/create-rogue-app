@@ -1,30 +1,40 @@
-import React, { memo } from "react";
-import {
-  useEntityContext,
-  EntityProvider,
-  EntityContext,
-} from "./useEntitiesState";
+import { render, merge, text, createRng, MainAST, Vector } from "herotext";
+import { hasPosition } from "../mechanics/hasPosition";
+import { hasTile } from "../mechanics/hasTile";
 
-type EntityFactoryProps<TState> = {
-  game: Game,
-  state: TState
-}
+export type EntityState = {
+  position: Vector;
+};
 
-export function entity<TState>(
-  factory: 
-): React.ComponentType<
-  TProps & { entityRef: React.MutableRefObject<EntityContext> }
-> {
-  const MemoComponent: React.ComponentType<TProps> = memo(Component) as any; // silly typescript
-  const entityComponent = (props: TProps) => {
-    // TODO: derive initial state values automatically from props
-    const [context, id, destroyed] = useEntityContext();
-    return destroyed ? null : (
-      <EntityProvider value={context}>
-        <MemoComponent {...props} />
-      </EntityProvider>
-    );
+export type EntityTemplate<TState = {}, TGame = {}> = {
+  main: MainAST<EntityState & TState & TGame>;
+  name: String;
+};
+
+// type EntityFactory<TState, TGame> = (
+//   game: GameContext<TGame>
+// ) => MainAST<TGame & TState>;
+
+const baseEntity = text`
+${hasPosition()}
+${hasTile("☻")}
+
+isEntity:=
+true
+
+Name:=
+$Type
+`;
+
+export const entity = <TState, TGame = {}>(
+  story: MainAST<
+    EntityState & TGame & TState
+  > /* | EntityFactory<TState, TGame> */
+): EntityTemplate<TState, TGame> => {
+  const main = merge(baseEntity, story);
+  const name = render(story, createRng(), {}, "Name");
+  return {
+    main,
+    name,
   };
-  entityComponent.displayName = Component.displayName + "Entity";
-  return entityComponent;
-}
+};

@@ -1,20 +1,11 @@
-import { Dispatch } from "react";
-import { Vector } from "./vector";
-import { useEntityState, stateGetter } from "./useEntityState";
-import { SetStateAction } from "../game/types";
+import { text } from "herotext";
+import { vector, Vector } from "herotext/src/vector";
 
-export type PositionProps = { position: Vector };
+export type PositionState = { position: Vector };
 
-const PositionKey = Symbol("Position");
+export const hasPosition = (position = vector(0, 0)) => text`
+position:=
+${() => position}
+`;
 
-export const hasPosition = (
-  position?: Vector | null
-): [Vector | null, Dispatch<SetStateAction<Vector | null>>] => {
-  const [currentPosition, setPosition] = useEntityState<Vector | null>(
-    PositionKey,
-    position
-  );
-  return [currentPosition, setPosition];
-};
-
-export const getPosition = stateGetter<Vector>(PositionKey);
+// TODO: Some kind of event system, onPositionChanged etc?

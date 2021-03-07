@@ -6,7 +6,7 @@ import { PositionProps } from "../../../engine/hasPosition";
 import { useEntityState } from "../../../engine/useEntityState";
 import { TavernState, TavernScene, TavernStateKey } from "./types";
 import { Roof } from "../../levels/Roof";
-import { vector, add, subtract } from "../../../math/vector";
+import { vector, add, subtract } from "herotext/src/vector";
 import { Sign } from "./Sign";
 
 export const TavernEntrance = ({ ...rest }: PositionProps) => {

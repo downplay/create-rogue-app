@@ -12,7 +12,7 @@ import {
   VECTOR_SW,
   VECTOR_W,
   VECTOR_NW,
-} from "../../math/vector";
+} from "herotext/src/vector";
 
 const moves = [
   VECTOR_ORIGIN,

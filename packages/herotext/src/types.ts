@@ -1,4 +1,5 @@
 import { ExecutionContext } from "./ExecutionContext";
+import { Vector } from "./vector";
 
 export interface ContentItemAST {
   type:
@@ -81,11 +82,18 @@ export type StoryInstance = {
 
 // TODO: Passing around stories by reference (e.g. for an instance spawner)
 export type PrimitiveValue = {
-  type: "string" | "number" | "boolean" | "array" | /*| "story"*/ "instance";
+  type:
+    | "string"
+    | "number"
+    | "boolean"
+    | "array"
+    | /*| "story"*/ "instance"
+    | "vector";
   value:
     | string
     | number
     | boolean
+    | Vector
     | PrimitiveValue[]
     | Record<string, PrimitiveValue>
     // | MainAST
@@ -102,6 +110,7 @@ export type ScopeValue =
   | string
   | number
   | boolean
+  | Vector
   | StoryInstance
   | ComplexValue
   | PrimitiveValue
@@ -122,7 +131,7 @@ export type InputAST = ContentItemAST & {
   handler: string;
 };
 
-export type MainAST = {
+export type MainAST<TState = {}> = {
   type: "main";
   content: ContentAST | null;
   labels: Record<string, LabelAST>;
@@ -151,7 +160,11 @@ export type ReturnCommand = {
   handler: string;
 };
 
-export type StateElement = string | number | boolean | StateElement[];
+// TODO: There's a bunch of weird overlap, Scalar vs ExecutionResultItem, also with heromaps.
+// Also will need vector etc.
+export type ScalarValue = string | number | boolean | Vector;
+
+export type StateElement = ScalarValue | StateElement[];
 
 export type StrandPathSegment = string | number;
 
@@ -162,14 +175,15 @@ export type ExecutionStrand = {
   internalState?: any;
 };
 
+export type TypedValue = PrimitiveValue | ComplexValue | ReturnCommand;
+
 export type ExecutionResultItem =
   | null
   | string
   | number
   | boolean
-  | PrimitiveValue
-  | ComplexValue
-  | ReturnCommand;
+  | Vector
+  | TypedValue;
 
 export type ExecutionResult = [NodeExecutionResult, ExecutionContext];
 
