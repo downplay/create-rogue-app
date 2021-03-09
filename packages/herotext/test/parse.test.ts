@@ -30,10 +30,7 @@ it("Parses group", () => {
   });
 
   expect(parse("Text [Group]")).toEqual({
-    content: [
-      { text: "Text ", type: "text" },
-      { text: "Group", type: "text" },
-    ],
+    content: { text: "Text Group", type: "text" },
     labels: {},
     type: "main",
   });
@@ -136,6 +133,64 @@ merge label
         signature: [],
       },
     },
+    type: "main",
+  });
+});
+
+it("Strips out comments", () => {
+  // TODO: Parser should have a mode where comment nodes are included, they're just skipped
+  // on render. This enables editor/autoformatting scenarios where we need to understand the parse
+  // tree and spit sourc eback out.
+  expect(parse("Test//partial line comment")).toEqual({
+    content: { text: "Test", type: "text" },
+    labels: {},
+    type: "main",
+  });
+  expect(parse("Test\\//partial line comment")).toEqual({
+    content: { text: "Test//partial line comment", type: "text" },
+    labels: {},
+    type: "main",
+  });
+  expect(
+    parse("Block comment /* none of this\nrenders */ end of comment")
+  ).toEqual({
+    content: { text: "Block comment  end of comment", type: "text" },
+    labels: {},
+    type: "main",
+  });
+  expect(
+    parse("Block comment \\/* all of this\nrenders */ end of comment")
+  ).toEqual({
+    content: {
+      type: "choices",
+      content: [
+        {
+          content: {
+            text: "Block comment /* all of this",
+            type: "text",
+          },
+          preconditions: [],
+          type: "choice",
+          weight: 10,
+        },
+        {
+          content: {
+            text: "renders */ end of comment",
+            type: "text",
+          },
+          preconditions: [],
+          type: "choice",
+          weight: 10,
+        },
+      ],
+    },
+    labels: {},
+    type: "main",
+  });
+
+  expect(parse("//whole line comment\nTest")).toEqual({
+    content: { text: "Test", type: "text" },
+    labels: {},
     type: "main",
   });
 });

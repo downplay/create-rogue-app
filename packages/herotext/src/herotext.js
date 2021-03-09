@@ -16,11 +16,16 @@ const bassign = {
   push: "nospace",
   value: (x) => x.slice(2, x.length - 2),
 };
+
 const sub = { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1), push: "subpath" };
 const bsub = { match: /\$\[/, push: "sublabel" };
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks: true };
 const space = { match: /[ \t]+/, lineBreaks: false };
 const input = "$?";
+
+const escape = { match: /\\[\\\[\]\{\}\$|:\/]/, value: (x) => x[1] };
+const lineComment = { match: /\/\/.*$/ };
+const blockComment = { match: /\/\*/, push: "comment" };
 
 const lexer = moo.states({
   line: {
@@ -58,13 +63,16 @@ const lexer = moo.states({
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },
-    string: /(?:\$\$|\\[\\\[\]\{\}\$|:]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r:|\[\]\{\}])+/,
-    newline,
-    space,
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     "]": { match: "]", pop: 1 },
     "|": "|",
+    lineComment,
+    blockComment,
+    newline,
+    space,
+    escape,
+    string: moo.fallback
   },
   group: {
     assign,
@@ -72,14 +80,15 @@ const lexer = moo.states({
     sub,
     bsub,
     input,
-    string: {
-      match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$|\[\]])+/,
-      lineBreaks: true,
-    },
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     "]": { match: "]", pop: 1 },
     "|": "|",
+    lineComment,
+    blockComment,
+    space,
+    escape,
+    string: moo.fallback
   },
   nospace: {
     assign,
@@ -87,9 +96,12 @@ const lexer = moo.states({
     sub,
     bsub,
     input,
+    escape,
+    // TODO: nospace is kinda broken anyway, would be nice to switch to moo.fallback, but the precondition
+    // catch-all does it instead; would need a weird group of most non-alphanumeric chars instead
     string: {
       match: /(?:\$\$|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/,
-      lineBreaks:false,
+      lineBreaks: false,
     },
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
@@ -109,6 +121,8 @@ const lexer = moo.states({
     ")": { match: ")", pop: 1 },
     space,
     newline,
+    lineComment,
+    blockComment,
   },
   subpath: {
     path: { match: /\.[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
@@ -127,27 +141,25 @@ const lexer = moo.states({
     "]": { match: "]", next: "subpath" },
     "|": "|",
   },
+  // TODO: Comments inside funcparams should be able to work
   funcparams: {
     //assign,
     //bassign,
     sub,
     bsub,
     input,
-    string: {
-      match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
-      lineBreaks: true,
-    },
     ",": ",",
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     ")": { match: ")", pop: 1 },
     "|": "|",
+    lineComment,
+    blockComment,
+    string: moo.fallback
   },
   precondition: {
-    space,
     number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
     compare: /(?:[<>=!]=?|~=?)/,   
-    string: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,=<>!\\\{\}\$\n\r|\[\]])+/,
     sub,
     bsub,
     "[": { match: "[", push: "group" },
@@ -155,7 +167,14 @@ const lexer = moo.states({
     ",": ",",
     "%": "%",
     "|": "|",
+    space,
+    escape,
+    string: moo.fallback
   },
+  comment: {
+    endComment: { match: "*/", pop: 1 },
+    string: moo.fallback
+  }
 });
 
 const empty = () => null;
@@ -186,7 +205,10 @@ const assignContent = (variable, content) => {
 };
 
 const choices = (items) => {
-  if (!items || items.length === 0) {
+  if (items) {
+    items = items.filter(item => item !== null);
+  }
+  if (items === null || items.length === 0) {
     return null;
   }
   if (items.length === 1 && items[0].preconditions && items[0].preconditions.length === 0) {
@@ -278,22 +300,34 @@ const signatureParam = (name, optional, defaultValue) => ({ type: "param", name,
 
 const inputContent = (value) => ({ type: "input" });
 
-const mergeParts = (a, b) => {
-  while (
-    a[a.length - 1] &&
-    a[a.length - 1].type === "text" &&
-    b.type === "text"
-  ) {
-    b = {
-      ...b,
-      text: a[a.length - 1].text + b.text,
-    };
-    a = a.slice(0, a.length - 1);
+const mergeParts = (parts) => {
+  const merged = [];
+  let last = undefined;
+  for (const part of parts) {
+    if (part === null || typeof part === "undefined") {
+      continue;
+    }
+    if (last && last.type === "text" && part.type === "text") {
+      last.text = last.text + part.text;
+    } else {
+      if (part && part.type === "text") {
+        last = {...part};
+      } else {
+        last = part;
+      }
+      merged.push(last);
+    }
   }
-  return [...a, b];
+  return merged;
 };
 
-const flatParts = (a) => (a.length === 1 ? a[0] : a);
+const flatParts = (a) => {
+  if (typeof a === "string") {
+    throw new Error("String: " + a );
+  }
+  const merged = mergeParts(a);
+  return (merged.length <= 1 ? (merged[0] || null) : merged);
+}
 
 var grammar = {
     Lexer: lexer,
@@ -328,7 +362,7 @@ var grammar = {
     {"name": "content$ebnf$1", "symbols": ["content$ebnf$1", "line"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "content", "symbols": ["content$ebnf$1"], "postprocess": id},
     {"name": "line", "symbols": ["preconditions", "parts", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => choice(d[1], d[0])},
-    {"name": "line", "symbols": ["requiredParts", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => choice(d[0])},
+    {"name": "line", "symbols": ["requiredParts", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": d => d[0] === null ? null : choice(d[0])},
     {"name": "group", "symbols": [{"literal":"["}, "choices", {"literal":"]"}], "postprocess": d => choices(d[1])},
     {"name": "choices", "symbols": ["choice"], "postprocess": d => [d[0]]},
     {"name": "choices", "symbols": ["choices", {"literal":"|"}, "choice"], "postprocess": d => [...d[0], d[2]]},
@@ -357,7 +391,12 @@ var grammar = {
     {"name": "part", "symbols": ["input"], "postprocess": id},
     {"name": "part", "symbols": ["group"], "postprocess": id},
     {"name": "part", "symbols": ["functionCall"], "postprocess": id},
+    {"name": "part", "symbols": ["comment"], "postprocess": empty},
     {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": d => d[0].value},
+    {"name": "string", "symbols": [(lexer.has("escape") ? {type: "escape"} : escape)], "postprocess": d => d[0].value},
+    {"name": "string", "symbols": [(lexer.has("space") ? {type: "space"} : space)], "postprocess": d => d[0].value},
+    {"name": "comment", "symbols": [(lexer.has("lineComment") ? {type: "lineComment"} : lineComment)], "postprocess": empty},
+    {"name": "comment", "symbols": [(lexer.has("blockComment") ? {type: "blockComment"} : blockComment), (lexer.has("string") ? {type: "string"} : string), (lexer.has("endComment") ? {type: "endComment"} : endComment)], "postprocess": empty},
     {"name": "assignment", "symbols": [(lexer.has("assign") ? {type: "assign"} : assign), "choices", (lexer.has("nospaceend") ? {type: "nospaceend"} : nospaceend)], "postprocess": d => assignContent(d[0].value, d[1])},
     {"name": "assignment", "symbols": [(lexer.has("bassign") ? {type: "bassign"} : bassign), "choices", (lexer.has("nospaceend") ? {type: "nospaceend"} : nospaceend)], "postprocess": d => assignContent(d[0].value, d[1])},
     {"name": "substitution", "symbols": ["substitutionPath", (lexer.has("pathend") ? {type: "pathend"} : pathend)], "postprocess": d => subContent(d[0])},
@@ -380,6 +419,7 @@ var grammar = {
     {"name": "_", "symbols": ["_$ebnf$1"], "postprocess": empty},
     {"name": "whitespace$subexpression$1", "symbols": [(lexer.has("newline") ? {type: "newline"} : newline)]},
     {"name": "whitespace$subexpression$1", "symbols": [(lexer.has("space") ? {type: "space"} : space)]},
+    {"name": "whitespace$subexpression$1", "symbols": ["comment"]},
     {"name": "whitespace", "symbols": ["whitespace$subexpression$1"], "postprocess": empty}
 ]
   , ParserStart: "main"

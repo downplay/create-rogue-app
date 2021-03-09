@@ -192,7 +192,7 @@ countdown:+
   expect(render(fixture, rng)).toEqual("3...2...1...");
 });
 
-it("Honours preconditions", () => {
+it("Changes weight in precondition", () => {
   const rng = mockRng([0, 0.18, 0.2, 0.99]);
   // Basic weightings
   const fixture = text`$demo
@@ -208,6 +208,23 @@ demo:
   expect(render(fixture, rng)).toEqual(
     "Doesn't actually have to add up to 100..."
   );
+});
+
+it("Switches on unary precondition", () => {
+  const rng = mockRng();
+  const fixture1 = text`
+{$value?}Yes
+{:}...No
+`;
+  expect(render(fixture1, rng, { value: true })).toEqual("Yes");
+  expect(render(fixture1, rng, { value: false })).toEqual("...No");
+
+  const fixture2 = text`
+{!$value?}No
+{:}...Yes
+`;
+  expect(render(fixture2, rng, { value: false })).toEqual("No");
+  expect(render(fixture2, rng, { value: true })).toEqual("...Yes");
 });
 
 it("Performs substitution inside label names", () => {
@@ -294,6 +311,5 @@ mouse
 chicken
 `;
   const main = text`Are you ${child} or ${child}?`;
-  console.log(JSON.stringify(main, null, "  "));
   expect(render(main, rng)).toEqual("Are you man or mouse?");
 });

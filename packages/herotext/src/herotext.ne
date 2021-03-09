@@ -12,11 +12,16 @@ const bassign = {
   push: "nospace",
   value: (x) => x.slice(2, x.length - 2),
 };
+
 const sub = { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1), push: "subpath" };
 const bsub = { match: /\$\[/, push: "sublabel" };
 const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks: true };
 const space = { match: /[ \t]+/, lineBreaks: false };
 const input = "$?";
+
+const escape = { match: /\\[\\\[\]\{\}\$|:\/]/, value: (x) => x[1] };
+const lineComment = { match: /\/\/.*$/ };
+const blockComment = { match: /\/\*/, push: "comment" };
 
 const lexer = moo.states({
   line: {
@@ -54,13 +59,16 @@ const lexer = moo.states({
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },
-    string: /(?:\$\$|\\[\\\[\]\{\}\$|:]|\\u[a-fA-F0-9]{4}|[^\\\$\n\r:|\[\]\{\}])+/,
-    newline,
-    space,
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     "]": { match: "]", pop: 1 },
     "|": "|",
+    lineComment,
+    blockComment,
+    newline,
+    space,
+    escape,
+    string: moo.fallback
   },
   group: {
     assign,
@@ -68,14 +76,15 @@ const lexer = moo.states({
     sub,
     bsub,
     input,
-    string: {
-      match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$|\[\]])+/,
-      lineBreaks: true,
-    },
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     "]": { match: "]", pop: 1 },
     "|": "|",
+    lineComment,
+    blockComment,
+    space,
+    escape,
+    string: moo.fallback
   },
   nospace: {
     assign,
@@ -83,9 +92,12 @@ const lexer = moo.states({
     sub,
     bsub,
     input,
+    escape,
+    // TODO: nospace is kinda broken anyway, would be nice to switch to moo.fallback, but the precondition
+    // catch-all does it instead; would need a weird group of most non-alphanumeric chars instead
     string: {
       match: /(?:\$\$|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/,
-      lineBreaks:false,
+      lineBreaks: false,
     },
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
@@ -105,6 +117,8 @@ const lexer = moo.states({
     ")": { match: ")", pop: 1 },
     space,
     newline,
+    lineComment,
+    blockComment,
   },
   subpath: {
     path: { match: /\.[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
@@ -123,27 +137,25 @@ const lexer = moo.states({
     "]": { match: "]", next: "subpath" },
     "|": "|",
   },
+  // TODO: Comments inside funcparams should be able to work
   funcparams: {
     //assign,
     //bassign,
     sub,
     bsub,
     input,
-    string: {
-      match: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,\\\{\}\$|\(\)\[\]])+/,
-      lineBreaks: true,
-    },
     ",": ",",
     "{": { match: "{", push: "precondition" },
     "[": { match: "[", push: "group" },
     ")": { match: ")", pop: 1 },
     "|": "|",
+    lineComment,
+    blockComment,
+    string: moo.fallback
   },
   precondition: {
-    space,
     number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
     compare: /(?:[<>=!]=?|~=?)/,   
-    string: /(?:\$\$|\\[\\\[\]\{\}\$|]|\\u[a-fA-F0-9]{4}|[^,=<>!\\\{\}\$\n\r|\[\]])+/,
     sub,
     bsub,
     "[": { match: "[", push: "group" },
@@ -151,7 +163,14 @@ const lexer = moo.states({
     ",": ",",
     "%": "%",
     "|": "|",
+    space,
+    escape,
+    string: moo.fallback
   },
+  comment: {
+    endComment: { match: "*/", pop: 1 },
+    string: moo.fallback
+  }
 });
 
 const empty = () => null;
@@ -182,7 +201,10 @@ const assignContent = (variable, content) => {
 };
 
 const choices = (items) => {
-  if (!items || items.length === 0) {
+  if (items) {
+    items = items.filter(item => item !== null);
+  }
+  if (items === null || items.length === 0) {
     return null;
   }
   if (items.length === 1 && items[0].preconditions && items[0].preconditions.length === 0) {
@@ -274,38 +296,51 @@ const signatureParam = (name, optional, defaultValue) => ({ type: "param", name,
 
 const inputContent = (value) => ({ type: "input" });
 
-const mergeParts = (a, b) => {
-  while (
-    a[a.length - 1] &&
-    a[a.length - 1].type === "text" &&
-    b.type === "text"
-  ) {
-    b = {
-      ...b,
-      text: a[a.length - 1].text + b.text,
-    };
-    a = a.slice(0, a.length - 1);
+const mergeParts = (parts) => {
+  const merged = [];
+  let last = undefined;
+  for (const part of parts) {
+    if (part === null || typeof part === "undefined") {
+      continue;
+    }
+    if (last && last.type === "text" && part.type === "text") {
+      last.text = last.text + part.text;
+    } else {
+      if (part && part.type === "text") {
+        last = {...part};
+      } else {
+        last = part;
+      }
+      merged.push(last);
+    }
   }
-  return [...a, b];
+  return merged;
 };
 
-const flatParts = (a) => (a.length === 1 ? a[0] : a);
+const flatParts = (a) => {
+  if (typeof a === "string") {
+    throw new Error("String: " + a );
+  }
+  const merged = mergeParts(a);
+  return (merged.length <= 1 ? (merged[0] || null) : merged);
+}
 
 %}
 
 @lexer lexer
 
 main              -> _ content _           {% d => main(d[1], []) %}
-                  | _ content _ labels     {% d => main(d[1], d[3]) %}
-                  | _ labels               {% d => main([], d[1]) %}
+                   | _ content _ labels     {% d => main(d[1], d[3]) %}
+                   | _ labels               {% d => main([], d[1]) %}
 
-labels           -> labelledContent:+      {% id %}
+labels            -> labelledContent:+      {% id %}
 
-labelledContent  -> label _ content _      {% d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3]) %}
+labelledContent   -> label _ content _      {% d => label(d[0][0], d[2], d[0][1], d[0][2], d[0][3]) %}
 
 # TODO: Shouldn't allow a signature on label types that don't support (e.g. eq)
 label             -> labelType %space:? %newline                {% id %}
-                    | labelType %space:? "(" signature ")" %space:? %newline  {% ([[value,type,merge], _, __, signature]) => [value, type, merge, signature] %}
+                   | labelType %space:? "(" signature ")" %space:? %newline
+                         {% ([[value,type,merge], _, __, signature]) => [value, type, merge, signature] %}
 
 labelType         -> %label                {% d => [d[0].value, "label"] %}
                    | %labeleq              {% d => [d[0].value, "set"] %}
@@ -324,17 +359,17 @@ signatureParam    -> %varname "?":?        {% d => signatureParam(d[0].value, d[
 content           -> line:+                         {% id %}
 
 # Lines can be observed as empty only if they begin will an (allowably empty) precondition
-line              -> preconditions parts %newline  {% d => choice(d[1], d[0]) %}
-                   | requiredParts %newline         {% d => choice(d[0]) %}
+line              -> preconditions parts %newline   {% d => choice(d[1], d[0]) %}
+                   | requiredParts %newline         {% d => d[0] === null ? null : choice(d[0]) %}
 
 group             -> "[" choices "]"                {% d => choices(d[1]) %}
 
 choices           -> choice                         {% d => [d[0]] %}                         
-                    | choices "|" choice            {% d => [...d[0], d[2]] %}
+                   | choices "|" choice             {% d => [...d[0], d[2]] %}
 
-choice            -> preconditions:? parts      {% d => choice(d[1], d[0]) %}
+choice            -> preconditions:? parts          {% d => choice(d[1], d[0]) %}
 
-preconditions     -> "{" conditions:? "}"             {% d => d[1] || [] %}
+preconditions     -> "{" conditions:? "}"           {% d => d[1] || [] %}
 
 conditions        -> condition                      {% d => [d[0]] %}                     
                    | conditions "," condition       {% d => [...d[0], d[2]] %}
@@ -357,8 +392,14 @@ part              -> string                         {% d => textContent(d[0]) %}
                    | input                          {% id %}
                    | group                          {% id %}
                    | functionCall                   {% id %}
+                   | comment                        {% empty %}
 
 string            -> %string                        {% d => d[0].value %}
+                   | %escape                        {% d => d[0].value %}
+                   | %space                         {% d => d[0].value %}
+
+comment           -> %lineComment                      {% empty %}
+                   | %blockComment %string %endComment {% empty %}
 
 assignment        -> %assign choices %nospaceend    {% d => assignContent(d[0].value, d[1]) %}
                    | %bassign choices %nospaceend   {% d => assignContent(d[0].value, d[1]) %}
@@ -389,4 +430,4 @@ input             -> %input                         {% d => inputContent() %}
 
 _                 -> whitespace:*                   {% empty %} 
 
-whitespace        -> (%newline | %space)            {% empty %}
+whitespace        -> (%newline | %space | comment)  {% empty %}

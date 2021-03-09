@@ -22,17 +22,49 @@ it("Streams simple string", () => {
   ]);
 });
 
-it.skip("Accepts input", () => {
+it("Accepts input", () => {
   const rng = mockRng();
   const main = text`[Input something: $input=$?]`;
   const bailResult = stream(main, rng);
+
+  const rootThreadResult = {
+    children: [
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                internalState: undefined,
+                localScope: {},
+                path: "",
+              },
+            ],
+            internalState: undefined,
+            localScope: {},
+            path: "content",
+          },
+        ],
+        internalState: [],
+        localScope: {},
+        path: 1,
+      },
+    ],
+    localScope: {},
+    path: "",
+  };
+
   expect(bailResult).toEqual([
     [
       "Input something: ",
       {
         type: "input",
-        execution: {
-          path: ["1", "0"],
+        handler: undefined,
+        strand: {
+          children: [],
+          localScope: {},
+          path: "",
+          internalState: undefined,
         },
       },
     ],
@@ -42,17 +74,24 @@ it.skip("Accepts input", () => {
       error: false,
       state: {},
       main,
+      rng,
+      root: rootThreadResult,
     }),
   ]);
-  (bailResult[0][1] as ReturnCommand).execution.yieldValue = "something";
-  const finalResult = fixture.stream(rng, undefined, bailResult[1]);
+  (bailResult[0][1] as ReturnCommand).strand.internalState = "something";
+  const finalResult = stream(main, rng, undefined, bailResult[1]);
+  rootThreadResult.children[0].children[0].children[0].internalState =
+    "something";
   expect(finalResult).toEqual([
     ["something"],
     new ExecutionContext({
+      main,
       finished: true,
-      bail: false,
+      suspend: false,
       error: false,
       state: { input: "something" },
+      rng,
+      root: rootThreadResult,
     }),
   ]);
 });

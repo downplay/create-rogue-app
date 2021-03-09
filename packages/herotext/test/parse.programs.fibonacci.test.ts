@@ -1,4 +1,4 @@
-import { text } from "../src/parse";
+import { text } from "../src/text";
 import { mockRng } from "./testUtils";
 
 it.skip("Computes Fibonacci sequence", () => {
