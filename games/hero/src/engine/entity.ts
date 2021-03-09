@@ -1,7 +1,16 @@
-import { render, merge, text, createRng, MainAST, Vector } from "herotext";
+import {
+  render,
+  merge,
+  text,
+  createRng,
+  MainAST,
+  Vector,
+  ExecutionContext,
+  commonFunctions,
+} from "herotext";
 import { hasPosition } from "../mechanics/hasPosition";
 import { hasTile } from "../mechanics/hasTile";
-import { ExecutionContext } from "../../../../packages/herotext/src/ExecutionContext";
+import { grammarHelpers } from "./grammarHelpers";
 
 export type EntityState = {
   position: Vector;
@@ -47,7 +56,7 @@ export const entity = <TState, TGame = {}>(
     EntityState & TGame & TState
   > /* | EntityFactory<TState, TGame> */
 ): EntityTemplate<TState, TGame> => {
-  const main = merge(baseEntity, story);
+  const main = merge(commonFunctions, grammarHelpers, baseEntity, story);
   const name = render(story, createRng(), {}, "Name");
   return {
     main,

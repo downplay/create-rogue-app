@@ -23,6 +23,9 @@ ${({ word }) => (usesAnForm(word) ? "an" : "a")} $word
 title: ($word)
 ${({ word }) => titleCase(word)}
 
+lower: ($word)
+${({ word }) => word.toLocaleLowerCase()}
+
 plural: ($word)
 ${({ word }) => pluralise(word)}
 

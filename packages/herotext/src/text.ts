@@ -81,7 +81,7 @@ const createLabelFromObject = (key: string, value: any): LabelAST => {
 // TODO: Assign ids on a symbol key instead to not duplicate things
 let externalIndex = 0;
 
-export const text = <T = Record<string, any>>(
+export const text = <T extends {}>(
   input: TemplateStringsArray,
   ...interpolations: (
     | ((

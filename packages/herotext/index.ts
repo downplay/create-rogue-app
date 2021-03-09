@@ -1,3 +1,4 @@
+export { storyInstance, StoryInstance } from "./src/instance";
 export { parse, merge, stringifyResult } from "./src/parse";
 export { text } from "./src/text";
 export { render, stream, executeText } from "./src/execute";

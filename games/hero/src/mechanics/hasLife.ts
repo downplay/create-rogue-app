@@ -1,25 +1,10 @@
-import { conjugate } from "../engine/helpers";
-import { useEffect, useRef } from "react";
-import { Vector } from "./vector";
-import { useEntityState, stateGetter, stateSetter } from "./useEntityState";
-import { hasStats } from "./hasStats";
-import { useEntity } from "./useEntitiesState";
-import { getName } from "./hasName";
-import { text } from '../../../../packages/herotext/src/text';
+import { text } from "herotext";
 
-export type PositionProps = { position: Vector };
+export type LifeProps = { life: number; health: number; isDead: boolean };
 
-const LifeKey = Symbol("Life");
-const DeathKey = Symbol("Death");
+type LabelProps = LifeProps & { old: LifeProps; newLife: number };
 
-export const hasLife = (life: number) => useEntityState<number>(LifeKey, life);
-export const hasDeath = () => useEntityState<boolean>(DeathKey, false);
-
-  // TODO: Probably we don't want to check isDead literally everywhere ... think of a way to completely
-  // shut down the entity after death. Maybe similar to isDestroyed, but do it in an `actor()` HoC?
-// TODO: Calculate health based on stats. Update on stats change.
-
-export const canLiveAndDie = (health: number = 10) => text`
+export const canLiveAndDie = (health: number = 10) => text<LabelProps>`
 life:=
 ${health}
 
@@ -30,44 +15,21 @@ isDead:=
 ${false}
 
 die:
-[$isDead=${true}]$title($Name) $conjugate(die,dies).
+// TODO: Probably we don't want to check isDead literally everywhere ... think of a way to completely
+// shut down the entity after death. Or spawn a corpse just with same tile.
+[$isDead=${true}]$conjugate($Name,The $lower($Name)) $conjugate(die,dies)!
 
-updateLife: ($newLife) => {
-    // Clamp to 0..1
-    // TODO: clamp function in  math lib
-    const clamped = Math.max(0, Math.min(newLife, stats.hp));
-    setLife(clamped);
-  };
+updateLife: ($newLife)
+// Clamp to 0..1
+// TODO: clamp function in  math lib
+$life=${({ health, newLife }) =>
+  Math.max(0, Math.min(newLife, health))}$checkDeath
 
-  const die = () => {
-    terminal.write(`${getName(actor)} ${conjugate(actor, "die", "dies")}!`);
-    setDeath(true);
-  };
+checkDeath: 
+{!$isDead,$life<=0}$die
 
-  // Manage initialization and stat adjusted
-  useEffect(() => {
-    if (stats === undefined || isDead) {
-      return;
-    }
-    if (life === undefined) {
-      // Initialise to full life
-      updateLife(stats.hp);
-    } else {
-      // If hp has increased, increase life accordingly
-      updateLife(life + stats.hp - oldHpRef.current);
-    }
-    oldHpRef.current = stats.hp;
-  }, [stats.hp]);
-
-  useEffect(() => {
-    if (!isDead && life !== undefined && life <= 0) {
-      die();
-    }
-  }, [life]);
-
-  return [life, updateLife];
-};
-
-export const getLife = stateGetter<number>(LifeKey);
-export const setLife = stateSetter<number>(LifeKey);
-export const getDeath = stateGetter<boolean>(DeathKey);
+onStatsChanged:~ ($old)
+// TODO: Calculate health based on stats. Update on stats change.
+$updateLife(${({ life, health, old }) =>
+  health !== old.health ? life + health - old.health : life})
+`;

@@ -1,11 +1,5 @@
-import { text, commonFunctions } from "herotext";
-import React, { useRef } from "react";
-import { RoadLayout } from "../../biomes/plains/RoadLayout";
-import { entity } from "../../../engine/entity";
-import { Mage } from "./Mage";
-import { EntityContext } from "../../../engine/useEntitiesState";
-import { useStory } from "../../../engine/useStory";
-import { hasName } from "../../../engine/hasName";
+import { text, commonFunctions, storyInstance } from "herotext";
+import { Familiar } from "./Familiar";
 
 // TODO: Figure out a good way to reuse things between text templates
 
@@ -27,30 +21,24 @@ type WanderingMageStory = {
 // so it doesn't spawn solid materials on top of wildlife.
 // Something like the mage can adapt with different costumes and inventory. Familiar could be biome-appropriate animal.
 
-export const WanderingMageEncounter = entity(() => {
-  const mageRef = useRef<EntityContext>();
-
-  const [story, dispatch] = useStory<WanderingMageStory>(() => {
-    const warningFireball = async (state: WanderingMageStory) => {
-      // TODO: Some contortions required here if we want to avoid promises (for savegame support).
-      // Need a ref to a story handle (2nd arg to this callback) that can be resolved when the fireball lands.
-      // On rehydate, we'll need to get back to this point and can call this function again;
-      // and the state that instances the fireball needs to be restored.
-      // Could handle this by using predetermined id (e.g. "WanderingMageWarningFireball")
-      // Also consider state machines (useful also for e.g switching behaviours, see Barkeep)
-      // mageRef.current.
-      return "FWOOOOOOM!";
-    };
-    const seriousFireball = async (state: WanderingMageStory) => {
-      return "FFWOOOOARRRRRMMMM!!!";
-    };
-    return text`(<null($gender=$genders)>
+// TODO: figure out this scripting
+const warningFireball = (state: WanderingMageStory) => {
+  return "FWOOOOOOM!";
+};
+const seriousFireball = (state: WanderingMageStory) => {
+  return "FFWOOOOARRRRRMMMM!!!";
+};
+export const WanderingMage = text`(<null($gender=$genders)>
 By the side of the track you see <$a($appearance)> $(kind=$(gender)Kinds)),
 accompanied by $a($appearance) $(familiar=$familiars). <title($subjectPronoun)> looks up as
 you approach, cocks $possessivePronoun head on one side, and $observes. The $familiar $familiarVerbs.
 (@aggressive?$title($subjectPronoun) $subjectVerb(attack) you!
 :$dialog)
 )
+
+Setup:~
+$familiar=${() => storyInstance(Familiar)}
+
 
 dialog:
 ("So, are you going to tell me why I shouldn't just roast you alive, right here on the spot?" asks the $kind.
@@ -133,7 +121,6 @@ possessivePronoun:
 subjectVerb(verb):
 @verb($gender!=neutral?s)
 
-
 observes:
 swints sideways at you
 glares in your direction
@@ -150,17 +137,3 @@ intimidatingly
 weightily
 gruffly
 `;
-  });
-
-  // TODO: changing the name should update the state
-  hasName(story.name || story.kind);
-
-  return (
-    <>
-      <RoadLayout />
-      <Mage entityRef={mageRef} />
-      <Familiar owner={mageRef.current} />
-      {children}
-    </>
-  );
-});

@@ -22,7 +22,7 @@ import {
 import { RNG } from "./rng";
 import { ExecutionContext } from "./ExecutionContext";
 import { stringifyResult, coalesceResult } from "./parse";
-import { FunctionAST, ComplexValue, PrimitiveValue, ScopeValue } from './types';
+import { FunctionAST, ComplexValue, PrimitiveValue, ScopeValue } from "./types";
 
 // TODO: command line param
 const debug = (...parts: any) => {};
@@ -726,7 +726,7 @@ export const executeText = (
 export const render = (
   main: MainAST,
   rng: RNG,
-  variables?: Record<string, ScopeValue>,
+  variables?: Record<string, StateElement>,
   entryPoint: string = ""
 ): string => {
   // console.log(JSON.stringify(main, null, "  "));
@@ -742,7 +742,7 @@ export const render = (
 export const stream = (
   main: MainAST,
   rng: RNG,
-  variables?: Record<string, ScopeValue>,
+  variables?: Record<string, StateElement>,
   executionContext?: ExecutionContext,
   entryPoint: string = ""
 ) =>

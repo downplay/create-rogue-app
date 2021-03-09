@@ -1,3 +1,4 @@
+import { storyInstance } from "herotext";
 import { useMemo } from "react";
 import { EntityTemplate } from "./entity";
 import { Grid, grid } from "./grid";
@@ -19,8 +20,21 @@ type Props = {
 
 const engine = ({ entities }: Props): HeroEngine => {
   const map = grid();
-  const playerInstance = storyInstance(Player);
-  return { entities, map };
+  const playerInstance = storyInstance<PlayerState>(Player.main);
+  // TODO: map is in two places for no reason
+  const game: GameState = {
+    time: 0,
+    turnQueue: [],
+    playerTurn: false,
+    grid: map,
+  };
+  return {
+    entities,
+    map,
+    player: playerInstance.globalScope,
+    content: [],
+    game,
+  };
 };
 
 export const useEngine = (props: Props): HeroEngine => {

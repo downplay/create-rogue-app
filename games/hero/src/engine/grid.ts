@@ -66,7 +66,7 @@ export type GridActions = {
     state?: S
   ) => string;
   removeTile: (position: Vector, handle: string) => void;
-  updateTileState: (position: Vector, handle: Tile, state: any) => void;
+  updateTileState: (position: Vector, handle: string, state: any) => void;
   findTiles: (predicate: TileFilterPredicate) => Tile[];
   getCell: (at: Vector) => Cell | undefined;
   updateSeen: (los: Vector[]) => void;

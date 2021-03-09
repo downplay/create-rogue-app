@@ -17,10 +17,10 @@ type Props = {
   owner: EntityContext;
 };
 
+// Could theoretically change type at any point to morph the familiar
 export const Familiar = ({ owner }: Props) => {
   const rng = useRng();
 
-  /* TODO: Could theoretically change type at any point to morph the familiar.
      This useState should be converted to some kind of "usePersistedState".
      Or. Does Familiar become another entity with its own state */
   const [familiarType] = useState(() => rng.pick(Object.keys(familiarTypes)));

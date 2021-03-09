@@ -1,4 +1,4 @@
-import { text } from "../../../../packages/herotext/src/text";
+import { text } from "herotext";
 
 export const grammarHelpers = text`
 conjugate: ($ifSelf, $ifOther)

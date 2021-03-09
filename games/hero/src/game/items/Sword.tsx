@@ -1,25 +1,24 @@
 import React from "react";
 import { tile, hasTile } from "../../engine/hasTile";
 import { GridLayers } from "../../engine/grid";
-import { onTake } from "../../engine/hasInventory";
 import { Item } from "../meta/Item";
 import { Card, Description } from "../../ui/Card";
 import { Name } from "../meta/Name";
-import { useStory } from "../../engine/useStory";
 import { text } from "../../engine/text/parse";
-import { useText } from "../../engine/useText";
 
-type SwordProps = {};
+type SwordState = {};
 
 export const SwordTile = tile("†");
 
-const descriptionText = text`
+export const Sword = text`
 You see $a($name).
 
-name:
+${hasTile(SwordTile, GridLayers.Item)}
+
+Name:
 $material $blade
 
-description:
+Description:
 A $size $class $material $blade.
 
 blade:=
@@ -28,6 +27,8 @@ rapier
 
 class:=
 
+toughness:=
+10
 
 material:=
 []wooden
@@ -45,19 +46,3 @@ size:=
 [10%,~10]large
 [1%,~100]massive
 `;
-
-export const Sword = ({}: SwordProps) => {
-  hasTile(SwordTile, GridLayers.Item);
-  const {state: {toughness}} = useStory(descriptionText);
-  const description = useText;
-  return (
-    <Item>
-      <Card>
-        <Name>{name}</Name>
-        <Description>
-          <SwordTile /> {description}
-        </Description>
-      </Card>
-    </Item>
-  );
-};

@@ -1,4 +1,6 @@
-import { text } from "herotext";
+import { text, merge, commonFunctions, MainAST } from "herotext";
+import { grammarHelpers } from "../../engine/grammarHelpers";
+
 export const baseMonster = text`
 hp:%=
 $maxhp
@@ -17,3 +19,6 @@ DescribeHealth:
 DescribePartialHealth: ($fraction)
 It is [{$fraction>0.75} slightly hurt|[{0.25>=$fraction>=0.75}half|{$fraction<0.25}nearly] dead].
 `;
+
+export const monster = (...stories: MainAST[]) =>
+  merge(commonFunctions, grammarHelpers, baseMonster, ...stories);

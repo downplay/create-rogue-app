@@ -1,14 +1,15 @@
+import { render, MainAST } from "herotext";
 import { useMemo } from "react";
 import { useRng } from "./useRng";
-import { ParsedTextTemplate } from "./text/parse";
 
+// TODO: Probably also a candidate for `herotext-react`
 export const useText = (
-  text: ParsedTextTemplate,
+  text: MainAST,
   variables: Record<string, string> = {}
 ) => {
   const rng = useRng();
   // TODO: Needs caching at save file level
   return useMemo(() => {
-    return text.render(rng, variables);
+    return render(text, rng, variables);
   }, [text]);
 };

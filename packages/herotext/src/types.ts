@@ -1,5 +1,6 @@
 import { ExecutionContext } from "./ExecutionContext";
 import { Vector } from "./vector";
+import { StoryInstance } from "./instance";
 
 export interface ContentItemAST {
   type:
