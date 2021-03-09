@@ -16,7 +16,7 @@ Object {
   },
   "cells": Array [
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Floor",
@@ -26,7 +26,7 @@ Object {
       "y": 0,
     },
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Wall",
@@ -54,7 +54,7 @@ Object {
   },
   "cells": Array [
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Floor",
@@ -89,7 +89,7 @@ Object {
   },
   "cells": Array [
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Wall",
@@ -99,7 +99,7 @@ Object {
       "y": 0,
     },
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Wall",
@@ -131,7 +131,7 @@ Object {
   },
   "cells": Array [
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Rat",
@@ -141,7 +141,7 @@ Object {
       "y": 0,
     },
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Floor",
@@ -151,7 +151,7 @@ Object {
       "y": 0,
     },
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Floor",
@@ -161,7 +161,7 @@ Object {
       "y": 0,
     },
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Wall",
@@ -171,7 +171,7 @@ Object {
       "y": 0,
     },
     Object {
-      "cells": Array [
+      "element": Array [
         Object {
           "params": Object {},
           "type": "Wall",

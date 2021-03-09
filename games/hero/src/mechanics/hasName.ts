@@ -1,9 +1,6 @@
-import { useEntityState, stateGetter } from "./useEntityState";
+import { render, RNG } from "herotext";
 
-const NameKey = Symbol("Name");
+export const LABEL_NAME = "Name";
 
-// TODO: Name shouldn't really be state, it's more an attribute or characteristic? More similar to flags.
-// Generally always inferred.
-export const hasName = (name: string) => useEntityState(NameKey, name);
-
-export const getName = stateGetter<string>(NameKey);
+export const getName = (instance: StoryInstance, rng: RNG) =>
+  render(instance.main, rng, instance.globalScope, LABEL_NAME);

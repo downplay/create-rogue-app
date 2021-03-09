@@ -1,15 +1,28 @@
-import { useEvent, EntityContext } from "../engine/useEntitiesState";
+import { text } from "herotext";
 
-const InteractEventKey = Symbol("Interact");
+// TODO: This is ok for now. As only player will be interacting.
+// But eventually need a way to AI monsters & allies to be able to
+// interact stuff. Or muliplayer we need to know who interacted.
+// interact: ($entity)
+// $onInteract($entity)
 
-export type InteractEvent = {
-  actor: EntityContext;
-};
+export const canInteractWith = text`
+interact:
+$onInteract
+`;
 
-export const onInteract = (handler?: (event: InteractEvent) => void) => {
-  useEvent(InteractEventKey, handler);
-};
+// import { useEvent, EntityContext } from "../engine/useEntitiesState";
 
-export const fireInteract = (actor: EntityContext, target: EntityContext) => {
-  target.fireEvent(InteractEventKey, { actor });
-};
+// const InteractEventKey = Symbol("Interact");
+
+// export type InteractEvent = {
+//   actor: EntityContext;
+// };
+
+// export const onInteract = (handler?: (event: InteractEvent) => void) => {
+//   useEvent(InteractEventKey, handler);
+// };
+
+// export const fireInteract = (actor: EntityContext, target: EntityContext) => {
+//   target.fireEvent(InteractEventKey, { actor });
+// };

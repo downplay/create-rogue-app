@@ -75,11 +75,6 @@ export type FunctionInvocationAST = Omit<ContentSubstitutionAST, "type"> & {
   parameters: ContentAST[];
 };
 
-export type StoryInstance = {
-  main: MainAST;
-  globalScope: Record<string, ScopeValue>;
-};
-
 // TODO: Passing around stories by reference (e.g. for an instance spawner)
 export type PrimitiveValue = {
   type:

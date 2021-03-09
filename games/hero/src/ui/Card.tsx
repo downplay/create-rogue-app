@@ -1,7 +1,6 @@
 import React, { useRef, useState, useCallback, useLayoutEffect } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
-import { onCard } from "../engine/grid";
 import { FONT_SIZE, CHAR_HEIGHT } from "./Typography";
 
 const portalRoot = document.getElementById("card");
@@ -41,6 +40,14 @@ const CardPortal = ({ children }: React.PropsWithChildren<{}>) => {
   }, []);
 
   return ReactDOM.createPortal(children, portalRef.current);
+};
+
+export const ShowCardEventKey = Symbol("ShowCard");
+export const HideCardEventKey = Symbol("HideCard");
+
+export const onCard = (show: () => void, hide: () => void) => {
+  useEvent(ShowCardEventKey, show);
+  useEvent(HideCardEventKey, hide);
 };
 
 export const Card = ({ children }: React.PropsWithChildren<{}>) => {

@@ -1,10 +1,13 @@
 import React from "react";
 import styled from "styled-components";
 import { Window } from "./Window";
-import { Map } from "../game/dungeon/Map";
-import { Terminal } from "./Terminal";
+import { Terminal, TerminalContent } from "./Terminal";
 import { CHAR_WIDTH, CHAR_HEIGHT } from "./Typography";
 import { Status } from "./Status";
+import { GameState } from "../engine/game";
+import { Grid } from "../engine/grid";
+import { PlayerState } from "../game/Player";
+import { Map } from "../map/Map";
 
 const Screen = styled.div`
   position: relative;
@@ -19,7 +22,8 @@ const Screen = styled.div`
 type AProps = {
   player: PlayerState;
   content: TerminalContent;
-  map: GridState;
+  map: Grid;
+  game: GameState;
 };
 
 export const Layout = ({ engine, player, content, map }: AProps) => {

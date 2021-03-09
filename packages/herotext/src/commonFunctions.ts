@@ -1,4 +1,4 @@
-import { text } from "./parse";
+import { text } from "./text";
 
 const vowels = ["a", "e", "i", "o", "u"];
 

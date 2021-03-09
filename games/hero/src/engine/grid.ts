@@ -1,10 +1,8 @@
-import { Vector, vector } from "herotext";
-import { virtualGrid } from "heromap";
+import { Vector } from "herotext";
+import { virtualGrid, VirtualGrid } from "heromap";
 import { v4 } from "uuid";
 
-import { createContext } from "../helpers/createContext";
-import { EntityContext, useEvent } from "./useEntitiesState";
-import { produce } from "immer";
+import { EntityContext } from "./useEntitiesState";
 
 export enum GridLayers {
   Floor = 0,
@@ -17,12 +15,18 @@ export enum GridLayers {
 
 export type Tile = {
   id: string;
-  TileComponent: React.ComponentType<any>;
+  content: TileContent<any>;
   layer: GridLayers;
-  position: Vector;
   entity?: EntityContext;
   state?: any;
 };
+
+export type TileContent<T> = string | React.ComponentType<T>;
+
+export type TileFilterPredicate = (
+  tile: Tile,
+  cell: Cell
+) => boolean | undefined;
 
 export type Cell = {
   tiles: Tile[];
@@ -30,11 +34,6 @@ export type Cell = {
 };
 
 export type Row = Cell[];
-
-export type TileFilterPredicate = (
-  tile: Tile,
-  cell: Cell
-) => boolean | undefined;
 
 export type SeenCell = Cell & {
   /**
@@ -48,179 +47,119 @@ export type SeenCell = Cell & {
    * needs regenerating now.
    */
   fromCell: Cell;
-
-  // TODO: Maybe no point having position here since it's also in the map cell
 };
 
 // TODO: Not so keen on "Seen" prefix ... "Known"? "Los"? "View"?
 export type SeenRows = SeenCell[][];
 
 export type Grid = {
-  map: Row[];
-  seen: SeenRows;
+  map: VirtualGrid<Cell>;
+  seen: VirtualGrid<SeenCell>;
 } & GridActions;
 
 export type GridActions = {
   addTile: <T extends {}, S>(
     position: Vector,
-    TileComponent: string | React.ComponentType<T>,
+    content: string | React.ComponentType<T>,
     layer?: GridLayers,
     entity?: EntityContext,
     state?: S
   ) => string;
-  updateTileState: (handle: Tile, state: any) => Tile;
-  removeTile: (handle: string) => void;
+  removeTile: (position: Vector, handle: string) => void;
+  updateTileState: (position: Vector, handle: Tile, state: any) => void;
   findTiles: (predicate: TileFilterPredicate) => Tile[];
-  getCell: (at: Vector) => Cell;
-  updateSeen: (seen: SeenRows) => void;
+  getCell: (at: Vector) => Cell | undefined;
+  updateSeen: (los: Vector[]) => void;
 };
 
 export type GridContext = Grid & GridActions;
 
-export const [useGrid, GridProvider] = createContext<GridActions>();
-export const [useGridState, GridStateProvider] = createContext<Grid>();
-
-export const gridMutations = {
-  addTile: <T, S>(
+export const grid = (): Grid => {
+  const map = virtualGrid<Cell>();
+  const seen = virtualGrid<SeenCell>();
+  const addTile = <T = {}>(
     position: Vector,
-    TileComponent: React.ComponentType<T>,
+    content: TileContent<T>,
     layer: GridLayers = GridLayers.Floor,
     entity?: EntityContext,
-    state?: S
-  ) => (grid: Grid): [Grid, Tile] => {
+    state?: any
+  ) => {
     const tile: Tile = {
-      TileComponent,
       id: v4(),
+      content,
       layer,
-      position,
       entity,
       state,
     };
-    if (!grid.map[position.y]?.[position.x]) {
-      throw new Error("No cell at " + position.x + ", " + position.y);
-    }
-    return [
-      produce(grid, (grid) => {
-        grid.map[position.y][position.x].tiles.push(tile);
-      }),
-      tile,
-    ];
-  },
-  updateTileState: (handle: Tile, state: any) => (grid: Grid): [Grid, Tile] => {
-    const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
-    if (!tiles) {
-      return [grid, handle];
-    }
-    // Slightly contorted map so we can retrieve the newly generated item to return as handle
-    let newHandle: Tile | undefined;
-    const newTiles = tiles.map((tile) => {
-      // TODO: Can't remember why refs didn't work and id was needed...
-      if (tile.id === handle.id) {
-        newHandle = { ...tile, state };
-        return newHandle;
-      }
-      return tile;
+    map.update(position.x, position.y, (current) => {
+      const cell: Cell = current || {
+        tiles: [],
+        position,
+      };
+      cell.tiles.push(tile);
+      return cell;
     });
-    if (newHandle) {
-      const newGrid = produce(grid, (grid) => {
-        grid.map[handle.position.y][handle.position.x].tiles = newTiles;
-      });
-      return [newGrid, newHandle! || handle];
-    }
-    return [grid, handle];
-  },
-  removeTile: (handle: Tile) => (grid: Grid): [Grid, undefined] => {
-    const tiles = grid.map[handle.position.y]?.[handle.position.x]?.tiles;
-    const index = tiles?.findIndex((tile) => tile.id === handle.id);
-    if (index !== undefined && index >= 0) {
-      return [
-        produce(grid, (grid) => {
-          grid.map[handle.position.y][handle.position.x].tiles.splice(index, 1);
-        }),
-        undefined,
-      ];
-    }
-    return [grid, undefined];
-  },
-  updateSeen: (seen: SeenRows) => (grid: Grid): [Grid, undefined] => {
-    return [
-      {
-        ...grid,
-        seen,
-      },
-      undefined,
-    ];
-  },
-};
+    return tile.id;
+  };
 
-export const gridQueries = {
-  findTiles: (predicate: TileFilterPredicate) => (grid: Grid): Tile[] => {
-    const found = [];
-    for (const row of grid.map) {
-      for (const cell of row) {
-        for (const tile of cell.tiles) {
-          if (predicate(tile, cell)) {
-            found.push(tile);
-          }
+  const removeTile = (position: Vector, handle: string) => {
+    map.update(position.x, position.y, (current) => {
+      if (current) {
+        const index = current.tiles.findIndex((tile) => tile.id === handle);
+        if (index >= 0) {
+          current.tiles.splice(index, 1);
         }
       }
+      return current;
+    });
+  };
+
+  const findTiles = (predicate: TileFilterPredicate): Tile[] =>
+    map
+      .map((cell) =>
+        cell.element.tiles.filter((tile) => predicate(tile, cell.element))
+      )
+      .flat();
+
+  const getCell = (at: Vector) => map.get(at.y, at.x);
+  const updateSeen = (los: Vector[]) => {
+    // TODO: Set all seen to not in view
+    for (const pos of los) {
+      const cell = getCell(pos);
+      if (!cell) {
+        seen.set(pos.x, pos.y, undefined);
+      } else {
+        seen.set(pos.x, pos.y, {
+          // A lot of stuff is still getting copied by ref inside Tile, but that's probably OK
+          tiles: cell.tiles.map((tile) => ({ ...tile })),
+          position: pos,
+          inView: true,
+          fromCell: cell,
+        });
+      }
     }
-    return found;
-  },
-  getCell: (at: Vector) => (grid: Grid): Cell => grid.map[at.y][at.x],
-};
+  };
 
-export const blankGrid = (width: number, height: number): Row[] => {
-  const grid = [];
-  for (let y: number = 0; y < height; y++) {
-    const row: Row = [];
-    grid.push(row);
-    for (let x: number = 0; x < width; x++) {
-      row.push({ position: vector(x, y), tiles: [] });
-    }
-  }
-  return grid;
-};
-
-export const blankSeenGrid = (width: number, height: number): SeenRows => {
-  const grid = [];
-  for (let y: number = 0; y < height; y++) {
-    const row: SeenCell[] = [];
-    grid.push(row);
-    for (let x: number = 0; x < width; x++) {
-      row.push({
-        position: vector(x, y),
-        tiles: [],
-        inView: false,
-        fromCell: { position: vector(x, y), tiles: [] },
-      });
-    }
-  }
-  return grid;
-};
-
-export const ShowCardEventKey = Symbol("ShowCard");
-export const HideCardEventKey = Symbol("HideCard");
-
-export const onCard = (show: () => void, hide: () => void) => {
-  useEvent(ShowCardEventKey, show);
-  useEvent(HideCardEventKey, hide);
-};
-
-export const grid = (): Grid => {
-  const map = virtualGrid<Cell>();
-  const seen = virtualGrid<Cell>();
-  const  addTile = <T = {}>(
-    position: Vector,
-    tile: string | React.ComponentType<T>,
-    layer: GridLayers = GridLayers.Floor,
-    entity?: EntityContext,
-  ) => {
-    map.
-  }
+  const updateTileState = (position: Vector, handle: string, state: any) => {
+    map.update(position.x, position.y, (current) => {
+      if (current) {
+        const tile = current.tiles.find((tile) => tile.id === handle);
+        if (tile) {
+          tile.state = state;
+        }
+      }
+      return current;
+    });
+  };
 
   return {
     map,
     seen,
+    addTile,
+    removeTile,
+    findTiles,
+    getCell,
+    updateSeen,
+    updateTileState,
   };
 };

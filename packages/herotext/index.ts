@@ -1,8 +1,14 @@
-export { text, parse, merge, stringifyResult } from "./src/parse";
+export { parse, merge, stringifyResult } from "./src/parse";
+export { text } from "./src/text";
 export { render, stream, executeText } from "./src/execute";
 export { RNG, createRng } from "./src/rng";
 export { ExecutionContext } from "./src/ExecutionContext";
-export { MainAST, ReturnCommand, ExecutionResultItem } from "./src/types";
+export {
+  MainAST,
+  ReturnCommand,
+  ExecutionResultItem,
+  ContentAST,
+} from "./src/types";
 export { commonFunctions } from "./src/commonFunctions";
 export {
   vector,

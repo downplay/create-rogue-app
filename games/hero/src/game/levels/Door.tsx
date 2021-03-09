@@ -1,23 +1,28 @@
 import React from "react";
-import { hasTile, TileProps } from "../../engine/hasTile";
-import { entity } from "../../engine/entity";
-import { PositionProps, hasPosition } from "../../engine/hasPosition";
+import { text, ContentAST } from "herotext";
 import { Emoji } from "../../ui/Typography";
-import { onInteract, InteractEvent } from "../../mechanics/canInteractWith";
-import { Handler } from "../../engine/useEntitiesState";
+import { hasPosition, PositionState } from "../../mechanics/hasPosition";
+import { hasTile, TileState } from "../../mechanics/hasTile";
 
 export const DoorTile = () => <Emoji>🚪</Emoji>;
 
-export type DoorProps = PositionProps &
-  TileProps & {
-    onEnter?: Handler<InteractEvent>;
+export type DoorState = PositionState &
+  TileState & {
+    // TODO: Not 100% sure how this will work, is it events or callbacks?
+    onEnter: ContentAST;
   };
 
-export const Door = entity(
-  ({ position, TileComponent = DoorTile, onEnter }: DoorProps) => {
-    hasPosition(position);
-    hasTile(TileComponent);
-    onInteract(onEnter);
-    return null;
-  }
-);
+// TODO: Want two slightly different kinds of doors. Plain open/close ones a la DC:SS,
+// then one like this with an event to go to different locations
+
+export const Door = entity(text<DoorState>`
+${hasTile(DoorTile)}
+${hasPosition()}
+${canInteractWith}
+
+onEnter:~
+You walk through the door...
+
+onInteract:
+$onEnter
+`);

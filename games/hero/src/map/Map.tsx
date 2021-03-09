@@ -1,32 +1,19 @@
+import styled from "styled-components";
 import React, {
   memo,
   useMemo,
   useState,
   useCallback,
   useRef,
-  useEffect,
   useLayoutEffect,
 } from "react";
-import {
-  SeenCell,
-  Tile,
-  useGridState,
-  GridLayers,
-  ShowCardEventKey,
-  HideCardEventKey,
-  useGrid,
-} from "../../engine/grid";
-import styled from "styled-components";
-import { CHAR_WIDTH, CHAR_HEIGHT } from "../../ui/Typography";
-import { usePlayer } from "../../engine/player";
-import {
-  vector,
-  Vector,
-  VECTOR_ORIGIN,
-  multiply,
-  add,
-} from "../../engine/vector";
-import { getPosition, PositionProps } from "../../engine/hasPosition";
+import { SeenCell, Tile, GridLayers } from "../engine/grid";
+import { CHAR_WIDTH, CHAR_HEIGHT, Char } from "../ui/Typography";
+import { vector, Vector, VECTOR_ORIGIN, multiply, add } from "herotext";
+import { Grid } from "../engine/grid";
+import { PlayerState } from "../game/Player";
+import { PositionState } from "../mechanics/hasPosition";
+import { GameState } from "../engine/game";
 
 // TODO: Get this from combination of; global setting, biome (high outdoors (infinite?)), player effects, current tile (shade)
 const LOS_DISTANCE = 5;
@@ -75,22 +62,23 @@ const Layer = styled.div<Pick<Tile, "layer">>`
   z-index: ${({ layer }) => zIndexFromLayer(layer)};
 `;
 
-const CellOuter = styled.div<PositionProps>`
+const CellOuter = styled.div<PositionState>`
   position: absolute;
   left: ${({ position }) => position.x * CHAR_WIDTH}px;
   top: ${({ position }) => position.y * CHAR_HEIGHT}px;
 `;
 
 const MapCell = memo(({ cell }: MapCellProps) => {
+  // TODO: Make this crap work. Prob much simpler now. Just raise a react handler and pass entity.
   const handleMouseOver = useCallback(() => {
-    for (const tile of cell.tiles) {
-      tile.entity?.fireEvent(ShowCardEventKey);
-    }
+    // for (const tile of cell.tiles) {
+    //   tile.entity?.fireEvent(ShowCardEventKey);
+    // }
   }, [cell]);
   const handleMouseOut = useCallback(() => {
-    for (const tile of cell.tiles) {
-      tile.entity?.fireEvent(HideCardEventKey);
-    }
+    // for (const tile of cell.tiles) {
+    //   tile.entity?.fireEvent(HideCardEventKey);
+    // }
   }, [cell]);
 
   return (
@@ -99,11 +87,19 @@ const MapCell = memo(({ cell }: MapCellProps) => {
       onMouseOver={handleMouseOver}
       onMouseOut={handleMouseOut}
     >
-      {cell.tiles.map(({ TileComponent, layer, id }) => (
-        <Layer key={id} layer={layer}>
-          <TileComponent />
-        </Layer>
-      ))}
+      {cell.tiles.map(({ content: TileComponent, layer, id, state }) => {
+        const tile =
+          typeof TileComponent === "string" ? (
+            <Char>${TileComponent}</Char>
+          ) : (
+            <TileComponent {...state} />
+          );
+        return (
+          <Layer key={id} layer={layer}>
+            {tile}
+          </Layer>
+        );
+      })}
     </CellOuter>
   );
 });
@@ -142,53 +138,24 @@ const PanZoom = styled.div<PanZoomProps>`
 /* left: ${({ pan }) => pan.x}px;
   top: ${({ pan }) => pan.y}px; */
 
-export const Map = memo(() => {
-  const grid = useGrid();
-  const gridState = useGridState();
-  // Alternately could trigger focus from an entity in the grid or a cell, but, more
-  // straightforward to do it like this really
-  const player = usePlayer();
+type MapProps = {
+  map: Grid;
+  player: PlayerState;
+  game: GameState;
+};
+
+export const Map = ({ map, player, game }: MapProps) => {
   const viewRef = useRef<HTMLDivElement>(null!);
   const [viewSize, setViewSize] = useState<Vector>();
-  const focus = getPosition(player.current);
+  // Alternately could trigger focus from the player entity and bubble upwards, simpler
+  // to do it like this tho
+  const focus = player.position;
   const pan = useMemo(() => {
     if (!viewSize || !focus) {
       return VECTOR_ORIGIN;
     }
     return add(multiply(focus, -CHAR_WIDTH), multiply(viewSize, 0.5));
   }, [viewSize, focus]);
-
-  // Every time map updates, we need to update the "seen" grid which is what will
-  // actually be rendered
-  // TODO: The map is getting fairly overloaded with functionality now, somehow
-  // move this elsewhere / subcomponents?
-  // TODO: Also this effect as well as many others could run a potentially silly number
-  // of times when not much has changed
-  useEffect(() => {
-    // Important: seen and map must already be the same size
-    let newGrid = gridState.seen;
-    for (const row of gridState.seen) {
-      let newRow = row;
-      for (const cell of row) {
-        const mapCell = gridState.map[cell.position.y][cell.position.x];
-        if (cell.fromCell !== mapCell) {
-          // TODO: Could optimise if multiple cells are being changed
-          newRow = newRow.map((oldCell) =>
-            oldCell === cell
-              ? { ...oldCell, tiles: mapCell.tiles, fromCell: mapCell }
-              : oldCell
-          );
-        }
-      }
-      if (row !== newRow) {
-        // TODO: Could optimise if multiple rows are being changed
-        newGrid = newGrid.map((oldRow) => (oldRow === row ? newRow : oldRow));
-      }
-    }
-    if (newGrid !== gridState.seen) {
-      grid.updateSeen(newGrid);
-    }
-  }, [gridState.map]);
 
   useLayoutEffect(() => {
     const updateViewSize = () => {
@@ -207,13 +174,17 @@ export const Map = memo(() => {
   const minCell = (focus?.x || 0) - MAX_DRAW_DISTANCE;
   const maxCell = (focus?.x || 0) + MAX_DRAW_DISTANCE;
 
+  // TODO: 1. Get flattened list of cells, simplify the rendering, everything absolute
+  //       2. A getQuad method on Grid?
+  //       3. seen grid is not updated
+
   return (
     <ViewPort ref={viewRef}>
       <PanZoom pan={pan}>
-        {mapBetween(gridState.seen, minRow, maxRow, (row, index) => (
+        {mapBetween(map.seen.getRows(), minRow, maxRow, (row, index) => (
           <MapRow key={index} row={row} min={minCell} max={maxCell} />
         ))}
       </PanZoom>
     </ViewPort>
   );
-});
+};

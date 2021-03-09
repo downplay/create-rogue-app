@@ -1,40 +1,36 @@
-import { useEntityState, stateGetter } from "./useEntityState";
-import { SetStateAction } from "../game/types";
+import { text } from "herotext";
 
 export type Stats = {
-  hp: number;
-  str: number;
-  dex: number;
-  int: number;
-  spd: number;
+  mind: number;
+  body: number;
+  spirit: number;
 };
 
-export const stats = (
-  hp: number,
-  str: number,
-  dex: number,
-  int: number,
-  spd: number
-): Stats => ({
-  hp,
-  str,
-  dex,
-  int,
-  spd
+export type StatsState = {
+  stats: Stats;
+};
+
+export const stats = (mind: number, body: number, spirit: number): Stats => ({
+  mind,
+  body,
+  spirit,
 });
 
-const StatsKey = Symbol("stats");
+const IDENTITY = stats(1, 1, 1);
 
-const IDENTITY = stats(1, 1, 1, 1, 1);
+/* TODO:
+   1. Adjusted stats
+   Temporary effects, item effects etc will 
+   
+   2. Derived stats
+   Based on combos; 
+      - agility | stamina = body & mind
+      - magic power | mana = spirit & mind
+      - con | h.p. = body & spirit
+      - speed = agility / (size - body)
+*/
 
-export const hasStats = (
-  baseStats?: Stats
-): [Stats, Stats, React.Dispatch<SetStateAction<Stats>>] => {
-  const [currentStats, setStats] = useEntityState(StatsKey, baseStats);
-
-  const adjustedStats = currentStats;
-
-  return [currentStats || IDENTITY, adjustedStats || IDENTITY, setStats];
-};
-
-export const getStats = stateGetter<Stats>(StatsKey);
+export const hasStats = (baseStats: Stats = IDENTITY) => text<StatsState>`
+stats:=
+${baseStats}
+`;

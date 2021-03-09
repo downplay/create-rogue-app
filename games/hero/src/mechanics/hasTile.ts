@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text, Vector } from "herotext";
 import { GameState } from "../engine/game";
 import { GridLayers } from "../engine/grid";
 import { PositionState } from "./hasPosition";
@@ -8,10 +8,12 @@ export type TileState<T extends {} = {}> = {
   tileGridHandle: string;
 };
 
+type CombinedState = GameState & PositionState & TileState;
+
 export const hasTile = <T extends {} = {}>(
   tile: string | React.ComponentType<T> = "",
   layer: GridLayers = GridLayers.Floor
-) => text<GameState & PositionState & TileState & T>`
+) => text<CombinedState & T>`
 Tile:
 ${tile as string}
 
@@ -21,16 +23,18 @@ $createTile
 
 onMove:~ ($to)
 $removeTile
-$createTile
+$createTile($to)
 
 destroy:~
 $removeTile
 
-createTile:
-$tileHandle=${({ grid, position, tile }) => grid.addTile(position, tile, layer)}
+createTile($to?):
+$tileHandle=${({ to, grid, position, tile }: CombinedState & { to?: Vector }) =>
+  grid.addTile(to || position, tile, layer)}
 
 removeTile:
-${({ grid, tileGridHandle }) => grid.removeTile(tileGridHandle)}
+${({ grid, tileGridHandle, position }) =>
+  grid.removeTile(position, tileGridHandle)}
 `;
 
 // export const tile = (glyph: string) => () => <Emoji>{glyph}</Emoji>;

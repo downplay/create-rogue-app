@@ -2,11 +2,15 @@ import { useMemo } from "react";
 import { EntityTemplate } from "./entity";
 import { Grid, grid } from "./grid";
 import { TerminalContent } from "../ui/Terminal";
+import { GameState } from "./game";
+import { PlayerState, Player } from "../game/Player";
 
 export type HeroEngine = {
   map: Grid;
   content: TerminalContent;
   player: PlayerState;
+  game: GameState;
+  entities: EntityTemplate[];
 };
 
 type Props = {
@@ -15,6 +19,7 @@ type Props = {
 
 const engine = ({ entities }: Props): HeroEngine => {
   const map = grid();
+  const playerInstance = storyInstance(Player);
   return { entities, map };
 };
 

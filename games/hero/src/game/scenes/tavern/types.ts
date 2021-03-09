@@ -1,4 +1,4 @@
-import { Vector } from "herotext/src/vector";
+import { Vector } from "herotext";
 
 export const TavernStateKey = Symbol("TavernScene");
 

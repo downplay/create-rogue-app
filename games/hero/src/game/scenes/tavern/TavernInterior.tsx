@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect } from "react";
 import { Room } from "../../levels/Room";
-import { multiply, subtract } from "herotext/src/vector";
+import { multiply, subtract } from "herotext";
 import { TavernState } from "./types";
 import { useTerminal } from "../../../engine/terminal";
 import { tavernInteriorDescription } from "./text";

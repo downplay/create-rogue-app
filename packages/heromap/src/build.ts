@@ -4,16 +4,16 @@ import { VirtualGrid, virtualGrid } from "./virtualGrid";
 import { BrushNode, BrushNodes } from "./types";
 import {
   MapNode,
-  NumberNode,
+  // NumberNode,
   OperationNode,
-  OrOpsNode,
+  // OrOpsNode,
   BrushOpNode,
 } from "./types";
 
 type BuildContext = {
   map: MapNode;
   rows: String[][];
-  grid: VirtualGrid<MapElement>;
+  grid: VirtualGrid<MapElement[]>;
   scope: Record<string, any>;
   rng: RNG;
 };
@@ -147,10 +147,13 @@ applyBrushToGlyphTargets = (
         throw new Error("Path chaining not supported: " + brush.path.join("."));
       }
       for (const target of targets) {
-        context.grid.add(target.x, target.y, {
+        const tile = {
           type: brush.path[0],
           params: {}, // TODO: Params
-        });
+        };
+        context.grid.update(target.x, target.y, (current) =>
+          current ? current.concat([tile]) : [tile]
+        );
       }
       break;
 
@@ -236,7 +239,7 @@ export const build = (
   const width = Math.max(...map.lines.map((line) => line.length));
   const height = map.lines.length;
   const rows = map.lines.map((line) => line.split(""));
-  const grid = virtualGrid<MapElement>(width, height);
+  const grid = virtualGrid<MapElement[]>(width, height);
   const context: BuildContext = {
     map,
     grid,
@@ -257,6 +260,6 @@ export const build = (
       height: grid.height,
       rows: context.rows,
     },
-    cells: grid.getCells(),
+    cells: grid.getAll(),
   };
 };

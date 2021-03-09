@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect } from "react";
+import { text } from "herotext";
 
-import { hasPosition } from "../engine/hasPosition";
 import {
   VECTOR_N,
   VECTOR_S,
@@ -10,26 +9,23 @@ import {
   VECTOR_NE,
   VECTOR_SE,
   VECTOR_SW,
-} from "herotext/src/vector";
-import { hasTile, tile } from "../engine/hasTile";
+} from "herotext";
 import { entity } from "../engine/entity";
 import { useControls, Commands } from "../providers/controls";
-import { canMove } from "../engine/canMove";
+import { canMove } from "../mechanics/canMove";
 import { hasStats, stats } from "../engine/hasStats";
-import { GridLayers, useGrid } from "../engine/grid";
-import { useEntity } from "../engine/useEntitiesState";
-import { usePlayer } from "../engine/player";
+import { GridLayers } from "../engine/grid";
 import { useGame, useGameState, TurnEvent, TurnEventKey } from "../engine/game";
 import { REAL_TIME_SPEED } from "../engine/game";
-import { canLiveAndDie } from "../engine/hasLife";
-import { hasInventory, fireTake } from "../engine/hasInventory";
+import { hasInventory, fireTake } from "../mechanics/hasInventory";
 import { isPlayer, FLAG_PLAYER_SPAWN } from "../engine/flags";
-import { fireInteract } from "../mechanics/canInteractWith";
-import { text } from "herotext/src/parse";
+// import { fireInteract } from "../mechanics/canInteractWith";
 import { femaleMageVariants, maleMageVariants } from "./scenes/mage/Mage";
 import { hasSpawnFlag } from "./behaviours/hasSpawnFlag";
 import { PositionState } from "../mechanics/hasPosition";
-import { TileState } from "../mechanics/hasTile";
+import { hasTile, TileState } from "../mechanics/hasTile";
+import { StatsState } from "../mechanics/hasStats";
+import { canLiveAndDie } from "../mechanics/hasLife";
 
 const commands = [
   Commands.MoveUp,
@@ -48,7 +44,15 @@ export const Player = entity<PlayerState>(text`
 Type:
 Player
 
-${hasTile("🧙", GridLayers.Actor)}
+Name:
+You
+
+${
+  hasTile(
+    "🧙",
+    GridLayers.Actor
+  ) /* TODO: give entity() a `layer` param so we don't have to do this ?*/
+}
 
 Tile:=
 ${maleMageVariants}
@@ -56,14 +60,13 @@ ${femaleMageVariants}
 
 ${hasInventory(() => ({ gold: 0, items: [] }))}
 ${hasSpawnFlag(FLAG_PLAYER_SPAWN)}
-
+${canLiveAndDie()}
+${canMove}
 isPlayer:=
 true
 `);
 
 // const [currentStats] = hasStats(stats(10, 5, 5, 5, 10));
-
-// canLiveAndDie();
 
 // useEffect(() => {
 //   nextTurn();
@@ -72,8 +75,6 @@ true
 // useEffect(() => {
 //   player.register(entity);
 // }, [entity]);
-
-// const [move] = canMove();
 
 /**
  * Will become canTake behaviour?
