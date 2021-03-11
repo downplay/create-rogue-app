@@ -67,7 +67,7 @@ export type GridActions = {
   ) => string;
   removeTile: (position: Vector, handle: string) => void;
   updateTileState: (position: Vector, handle: string, state: any) => void;
-  findTiles: (predicate: TileFilterPredicate) => Tile[];
+  findTiles: (predicate: TileFilterPredicate) => [Tile, Cell][];
   getCell: (at: Vector) => Cell | undefined;
   updateSeen: (los: Vector[]) => void;
 };
@@ -114,12 +114,14 @@ export const grid = (): Grid => {
     });
   };
 
-  const findTiles = (predicate: TileFilterPredicate): Tile[] =>
+  const findTiles = (predicate: TileFilterPredicate): [Tile, Cell][] =>
     map
       .map((cell) =>
-        cell.element.tiles.filter((tile) => predicate(tile, cell.element))
+        cell.element.tiles
+          .filter((tile) => predicate(tile, cell.element))
+          .map((tile) => [tile, cell.element] as [Tile, Cell])
       )
-      .flat();
+      .flat(1);
 
   const getCell = (at: Vector) => map.get(at.y, at.x);
   const updateSeen = (los: Vector[]) => {

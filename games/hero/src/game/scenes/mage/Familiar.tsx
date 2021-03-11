@@ -1,35 +1,41 @@
-import React, { useState, Props } from "react";
 import { Emoji } from "../../../ui/Typography";
-import { useRng } from "../../../engine/useRng";
-import { EntityContext } from "../../../engine/useEntitiesState";
+import { StoryInstance, text, merge } from "herotext";
+import { Dog } from "../../monsters/Dog";
+import { Cat } from "../../monsters/Cat";
+import { Rat } from "../../monsters/Rat";
+import { Bat } from "../../monsters/Bat";
+import { storyInstance } from "herotext";
 
 const CatTile = () => <Emoji>🐈</Emoji>;
-const DogTile = () => <Emoji>🐕</Emoji>;
 
 const familiarTypes = {
-  cat: Cat,
-  bat: Bat,
-  rat: Rat,
-  dog: Dog,
+  Cat,
+  Bat,
+  Rat,
+  Dog,
 };
 
-type Props = {
-  owner: EntityContext;
+type FamiliarState = {
+  owner: StoryInstance;
+};
+
+type HasFamiliarState = {
+  familiarType: string;
+  familiar: StoryInstance<FamiliarState>;
 };
 
 // Could theoretically change type at any point to morph the familiar
-export const Familiar = ({ owner }: Props) => {
-  const rng = useRng();
+export const hasFamiliar = (familiarType?: string) => text<HasFamiliarState>`
+setup:~
+$void($familiarType $familiar)
 
-     This useState should be converted to some kind of "usePersistedState".
-     Or. Does Familiar become another entity with its own state */
-  const [familiarType] = useState(() => rng.pick(Object.keys(familiarTypes)));
+familiar:=
+${({ familiarType }) => storyInstance(familiarTypes[familiarType])}
 
-  const FamiliarComponent = familiarTypes[familiarType];
-
-  return (
-    <FamiliarComponent>
-      <FamiliarBehavior></FamiliarBehavior>
-    </FamiliarComponent>
-  );
-};
+familiarType:=
+{?${familiarType}}$familiarType
+{40%}Cat
+{40%}Dog
+Rat
+{2%}Bug
+`;

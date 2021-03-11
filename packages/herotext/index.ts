@@ -1,7 +1,7 @@
 export { storyInstance, StoryInstance } from "./src/instance";
 export { parse, merge, stringifyResult } from "./src/parse";
 export { text } from "./src/text";
-export { render, stream, executeText } from "./src/execute";
+export { render, stream, executeText, inheritStrand } from "./src/execute";
 export { RNG, createRng } from "./src/rng";
 export { ExecutionContext } from "./src/ExecutionContext";
 export {
@@ -33,4 +33,5 @@ export {
   subtract,
   subtractTwo,
   vectorKey,
+  length,
 } from "./src/vector";

@@ -1,6 +1,7 @@
+import { MainAST, storyInstance } from "herotext";
+import { produce } from "immer";
 import { createContext } from "../helpers/createContext";
 import { EntityContext, useEvent, useEntity } from "./useEntitiesState";
-import { produce } from "immer";
 import { Grid } from "./grid";
 
 export const REAL_TIME_SPEED = 50;
@@ -22,7 +23,6 @@ export type GameState = {
   time: number;
   turnQueue: Turn[];
   playerTurn: boolean;
-  grid: Grid;
 };
 
 export type GameActions = {
@@ -108,3 +108,10 @@ export const onTurn = (handler: (event: TurnEvent) => void) => {
   const entity = useEntity();
   return game.findTurn(entity)?.time;
 };
+
+export const game = (main: MainAST) =>
+  storyInstance<GameState>(main, {
+    playerTurn: false,
+    time: 0,
+    turnQueue: [],
+  });

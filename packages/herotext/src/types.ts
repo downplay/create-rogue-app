@@ -150,7 +150,16 @@ export type LabelAST = Omit<ContentItemAST, "type"> & {
 };
 
 export type ReturnCommand = {
-  type: "input";
+  type: "updateGlobal" | "updateLocal" | "input" | "trigger";
+};
+
+export type ReturnCommandUpdate<T extends {}> = Omit<ReturnCommand, "type"> & {
+  type: "updateGlobal" | "updateLocal";
+  values: T;
+};
+
+export type ReturnCommandInput = Omit<ReturnCommand, "type"> & {
+  type: "input" | "trigger";
   yieldValue?: any;
   strand: ExecutionStrand;
   handler: string;
@@ -179,7 +188,8 @@ export type ExecutionResultItem =
   | number
   | boolean
   | Vector
-  | TypedValue;
+  | TypedValue
+  | StoryInstance;
 
 export type ExecutionResult = [NodeExecutionResult, ExecutionContext];
 

@@ -40,6 +40,9 @@ ${({ word, start, end }) => {
 
 null:
 {}
+
+void:
+{}
 `;
 // ^ weird hack to allow a null entry.
 // TODO: Implement comments

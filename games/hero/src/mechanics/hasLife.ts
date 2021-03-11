@@ -1,8 +1,8 @@
 import { text } from "herotext";
 
-export type LifeProps = { life: number; health: number; isDead: boolean };
+export type LifeState = { life: number; health: number; isDead: boolean };
 
-type LabelProps = LifeProps & { old: LifeProps; newLife: number };
+type LabelProps = LifeState & { old: LifeState; newLife: number };
 
 export const canLiveAndDie = (health: number = 10) => text<LabelProps>`
 life:=

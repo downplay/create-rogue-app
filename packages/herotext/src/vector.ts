@@ -84,3 +84,5 @@ export const reduceQuad = <T>(
   iterateQuad(a, b, (value) => output.push(callback(value)));
   return output;
 };
+
+export const length = (of: Vector) => Math.sqrt(of.x * of.x + of.y * of.y);

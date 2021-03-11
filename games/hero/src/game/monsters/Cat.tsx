@@ -6,19 +6,19 @@ import { text } from "herotext";
 import { hasStats, stats } from "../../mechanics/hasStats";
 import { hasTile } from "../../mechanics/hasTile";
 
-const dogStats = stats(6, 4, 5);
+const catStats = stats(6, 4, 5);
 
-const DogTile = () => <Emoji>🐕</Emoji>;
+const CatTile = () => <Emoji>🐕</Emoji>;
 
-export const Dog = entity(text`
+export const Cat = entity(text`
 Name:=
-$dogName
+$catName
 
 Describe:=
 $title($a($nouny $verb))
 
-${hasTile(DogTile, GridLayers.Actor)}
-${hasStats(dogStats)}
+${hasTile(CatTile, GridLayers.Actor)}
+${hasStats(catStats)}
 ${hasRandomMovement}
 
 nouny:
@@ -30,7 +30,7 @@ dopey
 
 verb:
 pooch
-$(gender=male)good boy
+$(gender=male)good kittt
 $(gender=female)good girl
 mutt
 pup

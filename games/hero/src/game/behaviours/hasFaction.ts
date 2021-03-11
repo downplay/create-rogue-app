@@ -1,4 +1,4 @@
-import { useEntityState } from "../../engine/useEntityState";
+import { text } from "herotext";
 export enum Factions {
   // Player themselves, and allies
   Player,
@@ -7,10 +7,14 @@ export enum Factions {
   // Shopkeepers and quest givers, not targetted
   NPC,
   // In faction by themselves, will go after anyone
-  Self
+  Self,
 }
 
-const FactionStateKey = Symbol("Faction");
+export type FactionState = {
+  faction: Factions;
+};
 
-export const hasFaction = (faction: Factions) =>
-  useEntityState<Factions>(FactionStateKey, faction);
+export const hasFaction = (faction: Factions) => text<FactionState>`
+faction:=
+${faction}
+`;

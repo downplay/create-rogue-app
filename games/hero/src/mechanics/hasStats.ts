@@ -6,8 +6,13 @@ export type Stats = {
   spirit: number;
 };
 
+export type DerivedStats = {
+  speed: number;
+};
+
 export type StatsState = {
   stats: Stats;
+  derived: DerivedStats;
 };
 
 export const stats = (mind: number, body: number, spirit: number): Stats => ({

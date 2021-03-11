@@ -1,10 +1,8 @@
-import { text, Vector, add } from "herotext";
-// import { hasPosition, getPosition } from "./hasPosition";
-import { FLAG_SOLID, FLAG_MONSTER, FLAG_PLAYER } from "../engine/flags";
-import { hasDeath, getDeath } from "./hasLife";
-// import { useCombat } from "./combat";
+import { text, Vector, add, length } from "herotext";
 import { GameState } from "../engine/game";
 import { EntityState } from "../engine/entity";
+import { LifeState } from "./hasLife";
+import { StatsState } from "./hasStats";
 
 // TODO: Putting all the interactions in `move` seems like the wrong way around; as this
 // becomes too unwieldy consider a more extensible way to handle entity interactions. Really
@@ -17,18 +15,25 @@ import { EntityState } from "../engine/entity";
 
 export const canMove = text`
 move: ($delta)
-$position=${(
-  actor: GameState & EntityState & LifeState & { delta: Vector }
-): Vector => {
-  const { position, isDead, grid, delta } = actor;
-  // TODO: Should never be called in either of these cirumstance
-  if (isDead || !position) {
-    return position;
-  }
-  const next = add(position, delta);
-  // const cell = grid.getCell(next);
-  return next;
-}}
+$void(
+  $position=${(
+    actor: GameState & EntityState & LifeState & StatsState & { delta: Vector }
+  ): Vector => {
+    const { position, isDead, grid, delta } = actor;
+    // TODO: Should never be called in either of these cirumstance
+    if (isDead || !position) {
+      return position;
+    }
+    const next = add(position, delta);
+    // const cell = grid.getCell(next);
+    return next;
+  }}
+  $waitForTurn(${({ delta, derived: { speed = 1 } }) => length(delta) / speed})
+  $onMoved($position)
+)
+
+onMoved:~
+{0}
 `;
 
 // TODO: Reimplement interact and combat

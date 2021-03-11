@@ -1,32 +1,23 @@
-import React from "react";
-import { tile, hasTile } from "../../engine/hasTile";
+import { text } from "herotext";
 import { GridLayers } from "../../engine/grid";
-import { onTake } from "../../engine/hasInventory";
-import { Item } from "../meta/Item";
-import { Card, Description } from "../../ui/Card";
-import { useTerminal } from "../../engine/terminal";
-import { Name } from "../meta/Name";
+import { InventoryState } from "../../mechanics/hasInventory";
+import { hasTile } from "../../mechanics/hasTile";
 
-type GoldProps = { amount: number };
+type GoldState = { gold: number };
 
-export const GoldTile = tile("💰");
+export const Gold = text<GoldState & { actor: InventoryState }>`
+${hasTile("💰", GridLayers.Item)}
 
-export const Gold = ({ amount }: GoldProps) => {
-  hasTile(GoldTile, GridLayers.Item);
-  const terminal = useTerminal();
-  onTake(({ inventory }) => {
-    inventory.gold += amount;
-    // TODO: Can automatically write the message based non name of entity
-    terminal.write(`You pocket 💰${amount}GP`);
-  });
-  return (
-    <Item>
-      <Card>
-        <Name>{`${amount}GP`}</Name>
-        <Description>
-          <GoldTile /> Shiny, shiny gold
-        </Description>
-      </Card>
-    </Item>
-  );
-};
+onTake:~ ($actor)
+$actor.conjugate(pocket,pockets) 💰$gold :)
+$void(
+  $actor.gold=${({ actor, gold }) => actor.gold + gold}
+  $destroy
+)
+
+Name:
+💰$gold
+
+Describe:
+Shiny, shiny gold
+`;

@@ -1,35 +1,42 @@
-import { useEffect, useCallback } from "react";
-import { useGame, onTurn, TurnEvent } from "../../engine/game";
-import { hasStats } from "../../engine/hasStats";
-import { useRng } from "../../engine/useRng";
-import { useEntity } from "../../engine/useEntitiesState";
+import { inheritStrand, ReturnCommand, text } from "herotext";
+import { GameState } from "../../engine/game";
 
-export const hasMonsterTurn = (handleTurn: (event: TurnEvent) => void) => {
-  const entity = useEntity();
-  const game = useGame();
-  const random = useRng();
-  const [stats] = hasStats();
+type HasMonsterTurnState = { game: GameState; delta: number };
 
-  const nextTurn = () => {
-    game.enqueueTurn(
-      10 / random.range(stats.spd * 0.9, stats.spd * 1.1),
-      entity
-    );
-  };
+export const hasMonsterTurn = (
+  idleTurnLength = 1,
+  turnRandomisation = 0.1
+) => text<HasMonsterTurnState>`
+setup:~
+$waitForNextTurn(${idleTurnLength})
 
-  const nextTime = onTurn(
-    useCallback(
-      event => {
-        handleTurn(event);
-        nextTurn();
-      },
-      [stats]
-    )
-  );
+onTurn:~
+{0}The $lower($Name) does nothing.$waitForTurn(${idleTurnLength})
 
-  useEffect(() => {
-    if (nextTime === undefined) {
-      nextTurn();
-    }
-  }, [nextTime]);
-};
+waitForTurn: ($delta)
+// TODO: $game.enqueueTurn ... ?
+// TODO: Also, get inferred speed from stats (? - does speed affect everything?)
+$enqueueTurn(${({ delta }, { rng }) =>
+  rng.range(
+    (delta || idleTurnLength) / (1 + turnRandomisation),
+    (delta || idleTurnLength) * (1 + turnRandomisation)
+  )})$onTurn//TODO: Default param values
+
+enqueueTurn: ($delta)
+${({ game }, context, strand) => {
+  const inputStrand = strand.children[0] || inheritStrand(strand);
+  strand.children[0] = inputStrand;
+  if (typeof inputStrand.internalState !== "undefined") {
+    return [inputStrand.internalState as string];
+  }
+  // TODO: strand context should be suspended instead
+  context.suspend = true;
+  return [
+    {
+      type: "trigger",
+      handler: "TurnQueue",
+      strand: inputStrand,
+    } as ReturnCommand,
+  ];
+}}
+`;

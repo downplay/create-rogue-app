@@ -38,7 +38,8 @@ const executeTextNode = (node: ContentTextAST) => {
   return [node.text];
 };
 
-const inheritStrand = (parent: ExecutionStrand): ExecutionStrand => ({
+// TODO: This is a bit low-level to be exporting, find a cleaner way to do this
+export const inheritStrand = (parent: ExecutionStrand): ExecutionStrand => ({
   ...parent,
   internalState: undefined,
   children: [],

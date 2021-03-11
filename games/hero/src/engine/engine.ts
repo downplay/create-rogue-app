@@ -14,6 +14,10 @@ export type HeroEngine = {
   entities: EntityTemplate[];
 };
 
+export type EngineState = {
+  engine: HeroEngine;
+};
+
 type Props = {
   entities: EntityTemplate[];
 };
@@ -26,7 +30,6 @@ const engine = ({ entities }: Props): HeroEngine => {
     time: 0,
     turnQueue: [],
     playerTurn: false,
-    grid: map,
   };
   return {
     entities,
