@@ -9,6 +9,7 @@ export {
   ReturnCommand,
   ExecutionResultItem,
   ContentAST,
+  IStateElement,
 } from "./src/types";
 export { commonFunctions } from "./src/commonFunctions";
 export {
@@ -23,15 +24,16 @@ export {
   VECTOR_SE,
   VECTOR_SW,
   VECTOR_W,
+  equals,
   add,
   addTwo,
-  equals,
-  iterateQuad,
-  multiply,
-  reduceQuad,
-  sortCorners,
   subtract,
   subtractTwo,
-  vectorKey,
+  multiply,
   length,
+  iterateQuad,
+  reduceQuad,
+  mapQuad,
+  sortCorners,
+  vectorKey,
 } from "./src/vector";

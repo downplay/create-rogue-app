@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import { hasName } from "../../engine/hasName";
 import { FONT_SIZE, CHAR_HEIGHT } from "../../ui/Typography";
 
 type NameProps = {
@@ -13,6 +12,6 @@ export const NameHeader = styled.h1`
 `;
 
 export const Name = ({ children }: NameProps) => {
-  hasName(children);
+  // hasName(children);
   return <NameHeader>{children}</NameHeader>;
 };

@@ -1,7 +1,7 @@
 import { text } from "herotext";
 import { hasStats } from "../../mechanics/hasStats";
 import { monster } from "./baseMonster";
-import { randomMovement } from "../behaviours/hasRandomMovement";
+import { hasRandomMovement } from "../behaviours/hasRandomMovement";
 
 // TODO: Not supported yet stuff...
 /*
@@ -53,4 +53,4 @@ DescribeSize:
 [~4]unusually massive
 `;
 
-export const Rat = monster(randomMovement, ratStory);
+export const Rat = monster(hasRandomMovement, ratStory);

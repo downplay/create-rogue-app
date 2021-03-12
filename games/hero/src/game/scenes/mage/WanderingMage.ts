@@ -1,7 +1,5 @@
-import { text, commonFunctions, storyInstance } from "herotext";
-import { Familiar } from "./Familiar";
-
-// TODO: Figure out a good way to reuse things between text templates
+import { text, commonFunctions } from "herotext";
+import { hasFamiliar } from "./Familiar";
 
 enum Genders {
   Male = "male",
@@ -36,10 +34,6 @@ you approach, cocks $possessivePronoun head on one side, and $observes. The $fam
 :$dialog)
 )
 
-Setup:~
-$familiar=${() => storyInstance(Familiar)}
-
-
 dialog:
 ("So, are you going to tell me why I shouldn't just roast you alive, right here on the spot?" asks the $kind.
 * Tell them about your quest => $dialogQuest
@@ -54,6 +48,7 @@ dialogQuest:
 [80]
 [20]A dark look crosses the $kind's face. "I see... in that case, the Evil One will surely pay me handsomely for your head!"($aggressive=true)
 
+${hasFamiliar()}
 ${commonFunctions}
 
 appearance:=

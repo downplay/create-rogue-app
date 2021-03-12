@@ -85,4 +85,20 @@ export const reduceQuad = <T>(
   return output;
 };
 
+/**
+ * Maps over all vectors inside quad bounded by corners (a,b) inclusive, resulting in a 2D array of T
+ */
+export const mapQuad = <T>(
+  a: Vector,
+  b: Vector,
+  callback: (value: Vector) => T
+): T[][] => {
+  const rows: Record<number, Record<number, T>> = {};
+  iterateQuad(a, b, (value) => {
+    rows[value.y] = rows[value.y] || {};
+    rows[value.y][value.x] = callback(value);
+  });
+  return Object.values(rows).map((row) => Object.values(row));
+};
+
 export const length = (of: Vector) => Math.sqrt(of.x * of.x + of.y * of.y);

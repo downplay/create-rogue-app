@@ -1,9 +1,6 @@
 import React from "react";
 import { Emoji } from "../../../ui/Typography";
 import { hasRandomMovement } from "../../behaviours/hasRandomMovement";
-import { hasTile } from "../../../engine/hasTile";
-import { stats, hasStats } from "../../../engine/hasStats";
-import { Monster } from "../../meta/Monster";
 import { Card, Description } from "../../../ui/Card";
 import { Name } from "../../meta/Name";
 import { patronBanter } from "./text";
@@ -11,9 +8,7 @@ import { onTurn } from "../../../engine/game";
 import { useRng } from "../../../engine/useRng";
 import { useTerminal } from "../../../engine/terminal";
 import { GridLayers } from "../../../engine/grid";
-import { useEntityState } from "../../../engine/useEntityState";
 import { hasFaction, Factions } from "../../behaviours/hasFaction";
-import { text } from "../../../engine/text/parse";
 
 enum BarkeepPose {
   Normal,

@@ -1,7 +1,7 @@
 import isFunction from "lodash/isFunction";
 import { ExecutionContext } from "./ExecutionContext";
 import { merge, parse } from "./parse";
-import { ExecutionStrand } from "./types";
+import { ExecutionStrand, IStateElement } from "./types";
 import {
   ContentTextAST,
   ExternalAST,
@@ -85,12 +85,18 @@ let externalIndex = 0;
 export const text = <T extends {}>(
   input: TemplateStringsArray,
   ...interpolations: (
+    | Record<string, number>
     | ((
         state: T,
         context: ExecutionContext,
         strand: ExecutionStrand
-      ) => ExecutionResultItem | ExecutionResultItem[] | void | undefined)
-    | StateElement
+      ) =>
+        | ExecutionResultItem
+        | ExecutionResultItem[]
+        | IStateElement
+        | void
+        | undefined)
+    | IStateElement
     | MainAST
     | undefined
   )[]

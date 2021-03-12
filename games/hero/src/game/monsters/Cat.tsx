@@ -8,7 +8,7 @@ import { hasTile } from "../../mechanics/hasTile";
 
 const catStats = stats(6, 4, 5);
 
-const CatTile = () => <Emoji>🐕</Emoji>;
+const CatTile = () => <Emoji>🐈</Emoji>;
 
 export const Cat = entity(text`
 Name:=

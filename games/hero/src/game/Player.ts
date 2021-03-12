@@ -11,14 +11,12 @@ import {
   VECTOR_SW,
 } from "herotext";
 import { entity } from "../engine/entity";
-import { useControls, Commands } from "../providers/controls";
+import { Commands } from "../providers/controls";
 import { canMove } from "../mechanics/canMove";
-import { hasStats, stats } from "../engine/hasStats";
 import { GridLayers } from "../engine/grid";
-import { useGame, useGameState, TurnEvent, TurnEventKey } from "../engine/game";
 import { REAL_TIME_SPEED } from "../engine/game";
-import { hasInventory, fireTake } from "../mechanics/hasInventory";
-import { isPlayer, FLAG_PLAYER_SPAWN } from "../engine/flags";
+import { hasInventory } from "../mechanics/hasInventory";
+import { FLAG_PLAYER_SPAWN } from "../engine/flags";
 // import { fireInteract } from "../mechanics/canInteractWith";
 import { femaleMageVariants, maleMageVariants } from "./scenes/mage/Mage";
 import { hasSpawnFlag } from "./behaviours/hasSpawnFlag";
@@ -58,7 +56,7 @@ Tile:=
 ${maleMageVariants}
 ${femaleMageVariants}
 
-${hasInventory(() => ({ gold: 0, items: [] }))}
+${hasInventory({ gold: 0, inventory: [] })}
 ${hasSpawnFlag(FLAG_PLAYER_SPAWN)}
 ${canLiveAndDie()}
 ${canMove}

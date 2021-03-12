@@ -9,6 +9,9 @@ import { text } from "herotext";
 export const canInteractWith = text`
 interact:
 $onInteract
+
+onInteract:
+Interact handler missing in $Type
 `;
 
 // import { useEvent, EntityContext } from "../engine/useEntitiesState";

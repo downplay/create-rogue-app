@@ -1,38 +1,16 @@
-import {
-  render,
-  merge,
-  text,
-  createRng,
-  MainAST,
-  Vector,
-  ExecutionContext,
-  commonFunctions,
-} from "herotext";
+import { merge, text, MainAST, Vector, commonFunctions } from "herotext";
 import { hasPosition } from "../mechanics/hasPosition";
 import { hasTile } from "../mechanics/hasTile";
 import { grammarHelpers } from "./grammarHelpers";
+import { StoryInstance } from "herotext";
 
 export type EntityState = {
   position: Vector;
 };
 
-export type EntityTemplate<TState extends {} = {}, TGame extends {} = {}> = {
-  main: MainAST<EntityState & TState & TGame>;
-  name: String;
-};
-
-// TODO: Should this be a Herotext type? And be generic?
-export type EntityInstance = {
-  type: "instance";
-  state: EntityState;
-  context: ExecutionContext;
+export type EntityInstance<T> = StoryInstance<T> & {
   entityType: string;
-  template: MainAST;
 };
-
-// type EntityFactory<TState, TGame> = (
-//   game: GameContext<TGame>
-// ) => MainAST<TGame & TState>;
 
 const baseEntity = text`
 ${hasPosition()}
@@ -55,11 +33,7 @@ export const entity = <TState, TGame = {}>(
   story: MainAST<
     EntityState & TGame & TState
   > /* | EntityFactory<TState, TGame> */
-): EntityTemplate<TState, TGame> => {
+): MainAST<TState & TGame> => {
   const main = merge(commonFunctions, grammarHelpers, baseEntity, story);
-  const name = render(story, createRng(), {}, "Name");
-  return {
-    main,
-    name,
-  };
+  return main;
 };

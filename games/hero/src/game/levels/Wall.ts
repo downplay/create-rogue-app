@@ -17,12 +17,12 @@ import { isSolid } from "../../engine/flags";
 export const Wall = entity(text`
 ${isSolid}
 
-Name:
+Type:
 Wall
 
 Tile:
 ▓
 
-Description:
+Describe:
 Just another wall in the grid.
 `);

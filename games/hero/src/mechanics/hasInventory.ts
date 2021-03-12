@@ -1,4 +1,4 @@
-import { text, StoryInstance } from "herotext";
+import { text, StoryInstance, IStateElement } from "herotext";
 
 export type InventoryItem = {
   count: number;
@@ -14,9 +14,16 @@ export type InventoryState = {
 // ... And need some event system? Trigger events when an object is picked up?
 //
 
-export const hasInventory = text`
+export const hasInventory = (initialInventory?: InventoryState) => text`
+gold:
+${initialInventory ? initialInventory.gold : 0}
+
 inventory:
-${[]}
+${
+  ((initialInventory
+    ? initialInventory.inventory
+    : []) as unknown) as StateElement[]
+}
 `;
 
 // export const getInventory = stateGetter<Inventory>(InventoryKey);

@@ -1,7 +1,7 @@
 import { FLAG_SOLID, FLAG_SPAWN } from "../../engine/flags";
 import { text } from "herotext";
 import { PositionState } from "../../mechanics/hasPosition";
-import { GameState } from "../../engine/game";
+// import { GameState } from "../../engine/game";
 import { EngineState } from "../../engine/engine";
 
 // export const useFindPosition = (flag: symbol = FLAG_SPAWN) => {

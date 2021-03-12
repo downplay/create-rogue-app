@@ -7,9 +7,11 @@ import "./ui/Card.css";
 import { Providers } from "./providers/Providers";
 import { entities } from "./game/entities";
 import { useEngine } from "./engine/engine";
+import { useRng } from "./engine/useRng";
 
 const App = () => {
-  const engine = useEngine({ entities });
+  const rng = useRng();
+  const engine = useEngine({ entities, rng });
   return (
     <Providers>
       <Global />

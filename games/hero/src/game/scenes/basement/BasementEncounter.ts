@@ -1,7 +1,18 @@
-import { text } from "herotext";
+import { text, StoryInstance, MainAST } from "herotext";
 import { map } from "heromap";
+import { IStateElement } from "../../../../../../packages/herotext/src/types";
 
-const basementMap = ({ stairs, decor }) => {
+type MapProps = {
+  stairs: StoryInstance;
+  decor: MainAST;
+  environment: string;
+};
+
+const basementMap = ({
+  stairs,
+  decor,
+  environment,
+}: MapProps): IStateElement => {
   return map`
 ##t#t#t#t#t#
 #^...O.....t
@@ -37,7 +48,7 @@ O = ${decor}
 `;
 };
 
-const basementStory = text`
+export const BasementStory = text<MapProps>`
 You walk down the steps into the $environment basement. $plural($decor) are strewn around the place.
 
 setup:

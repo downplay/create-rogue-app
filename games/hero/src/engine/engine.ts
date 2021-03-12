@@ -1,17 +1,17 @@
-import { storyInstance } from "herotext";
+import { storyInstance, MainAST, render, RNG } from "herotext";
 import { useMemo } from "react";
-import { EntityTemplate } from "./entity";
 import { Grid, grid } from "./grid";
 import { TerminalContent } from "../ui/Terminal";
 import { GameState } from "./game";
 import { PlayerState, Player } from "../game/Player";
+import { EntityState } from "./entity";
 
 export type HeroEngine = {
   map: Grid;
   content: TerminalContent;
   player: PlayerState;
   game: GameState;
-  entities: EntityTemplate[];
+  entities: Record<string, MainAST<EntityState>>;
 };
 
 export type EngineState = {
@@ -19,20 +19,36 @@ export type EngineState = {
 };
 
 type Props = {
-  entities: EntityTemplate[];
+  entities: MainAST<EntityState>[];
+  rng: RNG;
 };
 
-const engine = ({ entities }: Props): HeroEngine => {
+export const LABEL_TYPE = "Type";
+
+const engine = ({ entities, rng }: Props): HeroEngine => {
   const map = grid();
-  const playerInstance = storyInstance<PlayerState>(Player.main);
+  const playerInstance = storyInstance<PlayerState>(Player);
   // TODO: map is in two places for no reason
   const game: GameState = {
     time: 0,
     turnQueue: [],
     playerTurn: false,
   };
+  const entitiesMap = entities.reduce((acc, el) => {
+    const type = render(el, rng, {}, LABEL_TYPE);
+    if (!type) {
+      console.error(el);
+      throw new Error("Blank type");
+    }
+    if (acc[type]) {
+      console.error(el);
+      throw new Error("Two entities with type " + type);
+    }
+    acc[type] = el;
+    return acc;
+  }, {} as Record<string, MainAST>);
   return {
-    entities,
+    entities: entitiesMap,
     map,
     player: playerInstance.globalScope,
     content: [],

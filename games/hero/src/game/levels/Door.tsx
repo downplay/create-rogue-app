@@ -3,6 +3,8 @@ import { text, ContentAST } from "herotext";
 import { Emoji } from "../../ui/Typography";
 import { hasPosition, PositionState } from "../../mechanics/hasPosition";
 import { hasTile, TileState } from "../../mechanics/hasTile";
+import { entity } from "../../engine/entity";
+import { canInteractWith } from "../../mechanics/canInteractWith";
 
 export const DoorTile = () => <Emoji>🚪</Emoji>;
 
@@ -23,6 +25,6 @@ ${canInteractWith}
 onEnter:~
 You walk through the door...
 
-onInteract:
+onInteract:~
 $onEnter
 `);

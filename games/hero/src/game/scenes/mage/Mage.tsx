@@ -1,5 +1,5 @@
 import { text } from "herotext";
-import { entity } from "../../../engine/entity";
+import { monster } from "../../monsters/baseMonster";
 
 // TODO: depending on biome ...
 // wearing shades / swimwear
@@ -11,10 +11,8 @@ export const maleMageVariants = text`🧙‍♂️|🧙🏻‍♂️|🧙🏼‍
 
 export const femaleMageVariants = text`🧙‍♀️|🧙🏻‍♀️|🧙🏼‍♀️|🧙🏽‍♀️|🧙🏾‍♀️|🧙🏿‍♀️`;
 
-export const Mage = entity(text`
+export const Mage = monster(text`
 Tile:=
 ${maleMageVariants}
 ${femaleMageVariants}
-
-${baseMonster}
 `);

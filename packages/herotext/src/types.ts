@@ -169,7 +169,9 @@ export type ReturnCommandInput = Omit<ReturnCommand, "type"> & {
 // Also will need vector etc.
 export type ScalarValue = string | number | boolean | Vector;
 
-export type StateElement = ScalarValue | StateElement[];
+export interface IStateElement {}
+
+export type StateElement = (IStateElement | ScalarValue) | StateElement[];
 
 export type StrandPathSegment = string | number;
 

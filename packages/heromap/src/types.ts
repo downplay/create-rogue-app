@@ -1,4 +1,6 @@
-export type MapNode = {
+import { IStateElement } from "herotext";
+
+export type MapNode = IStateElement & {
   type: "Heromap::MapNode";
   lines: String[];
   legend: OperationNode[];

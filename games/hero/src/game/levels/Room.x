@@ -2,7 +2,7 @@ import React, { useMemo, memo, PropsWithChildren } from "react";
 import { Vector, VECTOR_ORIGIN, add, equals, vectorKey } from "herotext";
 import { Wall } from "./Wall";
 import { Floor } from "./Floor";
-import { Door, DoorProps } from "./Door";
+import { Door, DoorState } from "./Door";
 import { reduceQuad, VECTOR_NW } from "herotext";
 import { PositionProps } from "../../engine/hasPosition";
 

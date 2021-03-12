@@ -1,7 +1,7 @@
 // import { Ascii } from "../../ui/Typography";
 // import { isSpawn } from "../../engine/flags";
+import { text } from "herotext";
 import { entity } from "../../engine/entity";
-import { text } from "herotext/src/parse";
 
 // const SLATE_1 = "#49394E";
 // const SLATE_2 = "#59506C";
