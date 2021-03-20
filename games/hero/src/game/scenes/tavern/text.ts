@@ -1,4 +1,4 @@
-import { text } from "../../../engine/text/parse";
+import { text } from "herotext";
 
 export const tavernNameText = text`
 $YeOldePubbe
@@ -87,7 +87,7 @@ Leg$s
 Head$s
 Hand$s
 Knee$s
-(Feet|Foot)
+[Feet|Foot]
 Nose
 Ear$s
 Bowel$s
@@ -107,36 +107,27 @@ const wait = (n: number) => "WAIT:" + n;
 // $Abandoned
 
 export const tavernInteriorDescription = text`
-(You stoop into the murky atmosphere. "$tavernName" might just be the grubbiest pub you've ever seen...
+[You stoop into the murky atmosphere. "$tavernName" might just be the grubbiest pub you've ever seen...
 ${wait(2)}
-$Scene)
+$Scene]
 
 Scene:
 $Brawl
 $Abandoned
 
 Brawl:
-(...Someone eyes you shiftily from the other side of the room. In the corner, the piano stops.
+[...Someone eyes you shiftily from the other side of the room. In the corner, the piano stops.
 A patron spits on the floor. "You ain't from around 'ere," they grunt.
-Before you can reply, another drunk jeers, "Aye that's rich, comin' from a $(slur=XenophobicSlur)!"
+Before you can reply, another drunk jeers, "Aye that's rich, comin' from a $XenophobicSlur!"
 "'Oo you callin' a $slur?" replies the first. The second hurls their glass in response. Before you know it, the entire bar is embroiled in an out-of-control brawl!
-)
+]
 
 Abandoned:
-(...But it's completely deserted! A shiver runs down your spine. Half-drained ale flagons are dotted around the hall.)
+[...But it's completely deserted! A shiver runs down your spine. Half-drained ale flagons are dotted around the hall.]
 
-XenophobicSlur:
+XenophobicSlur:=
 Southern Florist
 Midlandser
 Northern Gridmonkey
 Fairy Islander
-`;
-
-export const patronBanter = text`
-Oi oi!
-What ho!
-Howdy
-¡Hola!
-Pardon...
-Cheers!
 `;

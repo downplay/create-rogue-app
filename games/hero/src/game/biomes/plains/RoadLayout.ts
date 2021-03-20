@@ -1,23 +1,11 @@
-import React, { useMemo } from "react";
-import { useRng } from "../../../engine/useRng";
-import { Ascii } from "../../../ui/Typography";
+import { text } from "herotext";
+import { map } from "heromap";
 import { FLAG_PLAYER_SPAWN } from "../../../engine/flags";
-import { map } from "../../../../../../packages/heromap/src/parse";
+import { entity } from "../../../engine/entity";
 
 export const FLAG_ROADSIDE = "RoadsideFlag";
 
-const variants = ["o", "8", "O", "c", "0", ".", "", ""];
-
-const colors = [
-  "#776A2A",
-  "#766227",
-  "#735A24",
-  "#705223",
-  "#6D4A22",
-  "#684321",
-];
-
-const road = map`
+export const RoadLayout = map`
 ........................................
 ........................................
 ........................................
@@ -51,17 +39,32 @@ outline([=@]) = flag(${FLAG_ROADSIDE})
 // <0,18..20>...<40,21..23> = Road
 // <width-3,*>:Road = flag(PLAYER_SPAWN)
 
-export const RoadTile = () => {
-  const rng = useRng();
+export const Road = entity(text`
+Type:
+Floor
 
-  const [variant, bg, fg] = useMemo(
-    () => [rng.pick(variants), rng.pick(colors), rng.pick(colors)],
-    []
-  );
+Tile:=
+// TODO: 
+[$fore=$TileColors][$back=$TileColors][o|8|O|c|0|{20%}.|{20%}']
 
-  return (
-    <Ascii fore={fg} back={bg}>
-      {fg === bg ? "" : variant}
-    </Ascii>
-  );
-};
+TileColors:
+#776A2A
+#766227
+#735A24
+#705223
+#6D4A22
+#684321
+
+Describe:=
+$adjective $noun.
+
+adjective:
+[Dusty|Hard|Rocky|Well-[trodden|worn]]
+
+noun:
+[path|track|carriageway]
+`);
+
+// TODO: Would be nice sometimes in situtations like above to create a first instance to
+// set the description permanently, then clone additional instances using its state
+// so all the tiles have the same descrption

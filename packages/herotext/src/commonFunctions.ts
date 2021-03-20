@@ -39,10 +39,8 @@ ${({ word, start, end }) => {
 }}
 
 null:
-{}
+{}// Weird hack to allow a null entry
 
 void:
 {}
 `;
-// ^ weird hack to allow a null entry.
-// TODO: Implement comments

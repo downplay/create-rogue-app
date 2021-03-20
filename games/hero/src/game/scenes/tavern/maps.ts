@@ -1,7 +1,6 @@
 import { map } from "heromap";
 
-export const interior1 = () => {
-  return map`
+export const interior1 = map`
 ###########
 #dddddd..♪#
 #BBBBBB..☺#
@@ -14,15 +13,28 @@ export const interior1 = () => {
 #cTc...cTc#
 #####@#####
 
-# = ${wall}
-. = ${floor}
-@ = ${door} + ${player}
-= = ${bar} + (${beer}|)
-♪ = ${floor} + ${piano}
-☺ = ${floor} + ${pianist}
-B = ${floor} + flag(${FLAG_BARKEEP_SPAWN})
-c = ${floor} + ${chair}
-T = ${floor} + ${table} + (${beer}|)
-d = ${barrel}|${shelves}
+[.♪☺BcT] = Floor
+
+# = Wall
+@ = Door + Player
+= = Bar + ( Beer | )
+♪ = Piano
+☺ = Pianist
+B = Barkeep:1
+c = Chair
+T = Table + ( Beer | )
+d = Barrel | Shelving
 `;
-};
+
+export const exterior1 = map`
+######
+#UUUU#
+#UUUU#
+#UUUU#
+#UUUU#
+#++++#
+
+# = Wall
+U = Roof
++ = Door:1 | Wall
+`;

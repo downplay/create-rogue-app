@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useRng } from "../../../engine/useRng";
 import { Ascii } from "../../../ui/Typography";
 
@@ -10,7 +10,7 @@ const colors = [
   "#536B33",
   "#5C7E41",
   "#649250",
-  "#6BA660"
+  "#6BA660",
 ];
 
 export const GrassTile = () => {

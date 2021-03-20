@@ -1,0 +1,26 @@
+import { merge, text, MainAST, commonFunctions } from "herotext";
+import { grammarHelpers } from "./grammarHelpers";
+
+export type BaseState = {
+  Name: string;
+};
+
+const baseStory = text`
+Type:
+${() => {
+  // TODO: Herotext built-in error throwing (poss: $!)
+  throw new Error("Missing Type in story!");
+}};
+
+Name:=
+$Type
+`;
+
+export const base = <TState, TGame = {}>(
+  story: MainAST<
+    BaseState & TGame & TState
+  > /* | EntityFactory<TState, TGame> */
+): MainAST<BaseState & TState & TGame> => {
+  const main = merge(commonFunctions, grammarHelpers, baseStory, story);
+  return main;
+};

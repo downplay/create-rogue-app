@@ -1,11 +1,6 @@
 import { text } from "herotext";
-import { Emoji } from "../../../ui/Typography";
 import { tavernNameText } from "./text";
 import { entity } from "../../../engine/entity";
-import { hasPosition } from "../../../mechanics/hasPosition";
-import { hasTile } from "../../../mechanics/hasTile";
-
-const SignTile = () => <Emoji>🚧</Emoji>;
 
 /**
  * Tavern sign: should probably be repurposed as a general sign with a prop for text
@@ -14,8 +9,8 @@ export const Sign = entity(text`
 Type:
 Sign
 
-${hasPosition()}
-${hasTile(SignTile)}
+Tile:
+🚧
 
 tavernName:=
 ${tavernNameText}
