@@ -1,13 +1,10 @@
 import isFunction from "lodash/isFunction";
-import { ExecutionContext } from "./ExecutionContext";
 import { merge, parse } from "./parse";
-import { ExecutionStrand, IStateElement } from "./types";
+import { IStateElement, ExternalNodeCallback } from "./types";
 import {
   ContentTextAST,
   ExternalAST,
   ComplexValue,
-  ExecutionResultItem,
-  StateElement,
   MainAST,
   ContentAST,
   ChoiceAST,
@@ -82,20 +79,11 @@ const createLabelFromObject = (key: string, value: any): LabelAST => {
 // TODO: Assign ids on a symbol key instead to not duplicate things
 let externalIndex = 0;
 
-export const text = <T extends {}>(
+export const text = <T extends {} = {}>(
   input: TemplateStringsArray,
   ...interpolations: (
     | Record<string, number>
-    | ((
-        state: T,
-        context: ExecutionContext,
-        strand: ExecutionStrand
-      ) =>
-        | ExecutionResultItem
-        | ExecutionResultItem[]
-        | IStateElement
-        | void
-        | undefined)
+    | ExternalNodeCallback<T>
     | IStateElement
     | MainAST
     | undefined

@@ -1,21 +1,20 @@
 import { text } from "herotext";
 
-import {
-  VECTOR_N,
-  VECTOR_S,
-  VECTOR_W,
-  VECTOR_E,
-  VECTOR_NW,
-  VECTOR_NE,
-  VECTOR_SE,
-  VECTOR_SW,
-} from "herotext";
+// import {
+//   VECTOR_N,
+//   VECTOR_S,
+//   VECTOR_W,
+//   VECTOR_E,
+//   VECTOR_NW,
+//   VECTOR_NE,
+//   VECTOR_SE,
+//   VECTOR_SW,
+// } from "herotext";
 import { entity } from "../engine/entity";
 import { Commands } from "../providers/controls";
 import { canMove } from "../mechanics/canMove";
 import { GridLayers } from "../engine/grid";
-import { REAL_TIME_SPEED } from "../engine/game";
-import { hasInventory } from "../mechanics/hasInventory";
+import { hasInventory, InventoryState } from "../mechanics/hasInventory";
 import { FLAG_PLAYER_SPAWN } from "../engine/flags";
 // import { fireInteract } from "../mechanics/canInteractWith";
 import { femaleMageVariants, maleMageVariants } from "./scenes/mage/Mage";
@@ -23,7 +22,7 @@ import { hasSpawnFlag } from "./behaviours/hasSpawnFlag";
 import { PositionState } from "../mechanics/hasPosition";
 import { hasTile, TileState } from "../mechanics/hasTile";
 import { StatsState } from "../mechanics/hasStats";
-import { canLiveAndDie } from "../mechanics/hasLife";
+import { canLiveAndDie, LifeState } from "../mechanics/hasLife";
 
 const commands = [
   Commands.MoveUp,
@@ -36,7 +35,11 @@ const commands = [
   Commands.MoveSW,
 ];
 
-export type PlayerState = StatsState & PositionState & TileState;
+export type PlayerState = StatsState &
+  PositionState &
+  TileState &
+  LifeState &
+  InventoryState;
 
 export const Player = entity<PlayerState>(text`
 Type:
@@ -57,9 +60,9 @@ ${maleMageVariants}
 ${femaleMageVariants}
 
 ${hasInventory({ gold: 0, inventory: [] })}
-${hasSpawnFlag(FLAG_PLAYER_SPAWN)}
 ${canLiveAndDie()}
 ${canMove}
+${hasSpawnFlag(FLAG_PLAYER_SPAWN)}
 isPlayer:=
 true
 `);

@@ -42,25 +42,25 @@ const CardPortal = ({ children }: React.PropsWithChildren<{}>) => {
   return ReactDOM.createPortal(children, portalRef.current);
 };
 
-export const ShowCardEventKey = Symbol("ShowCard");
-export const HideCardEventKey = Symbol("HideCard");
+// export const ShowCardEventKey = Symbol("ShowCard");
+// export const HideCardEventKey = Symbol("HideCard");
 
-export const onCard = (show: () => void, hide: () => void) => {
-  useEvent(ShowCardEventKey, show);
-  useEvent(HideCardEventKey, hide);
-};
+// export const onCard = (show: () => void, hide: () => void) => {
+//   useEvent(ShowCardEventKey, show);
+//   useEvent(HideCardEventKey, hide);
+// };
 
 export const Card = ({ children }: React.PropsWithChildren<{}>) => {
   const [isVisible, setIsVisible] = useState(false);
 
-  onCard(
-    useCallback(() => {
-      setIsVisible(true);
-    }, []),
-    useCallback(() => {
-      setIsVisible(false);
-    }, [])
-  );
+  // onCard(
+  //   useCallback(() => {
+  //     setIsVisible(true);
+  //   }, []),
+  //   useCallback(() => {
+  //     setIsVisible(false);
+  //   }, [])
+  // );
 
   if (isVisible) {
     return (

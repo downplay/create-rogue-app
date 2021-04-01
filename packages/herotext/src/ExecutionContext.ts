@@ -1,6 +1,7 @@
 import { ExecutionStrand, MainAST } from "./types";
 import { createRng } from "./rng";
 import { RNG } from "./rng";
+import { StoryInstance } from "./instance";
 
 type ConstructorProps = {
   state?: Record<string, any>;
@@ -9,6 +10,7 @@ type ConstructorProps = {
   error?: boolean;
   root?: ExecutionStrand;
   rng?: RNG;
+  instance?: StoryInstance;
   main: MainAST;
 };
 
@@ -37,6 +39,8 @@ export class ExecutionContext {
    * Root node of execution tree
    */
   root?: ExecutionStrand;
+
+  instance?: StoryInstance;
 
   constructor(props: ConstructorProps) {
     const { state, finished, suspend, error, root, rng, main } = props;

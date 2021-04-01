@@ -11,6 +11,9 @@ const dogStats = stats(6, 4, 5);
 const DogTile = () => <Emoji>🐕</Emoji>;
 
 export const Dog = entity(text`
+Type:
+Dog
+
 Name:=
 $dogName
 

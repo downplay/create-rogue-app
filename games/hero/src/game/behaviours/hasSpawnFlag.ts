@@ -1,8 +1,13 @@
-import { FLAG_SOLID, FLAG_SPAWN } from "../../engine/flags";
-import { text } from "herotext";
+import { text, StoryInstance } from "herotext";
 import { PositionState } from "../../mechanics/hasPosition";
 // import { GameState } from "../../engine/game";
-import { EngineState } from "../../engine/engine";
+import { EngineState } from "../../engine/types";
+import {
+  entityHasFlag,
+  FlagsState,
+  FLAG_SOLID,
+  FLAG_SPAWN,
+} from "../../engine/flags";
 
 // export const useFindPosition = (flag: symbol = FLAG_SPAWN) => {
 //   const grid = useGrid();
@@ -28,8 +33,8 @@ setup:~
 $position=${({ engine, position }, { rng }) => {
   const tiles = engine.map.findTiles(
     (tile, cell) =>
-      tile.entity?.getFlag(flag) &&
-      !cell.tiles.find((otherTile) => otherTile.entity?.getFlag(FLAG_SOLID))
+      entityHasFlag(tile.entity, flag) &&
+      !cell.tiles.find((otherTile) => entityHasFlag(otherTile.entity, flag))
   );
   if (tiles.length) {
     const chosen = rng.pick(tiles);

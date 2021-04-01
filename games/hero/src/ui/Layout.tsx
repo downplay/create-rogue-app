@@ -8,6 +8,7 @@ import { GameState } from "../engine/game";
 import { Grid } from "../engine/grid";
 import { PlayerState } from "../game/Player";
 import { Map } from "../map/Map";
+import { HeroEngine } from "../engine/types";
 
 const Screen = styled.div`
   position: relative;
@@ -20,20 +21,18 @@ const Screen = styled.div`
 `;
 
 type AProps = {
-  player: PlayerState;
-  content: TerminalContent;
-  map: Grid;
-  game: GameState;
+  engine: HeroEngine;
 };
 
-export const Layout = ({ engine, player, content, map }: AProps) => {
+export const Layout = ({ engine }: AProps) => {
+  const { player, content, map, game } = engine;
   return (
     <Screen>
       <Window>
-        <Map map={map} player={player} />
+        <Map map={map} player={player.globalScope} />
       </Window>
       <Window>
-        <Status player={player} game={game} />
+        <Status player={player.globalScope} game={game.globalScope} />
       </Window>
       <Window>
         <Terminal content={content} engine={engine} />

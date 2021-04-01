@@ -1,27 +1,52 @@
 import { map } from "heromap";
 
+const doorWays = map`
+#++#####++#
+
+#O#+###+#O#
+
+#OO#+++#OO#
+
+// @tag(room:well-lit)
+
+##O#+#+#O##
+
+##+##O##O##
+
+#O###OO#+##
+
+###+###OO##
+`;
+
 export const interior1 = map`
 ###########
 #dddddd..♪#
 #BBBBBB..☺#
 #======...#
 #.........#
-#cTc...cTc#
+#hTh...hTh#
 #.........#
-#.cTc.cTc.#
+#.hTh.hTh.#
 #.........#
-#cTc...cTc#
-#####@#####
+#hTh...hTh#
+#.........#
+@@@@@@@@@@@
+
+** = @class(room)
 
 [.♪☺BcT] = Floor
 
-# = Wall
+// Hmm, this has to overlap with the exterior
+@ = (+:1 + #) | (+:2 + #) | ( ${doorWays} )
+
 @ = Door + Player
++ = Door
+# = Wall
 = = Bar + ( Beer | )
 ♪ = Piano
 ☺ = Pianist
 B = Barkeep:1
-c = Chair
+h = Chair
 T = Table + ( Beer | )
 d = Barrel | Shelving
 `;

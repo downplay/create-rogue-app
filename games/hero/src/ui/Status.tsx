@@ -1,4 +1,3 @@
-import React from "react";
 import { Line, Emoji } from "./Typography";
 import { Meter } from "./controls/Meter";
 import { PlayerState } from "../game/Player";
@@ -9,9 +8,9 @@ type StatusProps = {
   game: GameState;
 };
 
-export const Status = ({ player }: StatusProps) => {
+export const Status = ({ player, game }: StatusProps) => {
   const { mind, body, spirit } = player.stats;
-  const { hp, max } = player.life;
+  const { life, health } = player;
   const { gold } = player;
 
   return (
@@ -28,10 +27,13 @@ export const Status = ({ player }: StatusProps) => {
       <Line>
         <Emoji>💓</Emoji>{" "}
         {/* TODO: Anatomical heart 🫀 (emoji 13 https://emojipedia.org/emoji-13.0/) */}
-        <Meter total={max} value={hp} fore="#00ff00" back="#ff0000" />
+        <Meter total={health} value={life} fore="#00ff00" back="#ff0000" />
       </Line>
       <Line>
         <Emoji>💰</Emoji> {gold}
+      </Line>
+      <Line>
+        <Emoji>🕒</Emoji> {game.time}
       </Line>
     </>
   );

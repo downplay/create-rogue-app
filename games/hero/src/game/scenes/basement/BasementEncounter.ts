@@ -1,6 +1,5 @@
 import { text, StoryInstance, MainAST } from "herotext";
 import { map } from "heromap";
-import { IStateElement } from "../../../../../../packages/herotext/src/types";
 
 type MapProps = {
   stairs: StoryInstance;
@@ -8,11 +7,7 @@ type MapProps = {
   environment: string;
 };
 
-const basementMap = ({
-  stairs,
-  decor,
-  environment,
-}: MapProps): IStateElement => {
+const basementMap = ({ stairs, decor, environment }: MapProps) => {
   return map`
 ##t#t#t#t#t#
 #^...O.....t
@@ -25,16 +20,16 @@ t...O.rrrr.#
 t..O....r..#
 #t#t#tt#t#t#
 
-match(${environment})
-    dark:
-        . = Floor
-        t = Wall
-    flooded:
-        . = Water
-        t = Wall
-    torch-lit:
-        . = Floor
-        t = Torch:1/3 | Wall
+match("${environment}")
+  dark:
+    . = Floor
+    t = Wall
+  flooded:
+    . = Water
+    t = Drain:1/3 | Wall
+  torch-lit:
+    . = Floor
+    t = Torch:1/3 | Wall
 
 ** = Floor
 # = Wall

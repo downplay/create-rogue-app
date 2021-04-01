@@ -141,10 +141,9 @@ const PanZoom = styled.div<PanZoomProps>`
 type MapProps = {
   map: Grid;
   player: PlayerState;
-  game: GameState;
 };
 
-export const Map = ({ map, player, game }: MapProps) => {
+export const Map = ({ map, player }: MapProps) => {
   const viewRef = useRef<HTMLDivElement>(null!);
   const [viewSize, setViewSize] = useState<Vector>();
   // Alternately could trigger focus from the player entity and bubble upwards, simpler

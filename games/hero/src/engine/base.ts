@@ -8,12 +8,14 @@ export type BaseState = {
 const baseStory = text`
 Type:
 ${() => {
-  // TODO: Herotext built-in error throwing (poss: $!)
+  // TODO: Herotext built-in error throwing (poss: $! or @!)
+  // TODO: Also somehow get better data from the ast to debug
+  // what is throwing it
   throw new Error("Missing Type in story!");
 }};
 
 Name:=
-$Type
+$lower($Type)
 `;
 
 export const base = <TState, TGame = {}>(

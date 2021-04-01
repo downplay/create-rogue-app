@@ -1,6 +1,6 @@
-import { render, RNG } from "herotext";
+import { render, RNG, StoryInstance } from "herotext";
 
 export const LABEL_NAME = "Name";
 
 export const getName = (instance: StoryInstance, rng: RNG) =>
-  render(instance.main, rng, instance.globalScope, LABEL_NAME);
+  render(instance.story, rng, instance.globalScope, LABEL_NAME);

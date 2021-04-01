@@ -2,7 +2,7 @@ import { text, merge, commonFunctions, MainAST } from "herotext";
 import { grammarHelpers } from "../../engine/grammarHelpers";
 import { canLiveAndDie } from "../../mechanics/hasLife";
 import { hasPosition } from "../../mechanics/hasPosition";
-import { hasSpawnFlag } from "../behaviours/hasSpawnFlag";
+// import { hasSpawnFlag } from "../behaviours/hasSpawnFlag";
 
 export const baseMonster = text`
 hp:%=
@@ -11,15 +11,25 @@ $maxhp
 maxhp:%
 1
 
-isMonster:
+isMonster:=
 true
 
+gender:=
+male
+female
+neutral
+
+Pronoun:
+{$gender=male}He
+{$gender=female}She
+{0}It
+
 Description:
-$DescribeLook.$DescribeHealth
+[$DescribeLook].$DescribeHealth
 
 DescribeHealth:
 {$hp==$maxhp}
-{$hp=0}It is dead.
+{$hp=0}$Pronoun is dead.
 {0%} $DescribePartialHealth(<$hp/$maxhp>)
 
 DescribePartialHealth: ($fraction)
@@ -32,7 +42,7 @@ export const monster = (...stories: MainAST[]) =>
     grammarHelpers,
     baseMonster,
     hasPosition(),
-    hasSpawnFlag(),
+    // hasSpawnFlag(),
     canLiveAndDie(),
     ...stories
   );

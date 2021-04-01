@@ -1,3 +1,4 @@
+// TODO: Pretty messy how IStateElement is used here
 import { text, StoryInstance, IStateElement } from "herotext";
 
 export type InventoryItem = {
@@ -22,7 +23,7 @@ inventory:
 ${
   ((initialInventory
     ? initialInventory.inventory
-    : []) as unknown) as StateElement[]
+    : []) as unknown) as IStateElement[]
 }
 `;
 

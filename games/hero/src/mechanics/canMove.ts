@@ -19,16 +19,18 @@ $void(
   $position=${(
     actor: GameState & EntityState & LifeState & StatsState & { delta: Vector }
   ): Vector => {
-    const { position, isDead, grid, delta } = actor;
+    const { position, isDead, engine, delta } = actor;
     // TODO: Should never be called in either of these cirumstance
     if (isDead || !position) {
       return position;
     }
     const next = add(position, delta);
-    // const cell = grid.getCell(next);
+    const cell = engine.map.getCell(next);
+    // TODO: check cell contents, maybe trigger interaction
     return next;
   }}
-  $waitForTurn(${({ delta, derived: { speed = 1 } }) => length(delta) / speed})
+  $waitForTurn(${({ delta, derived: { speed } = { speed: 1 } }) =>
+    length(delta) / speed})
   $onMoved($position)
 )
 

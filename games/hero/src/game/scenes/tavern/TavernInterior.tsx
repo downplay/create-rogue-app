@@ -1,37 +1,30 @@
-import React, { useMemo, useEffect } from "react";
-import { Room } from "../../levels/Room";
-import { multiply, subtract } from "herotext";
-import { TavernState } from "./types";
-import { useTerminal } from "../../../engine/terminal";
-import { tavernInteriorDescription } from "./text";
-import { useRng } from "../../../engine/useRng";
-import { Patron, Barkeep } from "./entities";
+import { text } from "herotext";
+import { wait } from "../../../executors/wait";
+import { interior1 } from "./maps";
 
-type Props = { state: TavernState };
+export const TavernInterior = text`
+[You stoop into the murky atmosphere. "$tavernName" might just be the grubbiest pub you've ever seen...
+${wait(2)}
+$grid(${interior1})
+$Scene]
 
-export const TavernInterior = ({ state }: Props) => {
-  const terminal = useTerminal();
-  const rng = useRng();
-  // TODO: Need an equivalent of useEffect but it persists its
-  // dependencies (or lack of) so when the entity reloads we don't need
-  // to run the effect again.
-  useEffect(() => {
-    terminal.write(tavernInteriorDescription(rng, { tavernName: state.name }));
-  });
-  const [size, origin, doors] = useMemo(() => {
-    const size = multiply(state.size, 2);
-    const origin = subtract(state.spawn!, multiply(state.door, 2));
-    const doors = [state.door];
-    return [size, origin, doors];
-  }, [state.size]);
-  return (
-    <Room size={size} origin={origin} doors={doors}>
-      <Barkeep />
-      <Patron />
-      <Patron />
-      <Patron />
-      <Patron />
-      <Patron />
-    </Room>
-  );
-};
+Scene:
+$Brawl
+$Abandoned
+
+Brawl:
+[...Someone eyes you shiftily from the other side of the room. In the corner, the piano stops.
+A patron spits on the floor. "You ain't from around 'ere," they grunt.
+Before you can reply, another drunk jeers, "Aye that's rich, comin' from a $XenophobicSlur!"
+"'Oo you callin' a $slur?" replies the first. The second hurls their glass in response. Before you know it, the entire bar is embroiled in an out-of-control brawl!
+]
+
+Abandoned:
+[...But it's completely deserted! A shiver runs down your spine. Half-drained ale flagons are dotted around the hall.]
+
+XenophobicSlur:=
+Southern Florist
+Midlandser
+Northern Gridmonkey
+Fairy Islander
+`;

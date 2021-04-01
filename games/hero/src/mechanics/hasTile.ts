@@ -1,14 +1,15 @@
-import { text, Vector } from "herotext";
-import { GameState } from "../engine/game";
+import { text, Vector, StoryInstance } from "herotext";
 import { GridLayers } from "../engine/grid";
 import { PositionState } from "./hasPosition";
+import { EngineState } from "../engine/types";
+import { EntityState } from "../engine/entity";
 
 export type TileState<T extends {} = {}> = {
   tile: string | React.ComponentType<T>;
   tileGridHandle: string;
 };
 
-type CombinedState = GameState & PositionState & TileState;
+type CombinedState = EngineState & PositionState & TileState;
 
 export const hasTile = <T extends {} = {}>(
   tile: string | React.ComponentType<T> = "",
@@ -28,13 +29,21 @@ $createTile($to)
 destroy:~
 $removeTile
 
-createTile($to?):
-$tileHandle=${({ to, grid, position, tile }: CombinedState & { to?: Vector }) =>
-  grid.addTile(to || position, tile, layer)}
+createTile: ($to?)
+$tileHandle=${(
+  { to, engine, position, tile }: CombinedState & { to?: Vector },
+  context
+) =>
+  engine.map.addTile(
+    to || position,
+    tile,
+    context.instance as StoryInstance<EntityState>,
+    layer
+  )}
 
 removeTile:
-${({ grid, tileGridHandle, position }) =>
-  grid.removeTile(position, tileGridHandle)}
+${({ engine, tileGridHandle, position }) =>
+  engine.map.removeTile(position, tileGridHandle)}
 `;
 
 // export const tile = (glyph: string) => () => <Emoji>{glyph}</Emoji>;

@@ -7,7 +7,7 @@ export type StoryInstance<T extends {} = {}> = {
   mainThread?: ExecutionContext;
 };
 
-export const storyInstance = <T extends {} = {}>(
+export const createInstance = <T extends {} = {}>(
   story: MainAST,
   globalScope?: T
 ): StoryInstance<T> => ({ story, globalScope: globalScope || ({} as T) });

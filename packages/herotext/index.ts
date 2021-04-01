@@ -1,4 +1,4 @@
-export { storyInstance, StoryInstance } from "./src/instance";
+export { createInstance as storyInstance, StoryInstance } from "./src/instance";
 export { parse, merge, stringifyResult } from "./src/parse";
 export { text } from "./src/text";
 export { render, stream, executeText, inheritStrand } from "./src/execute";
@@ -10,6 +10,7 @@ export {
   ExecutionResultItem,
   ContentAST,
   IStateElement,
+  ExternalNodeCallback,
 } from "./src/types";
 export { commonFunctions } from "./src/commonFunctions";
 export {

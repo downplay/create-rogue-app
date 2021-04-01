@@ -15,7 +15,7 @@ $void(
   $destroy
 )
 
-Name:
+Type:
 💰$gold
 
 Describe:

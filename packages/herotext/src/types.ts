@@ -113,13 +113,15 @@ export type ScopeValue =
   | ScopeValue[];
 // | Record<string, ScopeValue>;
 
+export type ExternalNodeCallback<S extends any = {}> = (
+  state: S,
+  context: ExecutionContext,
+  strand: ExecutionStrand
+) => NodeExecutionResult | string;
+
 export type ExternalAST = ContentItemAST & {
   type: "external";
-  callback: (
-    state: Record<string, ScopeValue>,
-    context: ExecutionContext,
-    strand: ExecutionStrand
-  ) => NodeExecutionResult | string;
+  callback: ExternalNodeCallback;
 };
 
 export type InputAST = ContentItemAST & {

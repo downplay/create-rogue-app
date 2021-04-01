@@ -8,14 +8,15 @@ import { Providers } from "./providers/Providers";
 import { entities } from "./game/entities";
 import { useEngine } from "./engine/engine";
 import { useRng } from "./engine/useRng";
+import { HeroGame } from "./game/HeroGame";
 
 const App = () => {
   const rng = useRng();
-  const engine = useEngine({ entities, rng });
+  const engine = useEngine({ entityTemplates: entities, rng, game: HeroGame });
   return (
     <Providers>
       <Global />
-      <Layout {...engine} />
+      <Layout engine={engine} />
       {/* <Game /> */}
       {/* <Player /> */}
     </Providers>

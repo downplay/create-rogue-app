@@ -28,8 +28,8 @@ export const ratStory = text`
 
 ${hasStats({ body: 3, mind: 1, spirit: 0 })}
 
-Name:
-rat
+Type:
+Rat
 
 Tile:
 🐀

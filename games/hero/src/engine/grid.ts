@@ -1,8 +1,7 @@
-import { Vector } from "herotext";
+import { Vector, StoryInstance } from "herotext";
 import { virtualGrid, VirtualGrid } from "heromap";
 import { v4 } from "uuid";
-
-import { EntityContext } from "./useEntitiesState";
+import { EntityState } from "./entity";
 
 export enum GridLayers {
   Floor = 0,
@@ -17,7 +16,7 @@ export type Tile = {
   id: string;
   content: TileContent<any>;
   layer: GridLayers;
-  entity?: EntityContext;
+  entity: StoryInstance<EntityState>;
   state?: any;
 };
 
@@ -61,8 +60,8 @@ export type GridActions = {
   addTile: <T extends {}, S>(
     position: Vector,
     content: string | React.ComponentType<T>,
+    entity: StoryInstance<EntityState>,
     layer?: GridLayers,
-    entity?: EntityContext,
     state?: S
   ) => string;
   removeTile: (position: Vector, handle: string) => void;
@@ -80,8 +79,8 @@ export const grid = (): Grid => {
   const addTile = <T = {}>(
     position: Vector,
     content: TileContent<T>,
+    entity: StoryInstance<EntityState>,
     layer: GridLayers = GridLayers.Floor,
-    entity?: EntityContext,
     state?: any
   ) => {
     const tile: Tile = {
