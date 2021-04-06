@@ -1,6 +1,6 @@
 import * as nearley from "nearley";
 import { RNG } from "./rng";
-import { ExecutionContext } from "./ExecutionContext";
+import { ExecutionContext } from "./context";
 import {
   ExecutionResult,
   ExecutionResultItem,

@@ -1,7 +1,7 @@
 import { text, Vector, StoryInstance } from "herotext";
 import { GridLayers } from "../engine/grid";
 import { PositionState } from "./hasPosition";
-import { EngineState } from "../engine/types";
+import { EngineState, SelfState } from "../engine/types";
 import { EntityState } from "../engine/entity";
 
 export type TileState<T extends {} = {}> = {
@@ -9,12 +9,12 @@ export type TileState<T extends {} = {}> = {
   tileGridHandle: string;
 };
 
-type CombinedState = EngineState & PositionState & TileState;
+// type CombinedState = EngineState & PositionState & TileState;
 
-export const hasTile = <T extends {} = {}>(
+export const hasTile = <T extends EntityState>(
   tile: string | React.ComponentType<T> = "",
   layer: GridLayers = GridLayers.Floor
-) => text<CombinedState & T>`
+) => text<T & SelfState<T>>`
 Tile:
 ${tile as string}
 
@@ -30,14 +30,21 @@ destroy:~
 $removeTile
 
 createTile: ($to?)
-$tileHandle=${(
-  { to, engine, position, tile }: CombinedState & { to?: Vector },
-  context
-) =>
+$tileHandle=${({
+  to,
+  engine,
+  position,
+  tile,
+  self,
+}: T & SelfState<T> & { to?: Vector }) =>
+  // TODO: Should `self` be a param of context, and context becomes typed,
+  // and can be extended with custom props that shouldn't really be considered state
+  // but still need to be accessible from entity?
+  // context
   engine.map.addTile(
     to || position,
     tile,
-    context.instance as StoryInstance<EntityState>,
+    self as StoryInstance<EntityState>,
     layer
   )}
 

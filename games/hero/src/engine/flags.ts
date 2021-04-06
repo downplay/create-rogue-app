@@ -1,5 +1,4 @@
-import { text } from "herotext";
-import { StoryInstance } from "../../../../packages/herotext/src/instance";
+import { text ,StoryInstance} from "herotext";
 
 export const FLAG_PLAYER = "PlayerFlag";
 export const FLAG_MONSTER = "MonsterFlag";

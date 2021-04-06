@@ -6,7 +6,7 @@ import { Player } from "../game/Player";
 import { EntityState } from "./entity";
 // import { turnManager } from "./turn";
 import { entityManager } from "./entityManager";
-import { HeroEngine } from "./types";
+import { HeroEngine, EngineState } from "./types";
 
 type Props = {
   entityTemplates: MainAST<EntityState>[];
@@ -29,6 +29,23 @@ const createEngine = ({ entityTemplates, rng, game }: Props): HeroEngine => {
   // const turns = turnManager();
 
   return engine as HeroEngine;
+};
+
+export const create = <T extends {} = {}>(
+  template: MainAST<T> | string,
+  initialState?: T
+) => {
+  // TODO: Need to be able to set state within herotext syntax
+  // Might look something like:
+  // $create(Rat, size: <12>, hp: <10>)
+  // Really need to think about this...
+  return ({ engine }: EngineState) =>
+    engine.entities.create(
+      typeof template === "string"
+        ? engine.entities.templates[template]
+        : template,
+      initialState
+    );
 };
 
 export const useEngine = (props: Props): HeroEngine => {

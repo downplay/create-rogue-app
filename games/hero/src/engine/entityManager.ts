@@ -1,4 +1,4 @@
-import { MainAST, render, storyInstance } from "herotext";
+import { MainAST, render, createInstance, executeInstance } from "herotext";
 import { HeroEngine, LABEL_TYPE, EngineState } from "./types";
 
 export const entityManager = (
@@ -25,7 +25,15 @@ export const entityManager = (
   }, {} as Record<string, MainAST>);
 
   const create = <T = {}>(template: MainAST, state: T = {} as T) => {
-    return storyInstance<EngineState & T>(template, { engine, ...state });
+    const instance = createInstance<EngineState & T>(template, {
+      engine,
+      ...state,
+    });
+    // TODO: don't use the global RNG; create a new one with a seed generated from
+    // an RNG from a parent instance etc
+
+    executeInstance(instance, engine.rng, "setup");
+    return instance;
   };
 
   const manager = {

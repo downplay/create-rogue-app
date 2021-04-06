@@ -20,19 +20,13 @@ import {
   ContentItemAST,
 } from "./types";
 import { RNG } from "./rng";
-import { ExecutionContext } from "./ExecutionContext";
 import { stringifyResult, coalesceResult } from "./parse";
-import { FunctionAST, ComplexValue, PrimitiveValue, ScopeValue } from "./types";
+import { FunctionAST, ComplexValue, PrimitiveValue } from "./types";
+import { createContext, ExecutionContext } from "./context";
 
 // TODO: command line param
 const debug = (...parts: any) => {};
 // const debug = (...parts: any) => console.log(...parts);
-
-type ExecutionOptions = {
-  rng?: RNG;
-  initialState?: Record<string, StateElement>;
-  entryPoint?: string;
-};
 
 const executeTextNode = (node: ContentTextAST) => {
   return [node.text];
@@ -685,74 +679,67 @@ executeNode = (
   }
 };
 
-export const executeText = (
-  main: MainAST,
-  options: ExecutionOptions,
-  previousContext?: ExecutionContext
-): ExecutionResult => {
-  // TODO: rng moves onto context?
-  const { rng, entryPoint, initialState } = options;
-
-  if (previousContext && previousContext.main !== main) {
-    throw new Error("previousContext must have same main as next call");
-  }
-
-  const rootStrand: ExecutionStrand =
-    previousContext && previousContext.root
-      ? previousContext.root
-      : {
-          path: entryPoint || "",
-          localScope: {},
-          children: [],
-        };
-
-  let context: ExecutionContext =
-    previousContext ||
-    new ExecutionContext({ state: initialState, rng, root: rootStrand, main });
+export const executeText = (context: ExecutionContext) => {
+  // const { rng, entryPoint, initialState } = options;
 
   context.suspend = false;
 
-  let entryNode: ContentItemAST | undefined = main;
-  if (entryPoint) {
-    entryNode = main.labels[entryPoint];
+  let entryNode: ContentItemAST | undefined = context.main;
+  if (context.root.path) {
+    entryNode = context.main.labels[context.root.path];
     if (!entryNode) {
-      throw new Error("Entrypoint label not found: " + entryPoint);
+      throw new Error("Entrypoint label not found: " + context.root.path);
     }
   }
 
-  const results = executeNode(entryNode, context, rootStrand);
-  return [results, context];
+  const results = executeNode(entryNode, context, context.root);
+  return results;
 };
 
-export const render = (
+export const beginExecution = <T extends {} = {}>(
   main: MainAST,
   rng: RNG,
-  variables?: Record<string, StateElement>,
+  variables?: T,
+  entryPoint: string = ""
+): ExecutionResult<T> => {
+  const root: ExecutionStrand = {
+    path: entryPoint || "",
+    localScope: {},
+    children: [],
+  };
+  const context = createContext(main, root, {
+    rng,
+    state: variables || ({} as T),
+  });
+  return [executeText(context), context];
+};
+
+export const resumeExecution = <T extends {} = {}>(
+  context: ExecutionContext<T>
+) => {
+  if (!context.suspend) {
+    throw new Error("Cannot resume finished context");
+  }
+  if (context.error) {
+    throw new Error("Cannot resume errored context");
+  }
+  context.suspend = false;
+  return executeText(context);
+};
+
+export const render = <T extends {} = {}>(
+  main: MainAST,
+  rng: RNG,
+  variables?: T,
   entryPoint: string = ""
 ): string => {
-  // console.log(JSON.stringify(main, null, "  "));
-  const stream = executeText(main, {
-    rng,
-    entryPoint,
-    initialState: variables,
-  });
-
-  return stringifyResult(stream[0]);
+  const [result, context] = beginExecution(main, rng, variables, entryPoint);
+  // TODO: For both of these Error conditions use a specialised Error object
+  if (context.suspend) {
+    throw new Error("Cannot render suspended context");
+  }
+  if (context.error) {
+    throw new Error("Cannot render errored context");
+  }
+  return stringifyResult(result);
 };
-
-export const stream = (
-  main: MainAST,
-  rng: RNG,
-  variables?: Record<string, StateElement>,
-  executionContext?: ExecutionContext,
-  entryPoint: string = ""
-) =>
-  executeText(
-    main,
-    {
-      rng,
-      initialState: variables,
-      entryPoint,
-    },
-    executionContext
-  );

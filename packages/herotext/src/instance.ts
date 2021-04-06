@@ -1,13 +1,36 @@
-import { MainAST } from "./types";
-import { ExecutionContext } from "./ExecutionContext";
+import { MainAST, ExecutionResult } from "./types";
+import { beginExecution } from "./execute";
+import { RNG } from "./rng";
 
 export type StoryInstance<T extends {} = {}> = {
+  type: "Herotext::StoryInstance";
   story: MainAST;
   globalScope: T;
-  mainThread?: ExecutionContext;
 };
 
 export const createInstance = <T extends {} = {}>(
   story: MainAST,
   globalScope?: T
-): StoryInstance<T> => ({ story, globalScope: globalScope || ({} as T) });
+): StoryInstance<T> => ({
+  type: "Herotext::StoryInstance",
+  story,
+  globalScope: globalScope || ({} as T),
+});
+
+export const executeInstance = <T extends {} = {}>(
+  instance: StoryInstance<T>,
+  rng: RNG,
+  entryPoint = ""
+): ExecutionResult => {
+  const [result, context] = beginExecution(
+    instance.story,
+    rng,
+    instance.globalScope,
+    entryPoint
+  );
+  // TODO: Actually do we need to update instance at all? Since state is never
+  // copied. Or will we copy state to a more usable form during execution and then
+  // marshall back to a POJO once done?
+  // instance.globalScope = context.state;
+  return [result, context];
+};

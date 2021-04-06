@@ -1,4 +1,4 @@
-import { ExecutionContext } from "./ExecutionContext";
+import { ExecutionContext } from "./context";
 import { Vector } from "./vector";
 import { StoryInstance } from "./instance";
 
@@ -195,6 +195,9 @@ export type ExecutionResultItem =
   | TypedValue
   | StoryInstance;
 
-export type ExecutionResult = [NodeExecutionResult, ExecutionContext];
+export type ExecutionResult<T extends {} = {}> = [
+  result: NodeExecutionResult,
+  context: ExecutionContext<T>
+];
 
 export type NodeExecutionResult = ExecutionResultItem[];

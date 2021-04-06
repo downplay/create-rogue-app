@@ -1,9 +1,8 @@
-import { StoryInstance, text } from "herotext";
+import { createInstance, StoryInstance, text } from "herotext";
 import { Dog } from "../../monsters/Dog";
 import { Cat } from "../../monsters/Cat";
 import { Rat } from "../../monsters/Rat";
 import { Bat } from "../../monsters/Bat";
-import { storyInstance } from "herotext";
 
 const familiarTypes = {
   Cat,
@@ -29,7 +28,7 @@ setup:~
 $void($familiarType $familiar)
 
 familiar:=
-${({ familiarType }) => storyInstance(familiarTypes[familiarType])}
+${({ familiarType }) => createInstance(familiarTypes[familiarType])}
 
 familiarType:=
 {?${familiarType}}${familiarType}

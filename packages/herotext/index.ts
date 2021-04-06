@@ -1,9 +1,15 @@
-export { createInstance as storyInstance, StoryInstance } from "./src/instance";
+export { createInstance, executeInstance, StoryInstance } from "./src/instance";
 export { parse, merge, stringifyResult } from "./src/parse";
 export { text } from "./src/text";
-export { render, stream, executeText, inheritStrand } from "./src/execute";
+export {
+  render,
+  executeText,
+  beginExecution,
+  resumeExecution,
+  inheritStrand,
+} from "./src/execute";
 export { RNG, createRng } from "./src/rng";
-export { ExecutionContext } from "./src/ExecutionContext";
+export { ExecutionContext, createContext } from "./src/context";
 export {
   MainAST,
   ReturnCommand,

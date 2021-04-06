@@ -18,6 +18,9 @@ export type DoorState = PositionState &
 // then one like this with an event to go to different locations
 
 export const Door = entity(text<DoorState>`
+Type:
+Door
+
 ${hasTile(DoorTile)}
 ${hasPosition()}
 ${canInteractWith}

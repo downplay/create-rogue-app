@@ -18,4 +18,8 @@ export type EngineState = {
   engine: HeroEngine;
 };
 
+export type SelfState<T extends EngineState = EngineState> = {
+  self: StoryInstance<T>;
+};
+
 export const LABEL_TYPE = "Type";

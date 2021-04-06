@@ -1,7 +1,8 @@
-import { storyInstance, text } from "herotext";
+import { text } from "herotext";
 import { TavernExterior } from "./TavernExterior";
 import { TavernInterior } from "./TavernInterior";
 import { encounter } from "../../../engine/encounter";
+import { create } from "../../../engine/engine";
 
 // export const TavernEncounter = encounter(() => {
 //   const terminal = useTerminal();
@@ -69,8 +70,8 @@ export const TavernEncounter = encounter(text`
 
 setup:~
 [
-  $exterior=${storyInstance(TavernExterior)}
-  $interior=${storyInstance(TavernInterior)}
+  $exterior=${create(TavernExterior)}
+  $interior=${create(TavernInterior)}
   $interior.connect($exterior)
 ]
 `);
