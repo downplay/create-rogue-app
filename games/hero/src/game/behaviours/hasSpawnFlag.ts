@@ -29,7 +29,7 @@ import {
 export const hasSpawnFlag = (flag = FLAG_SPAWN) => text<
   EngineState & PositionState
 >`
-setup:~
+setup:+~
 $position=${({ engine, position }, { rng }) => {
   const tiles = engine.map.findTiles(
     (tile, cell) =>

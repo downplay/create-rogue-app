@@ -68,7 +68,7 @@ export const TavernEncounter = encounter(text`
   You see a rustic-looking tavern. A creaking sign hanging by the door and swinging gently in the breeze reads: "$interior.Name"
 ]
 
-setup:~
+setup:+~
 [
   $exterior=${create(TavernExterior)}
   $interior=${create(TavernInterior)}

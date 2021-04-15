@@ -12,10 +12,13 @@ ${() => {
   // TODO: Also somehow get better data from the ast to debug
   // what is throwing it
   throw new Error("Missing Type in story!");
-}};
+}}
 
 Name:=
 $lower($Type)
+
+setup:+~
+{0}
 `;
 
 export const base = <TState, TGame = {}>(

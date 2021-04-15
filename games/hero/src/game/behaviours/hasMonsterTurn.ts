@@ -7,7 +7,7 @@ export const hasMonsterTurn = (
   idleTurnLength = 1,
   turnRandomisation = 0.1
 ) => text<HasMonsterTurnState>`
-setup:~
+setup:+~
 $waitForNextTurn(${idleTurnLength})
 
 onTurn:~

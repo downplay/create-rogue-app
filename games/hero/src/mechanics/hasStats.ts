@@ -37,7 +37,7 @@ const IDENTITY = stats(1, 1, 1);
 
 export const hasStats = (baseStats: Stats = IDENTITY) => text<StatsState>`
 
-setup:~
+setup:+~
 $stats
 
 stats:=

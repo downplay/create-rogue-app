@@ -18,7 +18,7 @@ export const hasTile = <T extends EntityState>(
 Tile:
 ${tile as string}
 
-setup:~
+setup:+~
 $tile=$Tile
 $createTile
 

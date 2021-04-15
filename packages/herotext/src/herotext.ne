@@ -40,7 +40,7 @@ const lexer = moo.states({
       value: (x) => x.slice(0, x.indexOf(":")),
     },
     labelplusmerge: {
-      match: /^[a-zA-Z0-9 ]+:+~\+/,
+      match: /^[a-zA-Z0-9 ]+:\+~/,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },

@@ -24,7 +24,7 @@ type HasFamiliarState = {
 export const hasFamiliar = (
   familiarType?: keyof typeof familiarTypes
 ) => text<HasFamiliarState>`
-setup:~
+setup:+~
 $void($familiarType $familiar)
 
 familiar:=

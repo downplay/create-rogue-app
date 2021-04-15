@@ -46,7 +46,7 @@ O = ${decor}
 export const BasementStory = text<MapProps>`
 You walk down the steps into the $environment basement. $plural($decor) are strewn around the place.
 
-setup:
+setup:+~
 $map(${basementMap})
 
 decor:=

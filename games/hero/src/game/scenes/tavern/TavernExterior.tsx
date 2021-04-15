@@ -20,7 +20,7 @@ import { text } from "herotext";
 // };
 
 export const TavernExterior = text`
-$Map(${RoadLayout})
+$map(${RoadLayout})
 $map(${exterior1})
 `;
 

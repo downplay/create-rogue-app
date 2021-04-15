@@ -34,7 +34,7 @@ Rat
 Tile:
 🐀
 
-setup:
+setup:+~
 $null($size)
 
 size:=

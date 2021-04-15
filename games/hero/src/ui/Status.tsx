@@ -9,7 +9,7 @@ type StatusProps = {
 };
 
 export const Status = ({ player, game }: StatusProps) => {
-  const { mind, body, spirit } = player.stats;
+  const { mind, body, spirit } = player.stats || {};
   const { life, health } = player;
   const { gold } = player;
 

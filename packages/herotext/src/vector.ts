@@ -10,6 +10,7 @@ export const vector = (x: number | Vector, y: number): Vector =>
 
 // TODO: 3D vectors
 export const isVector = (test: any) =>
+  test &&
   Object.prototype.hasOwnProperty.call(test, "x") &&
   Object.prototype.hasOwnProperty.call(test, "y") &&
   Object.keys(test).length === 2 &&

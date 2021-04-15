@@ -93,7 +93,7 @@ export const text = <T extends {} = {}>(
   const mergedTemplates: MainAST[] = [];
   const flattened = input
     .map((fragment, i) => {
-      if (interpolations[i]) {
+      if (typeof interpolations[i] !== "undefined") {
         const external = interpolations[i];
         // TODO: Maybe do some more checking of types (like heromaps does) and inline strings
         if (

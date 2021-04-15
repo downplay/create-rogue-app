@@ -1,4 +1,4 @@
-import { text ,StoryInstance} from "herotext";
+import { text, StoryInstance } from "herotext";
 
 export const FLAG_PLAYER = "PlayerFlag";
 export const FLAG_MONSTER = "MonsterFlag";
@@ -20,7 +20,7 @@ const removeFlag = (flags: string[], flag: string) => {
 };
 
 export const hasFlags = () => text<HasFlagProps>`
-setup:~
+setup:+~
 $flags=${[]}
 
 setFlag: ($flag, $on?)
@@ -34,7 +34,7 @@ ${({ flag, flags, on = true }) => {
 `;
 
 export const hasFlag = (flag: string, value?: boolean) => text<HasFlagProps>`
-setup:~
+setup:+~
 $setFlag(${flag})
 `;
 

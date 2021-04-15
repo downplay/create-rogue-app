@@ -7,9 +7,9 @@ import { monster } from "../../monsters/baseMonster";
 // building a snowman
 // ...snowmage!
 
-export const maleMageVariants = text`🧙‍♂️|🧙🏻‍♂️|🧙🏼‍♂️|🧙🏽‍♂️|🧙🏾‍♂️|🧙🏿‍♂️`;
+export const maleMageVariants = text`[🧙‍♂️|🧙🏻‍♂️|🧙🏼‍♂️|🧙🏽‍♂️|🧙🏾‍♂️|🧙🏿‍♂️]`;
 
-export const femaleMageVariants = text`🧙‍♀️|🧙🏻‍♀️|🧙🏼‍♀️|🧙🏽‍♀️|🧙🏾‍♀️|🧙🏿‍♀️`;
+export const femaleMageVariants = text`[🧙‍♀️|🧙🏻‍♀️|🧙🏼‍♀️|🧙🏽‍♀️|🧙🏾‍♀️|🧙🏿‍♀️]`;
 
 export const Mage = monster(text`
 Tile:=

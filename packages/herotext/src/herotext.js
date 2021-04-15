@@ -7,59 +7,59 @@ function id(x) { return x[0]; }
 const moo = require("moo");
 
 const assign = {
-  match: /\$[a-zA-Z0-9]+=/,
+  match: /\$[a-zA-Z0-9]+=/u,
   push: "nospace",
   value: (x) => x.slice(1, x.length - 1),
 };
 const bassign = {
-  match: /\$\[[a-zA-Z0-9 ]+\]=/,
+  match: /\$\[[a-zA-Z0-9 ]+\]=/u,
   push: "nospace",
   value: (x) => x.slice(2, x.length - 2),
 };
 
-const sub = { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1), push: "subpath" };
-const bsub = { match: /\$\[/, push: "sublabel" };
-const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks: true };
-const space = { match: /[ \t]+/, lineBreaks: false };
+const sub = { match: /\$[a-zA-Z0-9]+/u, value: (x) => x.slice(1), push: "subpath" };
+const bsub = { match: /\$\[/u, push: "sublabel" };
+const newline = { match: /(?:\r\n|\r|\n)/u, lineBreaks: true };
+const space = { match: /[ \t]+/u, lineBreaks: false };
 const input = "$?";
 
-const escape = { match: /\\[\\\[\]\{\}\$|:\/]/, value: (x) => x[1] };
-const lineComment = { match: /\/\/.*$/ };
-const blockComment = { match: /\/\*/, push: "comment" };
+const escape = { match: /\\[\\\[\]\{\}\$|:\/]/u, value: (x) => x[1] };
+const lineComment = { match: /\/\/.*$/u };
+const blockComment = { match: /\/\*/u, push: "comment" };
 
 const lexer = moo.states({
   line: {
-    bang: /^!/,
+    bang: /^!/u,
     assign,
     bassign,
     sub,
     bsub,
     input,
     labeleqmerge: {
-      match: /^[a-zA-Z0-9 ]+:=~/,
+      match: /^[a-zA-Z0-9 ]+:=~/u,
       value: (x) => x.slice(0, x.indexOf(":")),
     },
     labeleq: {
-      match: /^[a-zA-Z0-9 ]+:=/,
+      match: /^[a-zA-Z0-9 ]+:=/u,
       value: (x) => x.slice(0, x.indexOf(":")),
     },
     labelplusmerge: {
-      match: /^[a-zA-Z0-9 ]+:+~\+/,
+      match: /^[a-zA-Z0-9 ]+:\+~/u,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },
     labelplus: {
-      match: /^[a-zA-Z0-9 ]+:\+/,
+      match: /^[a-zA-Z0-9 ]+:\+/u,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },
     labelmerge: {
-      match: /^[a-zA-Z0-9 ]+:~/,
+      match: /^[a-zA-Z0-9 ]+:~/u,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },
     label: {
-      match: /^[a-zA-Z0-9 ]+:/,
+      match: /^[a-zA-Z0-9 ]+:/u,
       value: (x) => x.slice(0, x.indexOf(":")),
       push: "labelend",
     },
@@ -100,7 +100,7 @@ const lexer = moo.states({
     // TODO: nospace is kinda broken anyway, would be nice to switch to moo.fallback, but the precondition
     // catch-all does it instead; would need a weird group of most non-alphanumeric chars instead
     string: {
-      match: /(?:\$\$|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/,
+      match: /(?:\$\$|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/u,
       lineBreaks: false,
     },
     "{": { match: "{", push: "precondition" },
@@ -115,7 +115,7 @@ const lexer = moo.states({
   },
   labelparams: {
     // TODO: support spaces in var names
-    varname: { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1)},
+    varname: { match: /\$[a-zA-Z0-9]+/u, value: (x) => x.slice(1)},
     "?": "?",
     ",": ",",
     ")": { match: ")", pop: 1 },
@@ -125,13 +125,13 @@ const lexer = moo.states({
     blockComment,
   },
   subpath: {
-    path: { match: /\.[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
-    bpath: { match: /\.\[/, next: "sublabel" },
+    path: { match: /\.[a-zA-Z0-9]+/u, value: (x) => x.slice(1) },
+    bpath: { match: /\.\[/u, next: "sublabel" },
     "(": { match: "(", next: "funcparams" },
-    pathend: { match: /(?=[^])/, pop: 1, lineBreaks: true }
+    pathend: { match: /(?=[^])/u, pop: 1, lineBreaks: true }
   },
   sublabel: {
-    string: { match: /[a-zA-Z0-9 ]+/ },
+    string: { match: /[a-zA-Z0-9 ]+/u},
     assign,
     bassign,
     sub,
@@ -158,8 +158,8 @@ const lexer = moo.states({
     string: moo.fallback
   },
   precondition: {
-    number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
-    compare: /(?:[<>=!]=?|~=?)/,   
+    number: /-?[0-9]+(?:\.[0-9]+)?\%?/u,
+    compare: /(?:[<>=!]=?|~=?)/u,   
     sub,
     bsub,
     "[": { match: "[", push: "group" },
