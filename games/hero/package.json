@@ -21,7 +21,7 @@
     "heromap": "0.0.1",
     "immer": "^8.0.1",
     "keycode-js": "^3.1.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "modern-css-reset": "^1.4.0",
     "moo": "^0.5.1",
     "nearley": "^2.20.1",
