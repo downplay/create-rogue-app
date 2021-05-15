@@ -26,6 +26,7 @@
     "jest": "^26.6.3"
   },
   "dependencies": {
+    "@hero/math": "^0.1.0",
     "@types/moo": "^0.5.4",
     "@types/ramda": "^0.27.38",
     "flatted": "^3.1.1",

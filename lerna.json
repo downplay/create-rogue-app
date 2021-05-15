@@ -8,7 +8,12 @@
     "run": {
       "npmClient": "yarn"
     },
+    "publish": {
+      "npmClient": "yarn",
+      "message": "chore(release): publish"
+    },
     "version": {
+      "npmClient": "yarn",
       "message": "chore(release): version"
     }
   }
