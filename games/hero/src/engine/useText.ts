@@ -1,4 +1,4 @@
-import { render, MainAST } from "herotext";
+import { render, MainAST } from "@hero/text";
 import { useMemo } from "react";
 import { useRng } from "./useRng";
 

@@ -3,7 +3,7 @@
 // Will prob be used internally in useEngine eventually.
 
 // import { useState, useRef } from "react";
-// import { parse } from "herotext";
+// import { parse } from "@hero/text";
 // import { ExecutionContext } from "./text/ExecutionContext";
 
 // export const useStory = <S extends {}>(

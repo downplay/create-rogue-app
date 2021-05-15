@@ -1,5 +1,5 @@
 // TODO: Pretty messy how IStateElement is used here
-import { text, StoryInstance, IStateElement } from "herotext";
+import { text, StoryInstance, IStateElement } from "@hero/text";
 
 export type InventoryItem = {
   count: number;
@@ -21,9 +21,9 @@ ${initialInventory ? initialInventory.gold : 0}
 
 inventory:
 ${
-  ((initialInventory
+  (initialInventory
     ? initialInventory.inventory
-    : []) as unknown) as IStateElement[]
+    : []) as unknown as IStateElement[]
 }
 `;
 

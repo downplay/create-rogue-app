@@ -1,5 +1,5 @@
 import React from "react";
-import { text, ContentAST } from "herotext";
+import { text, ContentAST } from "@hero/text";
 import { Emoji } from "../../ui/Typography";
 import { hasPosition, PositionState } from "../../mechanics/hasPosition";
 import { hasTile, TileState } from "../../mechanics/hasTile";

@@ -1,4 +1,4 @@
-import { text, StoryInstance } from "herotext";
+import { text, StoryInstance } from "@hero/text";
 import { PositionState } from "../../mechanics/hasPosition";
 // import { GameState } from "../../engine/game";
 import { EngineState } from "../../engine/types";

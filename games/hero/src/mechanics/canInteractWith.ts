@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 
 // TODO: This is ok for now. As only player will be interacting.
 // But eventually need a way to AI monsters & allies to be able to

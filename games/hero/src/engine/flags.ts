@@ -1,4 +1,4 @@
-import { text, StoryInstance } from "herotext";
+import { text, StoryInstance } from "@hero/text";
 
 export const FLAG_PLAYER = "PlayerFlag";
 export const FLAG_MONSTER = "MonsterFlag";

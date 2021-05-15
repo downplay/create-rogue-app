@@ -1,5 +1,5 @@
 {
-  "name": "heromap",
+  "name": "@hero/map",
   "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",

@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { entity } from "../../engine/entity";
 import { isSolid } from "../../engine/flags";
 

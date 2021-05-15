@@ -1,6 +1,6 @@
+import { RNG } from "@hero/math";
 import { MainAST, ExecutionResult } from "./types";
 import { beginExecution } from "./execute";
-import { RNG } from "./rng";
 
 export type StoryInstance<T extends {} = {}> = {
   type: "Herotext::StoryInstance";

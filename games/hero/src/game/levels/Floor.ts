@@ -1,6 +1,6 @@
 // import { Ascii } from "../../ui/Typography";
 // import { isSpawn } from "../../engine/flags";
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { entity } from "../../engine/entity";
 
 // const SLATE_1 = "#49394E";

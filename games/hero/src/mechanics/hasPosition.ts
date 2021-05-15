@@ -1,5 +1,5 @@
-import { text } from "herotext";
-import { vector, Vector } from "herotext";
+import { text } from "@hero/text";
+import { vector, Vector } from "@hero/text";
 
 export type PositionState = { position: Vector };
 

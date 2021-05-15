@@ -1,4 +1,4 @@
-import { merge, render } from "herotext";
+import { merge, render } from "@hero/text";
 import { Bank } from "./Bank";
 import { baseLocation } from "./baseLocation";
 import { baseCommands } from "../commands/baseCommands";

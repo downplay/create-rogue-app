@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { stats, hasStats } from "../../mechanics/hasStats";
 import { hasTile } from "../../mechanics/hasTile";
 import { entity } from "../../engine/entity";

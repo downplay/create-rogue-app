@@ -1,4 +1,4 @@
-import { RNG, createRng } from "herotext";
+import { RNG, createRng } from "@hero/text";
 
 export const mockRng = (
   sequence: number[] = [0, 0.25, 0.5, 0.75, 0.9999]

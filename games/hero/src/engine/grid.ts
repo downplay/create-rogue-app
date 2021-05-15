@@ -1,5 +1,5 @@
-import { Vector, StoryInstance } from "herotext";
-import { virtualGrid, VirtualGrid } from "heromap";
+import { Vector, StoryInstance } from "@hero/text";
+import { virtualGrid, VirtualGrid } from "@hero/map";
 import { v4 } from "uuid";
 import { EntityState } from "./entity";
 

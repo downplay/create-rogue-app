@@ -1,4 +1,4 @@
-import { createInstance, MainAST } from "herotext";
+import { createInstance, MainAST } from "@hero/text";
 import { TurnState } from "./turn";
 
 export type GameState = TurnState;

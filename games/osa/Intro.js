@@ -1,4 +1,4 @@
-import { text, merge } from "herotext";
+import { text, merge } from "@hero/text";
 import { baseCommands } from "./commands/baseCommands";
 import {
   LOCATION_ALLEY,

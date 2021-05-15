@@ -1,4 +1,4 @@
-import { text, merge, commonFunctions, MainAST } from "herotext";
+import { text, merge, commonFunctions, MainAST } from "@hero/text";
 import { grammarHelpers } from "../../engine/grammarHelpers";
 import { canLiveAndDie } from "../../mechanics/hasLife";
 import { hasPosition } from "../../mechanics/hasPosition";

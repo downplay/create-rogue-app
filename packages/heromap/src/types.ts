@@ -1,4 +1,4 @@
-import { IStateElement } from "herotext";
+import { IStateElement } from "@hero/text";
 
 export type MapNode = IStateElement & {
   type: "Heromap::MapNode";

@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 
 export type LifeState = { life: number; health: number; isDead: boolean };
 

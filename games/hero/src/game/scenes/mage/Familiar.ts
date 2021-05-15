@@ -1,4 +1,4 @@
-import { createInstance, StoryInstance, text } from "herotext";
+import { createInstance, StoryInstance, text } from "@hero/text";
 import { Dog } from "../../monsters/Dog";
 import { Cat } from "../../monsters/Cat";
 import { Rat } from "../../monsters/Rat";

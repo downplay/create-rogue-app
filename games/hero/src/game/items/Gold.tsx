@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { GridLayers } from "../../engine/grid";
 import { InventoryState } from "../../mechanics/hasInventory";
 import { hasTile } from "../../mechanics/hasTile";

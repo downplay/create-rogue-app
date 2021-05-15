@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { OnHitState, Sword } from "../Sword";
 
 export const CocktailStick = text`

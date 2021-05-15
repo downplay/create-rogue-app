@@ -1,4 +1,4 @@
-import { text, Vector, StoryInstance } from "herotext";
+import { text, Vector, StoryInstance } from "@hero/text";
 import { GridLayers } from "../engine/grid";
 import { PositionState } from "./hasPosition";
 import { EngineState, SelfState } from "../engine/types";

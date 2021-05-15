@@ -1,5 +1,5 @@
 import * as nearley from "nearley";
-import { RNG } from "./rng";
+import { Vector, isVector, RNG } from "@hero/math";
 import { ExecutionContext } from "./context";
 import {
   ExecutionResult,
@@ -10,7 +10,6 @@ import {
 import grammar from "./herotext";
 import { PrimitiveValue, TypedValue } from "./types";
 import { stringify } from "flatted";
-import { Vector, isVector } from "./vector";
 
 export const parse = (input: string): MainAST => {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
@@ -24,7 +23,7 @@ export const parse = (input: string): MainAST => {
     throw new Error("Unparseable text");
   }
   const main: MainAST = parsed.results[0]
-    ? ((parsed.results[0] as unknown) as MainAST)
+    ? (parsed.results[0] as unknown as MainAST)
     : { type: "main", content: null, labels: {} };
   if (Object.keys(main.labels).some((name) => name.startsWith("OUT"))) {
     console.error("Labels beginning with OUT are reserved for external calls:");

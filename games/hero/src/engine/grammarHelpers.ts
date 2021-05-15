@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 
 // TODO: Not really an engine thing, maybe a language module?
 

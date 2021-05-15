@@ -1,7 +1,6 @@
+import { Vector } from "@hero/math";
 import { ExecutionContext } from "./context";
-import { Vector } from "./vector";
 import { StoryInstance } from "./instance";
-
 export interface ContentItemAST {
   type:
     | "text"

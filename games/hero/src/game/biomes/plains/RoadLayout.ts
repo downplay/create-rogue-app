@@ -1,5 +1,5 @@
-import { text } from "herotext";
-import { map } from "heromap";
+import { text } from "@hero/text";
+import { map } from "@hero/map";
 import { FLAG_PLAYER_SPAWN } from "../../../engine/flags";
 import { entity } from "../../../engine/entity";
 

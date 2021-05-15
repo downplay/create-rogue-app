@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 
 // import {
 //   VECTOR_N,
@@ -9,7 +9,7 @@ import { text } from "herotext";
 //   VECTOR_NE,
 //   VECTOR_SE,
 //   VECTOR_SW,
-// } from "herotext";
+// } from "@hero/text";
 import { entity } from "../engine/entity";
 import { Commands } from "../providers/controls";
 import { canMove } from "../mechanics/canMove";

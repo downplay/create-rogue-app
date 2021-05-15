@@ -1,7 +1,7 @@
 import { hasRandomMovement } from "../../behaviours/hasRandomMovement";
 import { GridLayers } from "../../../engine/grid";
 import { hasFaction, Factions } from "../../behaviours/hasFaction";
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { hasStats, stats } from "../../../mechanics/hasStats";
 import { hasTile } from "../../../mechanics/hasTile";
 

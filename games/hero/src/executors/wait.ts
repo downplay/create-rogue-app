@@ -1,4 +1,4 @@
-import { ExternalNodeCallback } from "herotext";
+import { ExternalNodeCallback } from "@hero/text";
 
 type EndToken = {};
 const end: EndToken = {};

@@ -1,3 +1,4 @@
+import { RNG } from "@hero/math";
 import {
   MainAST,
   ContentAST,
@@ -19,7 +20,6 @@ import {
   ValueAST,
   ContentItemAST,
 } from "./types";
-import { RNG } from "./rng";
 import { stringifyResult, coalesceResult } from "./parse";
 import { FunctionAST, ComplexValue, PrimitiveValue } from "./types";
 import { createContext, ExecutionContext } from "./context";
@@ -79,7 +79,7 @@ const valueOfExpression = (
   strand: ExecutionStrand
 ): string | number => {
   if (["string", "number"].includes(typeof value)) {
-    return (value as unknown) as string;
+    return value as unknown as string;
   }
   switch (value.type) {
     case "text":
@@ -590,7 +590,7 @@ executeNode = (
       case "text":
         return executeTextNode(node as ContentTextAST);
       case "complex":
-        return [(node as unknown) as ComplexValue];
+        return [node as unknown as ComplexValue];
       case "choices":
         return executeChoicesNode(node as ContentChoiceAST, context, strand);
       case "main": {

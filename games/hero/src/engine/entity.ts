@@ -1,7 +1,7 @@
-import { merge, text, MainAST } from "herotext";
+import { merge, text, MainAST } from "@hero/text";
 import { hasPosition, PositionState } from "../mechanics/hasPosition";
 import { hasTile, TileState } from "../mechanics/hasTile";
-import { StoryInstance } from "herotext";
+import { StoryInstance } from "@hero/text";
 import { base } from "./base";
 import { EngineState } from "./types";
 import { FlagsState } from "./flags";

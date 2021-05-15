@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { tavernNameText } from "./text";
 import { entity } from "../../../engine/entity";
 

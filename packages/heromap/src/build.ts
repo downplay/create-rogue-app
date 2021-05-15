@@ -1,5 +1,5 @@
 import { stringify } from "flatted";
-import { RNG, createRng } from "herotext";
+import { RNG, createRng } from "@hero/text";
 import { VirtualGrid, virtualGrid } from "./virtualGrid";
 import { BrushNode, BrushNodes } from "./types";
 import {

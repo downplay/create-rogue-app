@@ -1,4 +1,4 @@
-import { text, Vector, add, length } from "herotext";
+import { text, Vector, add, length } from "@hero/text";
 import { GameState } from "../engine/game";
 import { EntityState } from "../engine/entity";
 import { LifeState } from "./hasLife";

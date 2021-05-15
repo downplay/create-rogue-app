@@ -1,4 +1,4 @@
-import { merge, text, MainAST, commonFunctions } from "herotext";
+import { merge, text, MainAST, commonFunctions } from "@hero/text";
 import { grammarHelpers } from "./grammarHelpers";
 
 export type BaseState = {

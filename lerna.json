@@ -1,0 +1,15 @@
+{
+  "version": "independent",
+  "packages": ["packages/*", "games/*"],
+  "npmClient": "yarn",
+  "npmClientArgs": ["--no-optional"],
+  "useWorkspaces": true,
+  "command": {
+    "run": {
+      "npmClient": "yarn"
+    },
+    "version": {
+      "message": "chore(release): version"
+    }
+  }
+}

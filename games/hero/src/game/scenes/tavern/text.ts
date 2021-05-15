@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { interior1 } from "./maps";
 import { wait } from "../../../executors/wait";
 

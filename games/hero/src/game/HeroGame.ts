@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { game } from "../engine/game";
 
 const gameStory = text`

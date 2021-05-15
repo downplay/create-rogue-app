@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 export enum Factions {
   // Player themselves, and allies
   Player,

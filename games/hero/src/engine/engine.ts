@@ -1,4 +1,4 @@
-import { MainAST, RNG, StoryInstance } from "herotext";
+import { MainAST, RNG, StoryInstance } from "@hero/text";
 import { useMemo } from "react";
 import { grid } from "./grid";
 import { GameState } from "./game";

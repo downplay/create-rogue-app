@@ -1,4 +1,4 @@
-import { text, commonFunctions } from "herotext";
+import { text, commonFunctions } from "@hero/text";
 import { hasFamiliar } from "./Familiar";
 
 enum Genders {

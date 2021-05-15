@@ -1,6 +1,6 @@
 import { exterior1 } from "./maps";
 import { RoadLayout } from "../../biomes/plains/RoadLayout";
-import { text } from "herotext";
+import { text } from "@hero/text";
 
 // export const TavernEntrance = ({ ...rest }: PositionProps) => {
 //   const [state, setState] = useEntityState<TavernState>(TavernStateKey);

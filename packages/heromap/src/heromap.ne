@@ -43,7 +43,7 @@ const empty = () => null;
 
 const vid = d => d[0].value;
 
-const heromapSymbol = Symbol("heromap");
+const heromapSymbol = Symbol("@hero/map");
 
 // TODO: With overlays, make sure trim keeps them all relative
 const trimMapLines = (lines) => {

@@ -5,6 +5,7 @@
   "workspaces": [
     "packages/herotext",
     "packages/heromap",
+    "packages/heromath",
     "games/osa",
     "games/hero"
   ],

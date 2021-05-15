@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { hasStats } from "../../mechanics/hasStats";
 import { monster } from "./baseMonster";
 import { hasRandomMovement } from "../behaviours/hasRandomMovement";

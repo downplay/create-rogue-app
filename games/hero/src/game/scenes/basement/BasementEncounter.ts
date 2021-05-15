@@ -1,5 +1,5 @@
-import { text, StoryInstance, MainAST } from "herotext";
-import { map } from "heromap";
+import { text, StoryInstance, MainAST } from "@hero/text";
+import { map } from "@hero/map";
 
 type MapProps = {
   stairs: StoryInstance;

@@ -1,4 +1,4 @@
-import { render } from "herotext";
+import { render } from "@hero/text";
 
 export const location = (story) => ({
   type: "location",

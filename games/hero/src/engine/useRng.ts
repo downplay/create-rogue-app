@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { createRng, RNG } from "herotext";
+import { createRng, RNG } from "@hero/text";
 
 export const useRng = (): RNG => {
   // Some reqs.

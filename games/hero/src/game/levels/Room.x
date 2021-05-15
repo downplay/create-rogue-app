@@ -1,9 +1,9 @@
 import React, { useMemo, memo, PropsWithChildren } from "react";
-import { Vector, VECTOR_ORIGIN, add, equals, vectorKey } from "herotext";
+import { Vector, VECTOR_ORIGIN, add, equals, vectorKey } from "@hero/text";
 import { Wall } from "./Wall";
 import { Floor } from "./Floor";
 import { Door, DoorState } from "./Door";
-import { reduceQuad, VECTOR_NW } from "herotext";
+import { reduceQuad, VECTOR_NW } from "@hero/text";
 import { PositionProps } from "../../engine/hasPosition";
 
 export type RoomProps = {

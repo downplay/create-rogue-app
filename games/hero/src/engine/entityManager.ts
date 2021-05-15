@@ -1,4 +1,4 @@
-import { MainAST, render, createInstance, executeInstance } from "herotext";
+import { MainAST, render, createInstance, executeInstance } from "@hero/text";
 import { HeroEngine, LABEL_TYPE, EngineState } from "./types";
 
 export const entityManager = (

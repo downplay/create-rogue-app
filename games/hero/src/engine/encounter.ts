@@ -1,4 +1,4 @@
-import { merge, text, MainAST } from "herotext";
+import { merge, text, MainAST } from "@hero/text";
 import { base } from "./base";
 
 type EncounterState = {};

@@ -1,4 +1,4 @@
-import { inheritStrand, ReturnCommand, text } from "herotext";
+import { inheritStrand, ReturnCommand, text } from "@hero/text";
 import { GameState } from "../../engine/game";
 
 type HasMonsterTurnState = { game: GameState; delta: number };

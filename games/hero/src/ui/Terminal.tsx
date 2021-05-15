@@ -1,5 +1,5 @@
 import { useRef, useLayoutEffect } from "react";
-import { ExecutionResultItem, stringifyResult } from "herotext";
+import { ExecutionResultItem, stringifyResult } from "@hero/text";
 import styled from "styled-components";
 import { Line } from "./Typography";
 import { HeroEngine } from "../engine/types";

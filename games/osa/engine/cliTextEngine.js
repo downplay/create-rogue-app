@@ -1,4 +1,4 @@
-import { stream, createRng, render, text } from "herotext";
+import { stream, createRng, render, text } from "@hero/text";
 
 import { gui } from "./gui";
 

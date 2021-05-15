@@ -1,4 +1,4 @@
-import { render, RNG, StoryInstance } from "herotext";
+import { render, RNG, StoryInstance } from "@hero/text";
 
 export const LABEL_NAME = "Name";
 

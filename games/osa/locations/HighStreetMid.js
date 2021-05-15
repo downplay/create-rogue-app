@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import {
   LOCATION_BANK,
   LOCATION_HIGHSTREETMID,

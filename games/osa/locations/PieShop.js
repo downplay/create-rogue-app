@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { LOCATION_HIGHSTREETMID, LOCATION_PIESHOP } from "./locationNames";
 
 export const PieShop = text`

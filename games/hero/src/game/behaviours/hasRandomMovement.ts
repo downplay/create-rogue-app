@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { hasMonsterTurn } from "./hasMonsterTurn";
 import { useRng } from "../../engine/useRng";
 import { canMove } from "../../mechanics/canMove";
@@ -12,7 +12,7 @@ import {
   VECTOR_SW,
   VECTOR_W,
   VECTOR_NW,
-} from "herotext";
+} from "@hero/text";
 
 export const hasRandomMovement = text`
 ${hasMonsterTurn()}

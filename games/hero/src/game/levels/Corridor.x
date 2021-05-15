@@ -1,5 +1,5 @@
 import React, { useMemo, memo, PropsWithChildren } from "react";
-import { Vector, reduceQuad, sortCorners } from "herotext";
+import { Vector, reduceQuad, sortCorners } from "@hero/text";
 import { Floor } from "./Floor";
 import { useRng } from "../../engine/useRng";
 import { Wall } from "./Wall";

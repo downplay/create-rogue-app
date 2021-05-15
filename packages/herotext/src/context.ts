@@ -1,5 +1,5 @@
+import { createRng, RNG } from "@hero/math";
 import { ExecutionStrand, MainAST } from "./types";
-import { createRng, RNG } from "./rng";
 
 export type ExecutionContext<T extends {} = Record<string, any>> = {
   state: T;

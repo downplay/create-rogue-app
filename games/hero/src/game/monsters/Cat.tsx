@@ -2,7 +2,7 @@ import { entity } from "../../engine/entity";
 import { GridLayers } from "../../engine/grid";
 import { hasRandomMovement } from "../behaviours/hasRandomMovement";
 import { Emoji } from "../../ui/Typography";
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { hasStats, stats } from "../../mechanics/hasStats";
 import { hasTile } from "../../mechanics/hasTile";
 

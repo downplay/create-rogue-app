@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { SeenCell, Tile, GridLayers } from "../engine/grid";
 import { CHAR_WIDTH, CHAR_HEIGHT, Char } from "../ui/Typography";
-import { vector, Vector, VECTOR_ORIGIN, multiply, add } from "herotext";
+import { vector, Vector, VECTOR_ORIGIN, multiply, add } from "@hero/text";
 import { Grid } from "../engine/grid";
 import { PlayerState } from "../game/Player";
 import { PositionState } from "../mechanics/hasPosition";

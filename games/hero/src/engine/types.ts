@@ -1,6 +1,6 @@
 import { Grid } from "./grid";
 import { TerminalContent } from "../ui/Terminal";
-import { StoryInstance, RNG } from "herotext";
+import { StoryInstance, RNG } from "@hero/text";
 import { PlayerState } from "../game/Player";
 import { GameState } from "./game";
 import { EntityManager } from "./entityManager";

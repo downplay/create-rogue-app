@@ -2,10 +2,10 @@ import React from "react";
 import { useRng } from "../../engine/useRng";
 import { useMemo } from "react";
 import { Room, RoomProps } from "./Room";
-import { vector, Vector, VECTOR_E, add, VECTOR_W, VECTOR_S } from "herotext";
+import { vector, Vector, VECTOR_E, add, VECTOR_W, VECTOR_S } from "@hero/text";
 import { CorridorOrientation, CorridorProps, Corridor } from "./Corridor";
 import { omitUndefined } from "../../engine/helpers";
-import { VECTOR_N } from "herotext";
+import { VECTOR_N } from "@hero/text";
 import { EntityGroup } from "../../engine/EntityGroup";
 
 const MAX_SIZE = 20;

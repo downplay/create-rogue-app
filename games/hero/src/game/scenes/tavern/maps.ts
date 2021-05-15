@@ -1,4 +1,4 @@
-import { map } from "heromap";
+import { map } from "@hero/map";
 
 const doorWays = map`
 #++#####++#

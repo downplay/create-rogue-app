@@ -1,4 +1,4 @@
-import { StoryInstance } from "herotext";
+import { StoryInstance } from "@hero/text";
 
 export const REAL_TIME_SPEED = 50;
 

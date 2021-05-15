@@ -1,5 +1,5 @@
 import { GridLayers } from "../../engine/grid";
-import { text, StoryInstance } from "herotext";
+import { text, StoryInstance } from "@hero/text";
 import { hasTile } from "../../mechanics/hasTile";
 
 export type SwordState = {

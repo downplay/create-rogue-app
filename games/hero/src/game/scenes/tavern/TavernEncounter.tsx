@@ -1,4 +1,4 @@
-import { text } from "herotext";
+import { text } from "@hero/text";
 import { TavernExterior } from "./TavernExterior";
 import { TavernInterior } from "./TavernInterior";
 import { encounter } from "../../../engine/encounter";
