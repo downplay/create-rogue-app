@@ -1,12 +1,12 @@
 {
   "name": "OldSchoolAdventure",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@hero/text": "^0.1.0",
     "blessed": "^0.1.81",
     "blessed-contrib": "^4.8.21",
-    "eslint-config-prettier": "^8.1.0",
-    "@hero/text": "0.0.1"
+    "eslint-config-prettier": "^8.1.0"
   },
   "scripts": {
     "start": "babel-node ./start.js"
