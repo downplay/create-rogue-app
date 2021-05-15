@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "prepublish": "tsc",
-    "build": "tsc --watch",
+    "build": "tsc",
+    "watch": "tsc --watch",
     "test": "jest",
     "grammar": "nearleyc src/heromap.ne -o src/heromap.js",
     "grammar-sandbox": "nearley-test src/heromap.ne",

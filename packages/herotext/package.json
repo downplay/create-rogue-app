@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "prepublish": "tsc",
-    "build": "tsc --watch",
+    "build": "tsc",
+    "watch": "tsc --watch",
     "test": "jest",
     "grammar": "nearleyc src/herotext.ne -o src/herotext.js",
     "grammar-sandbox": "nearley-test src/herotext.ne",

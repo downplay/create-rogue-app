@@ -23,4 +23,5 @@ export {
   mapQuad,
   sortCorners,
   vectorKey,
+  isVector,
 } from "./src/vector";

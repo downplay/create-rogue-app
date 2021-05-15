@@ -11,13 +11,15 @@
   ],
   "scripts": {
     "test": "yarn workspaces run test",
-    "build": "yarn workspaces run build",
+    "build": "lerna run build",
+    "watch": "lerna run watch --parallel",
     "grammar": "yarn workspaces run grammar",
     "start": "cd games/hero && yarn start",
     "osa": "cd games/osa && yarn start"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
+    "lerna": "^4.0.0",
     "npm-run-all": "^4.1.5"
   }
 }
