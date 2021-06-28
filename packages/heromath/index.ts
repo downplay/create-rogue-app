@@ -17,6 +17,7 @@ export {
   subtract,
   subtractTwo,
   multiply,
+  normalize,
   length,
   iterateQuad,
   reduceQuad,

@@ -5,6 +5,8 @@ export type Vector = {
   y: number;
 };
 
+export type Vector3 = Vector & { z: number };
+
 export const vector = (x: number | Vector, y: number): Vector =>
   typeof x === "number" ? { x, y } : x;
 
@@ -103,3 +105,7 @@ export const mapQuad = <T>(
 };
 
 export const length = (of: Vector) => Math.sqrt(of.x * of.x + of.y * of.y);
+
+export const normalize = (value: Vector) => multiply(value, 1 / length(value));
+
+export const copy = (source: Vector) => ({ x: source.x, y: source.y });
