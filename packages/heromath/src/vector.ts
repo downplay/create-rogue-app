@@ -1,5 +1,3 @@
-// TODO: Move to a whole math package. Matrices & RNGs & crap.
-
 export type Vector = {
   x: number;
   y: number;
@@ -7,17 +5,24 @@ export type Vector = {
 
 export type Vector3 = Vector & { z: number };
 
-export const vector = (x: number | Vector, y: number): Vector =>
-  typeof x === "number" ? { x, y } : x;
+declare type DefinitelyVector<T> = Extract<T, Vector> extends never
+  ? Vector
+  : Extract<T, Vector>;
 
 // TODO: 3D vectors
-export const isVector = (test: any) =>
+export const isVector = <T>(test: T | Vector): test is DefinitelyVector<T> =>
   test &&
-  Object.prototype.hasOwnProperty.call(test, "x") &&
-  Object.prototype.hasOwnProperty.call(test, "y") &&
+  "x" in test &&
+  "y" in test &&
   Object.keys(test).length === 2 &&
   typeof test.x === "number" &&
   typeof test.y === "number";
+
+export const vector: {
+  (x: number, y: number): Vector;
+  (v: Vector): Vector;
+} = (x, y?) => (typeof x === "number" ? { x, y: y as number } : x);
+//  ? { x, y } : x;
 
 export const vectorKey = ({ x, y }: Vector) => `${x}_${y}`;
 

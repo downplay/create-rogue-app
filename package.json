@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "test": "yarn workspaces run test",
+    "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "watch": "lerna run watch --parallel",
     "grammar": "yarn workspaces run grammar",

@@ -1,4 +1,4 @@
-export { RNG, createRng } from "./src/rng";
+export { RNG, createRng } from "./rng";
 export {
   vector,
   Vector,
@@ -25,4 +25,4 @@ export {
   sortCorners,
   vectorKey,
   isVector,
-} from "./src/vector";
+} from "./vector";

@@ -1,0 +1,6 @@
+packages:
+  # Main projects
+  - "packages/heromap/**"
+  - "packages/herotext/**"
+  - "packages/heromath/**"
+  - "games/gardeners/**"
