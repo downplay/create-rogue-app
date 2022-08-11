@@ -13,12 +13,15 @@ type GlobalInstance = {
     props: any
 }
 
-export const useEngine = <T extends {}>(
-    props: CreateEngineOptions,
-    root: Instance,
+export type UseEngineOptions = {
+    props: CreateEngineOptions
+    root: Instance
     globals: GlobalInstance[]
-): WithEngine => {
+}
+
+export const useEngine = ({ props, root, globals }: UseEngineOptions): WithEngine => {
     return useMemo(() => {
+        console.log("creating engine")
         const engine = createEngine(props)
         for (const { global, props } of globals) {
             const name = global.name || entityTypeName(engine, global.entity)

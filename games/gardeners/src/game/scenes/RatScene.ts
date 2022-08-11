@@ -1,4 +1,6 @@
+import { text } from "@hero/text"
 import { defineEntity } from "../../engine/entity"
+import { hasStory } from "../../engine/hasStory"
 import { withSprite } from "../../with-three/withSprite"
 
 // const Disease = defineMod("Disease", () => {
@@ -45,6 +47,8 @@ import { withSprite } from "../../with-three/withSprite"
 //   `)
 // }
 
+export const RatMan = defineEntity("RatMan", () => {})
+
 export const RatScene = defineEntity("RatScene", () => {
     withSprite()
     // TODO:
@@ -58,4 +62,19 @@ export const RatScene = defineEntity("RatScene", () => {
     // - gain cheese
     // - gain rat trap
     // - fight rat(s)
+    // - give cheese to get random jump
+    hasStory(
+        text`
+Hi folks I'm the ratman!$test
+
+test:
+one
+two
+three
+
+onSetup:
+Boo
+    `,
+        {}
+    )
 })

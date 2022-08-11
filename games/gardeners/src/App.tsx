@@ -10,17 +10,25 @@ import { Game } from "./game/Game"
 import { RatScene } from "./game/scenes/RatScene"
 import { ComponentManager, GlobalComponentManager } from "./with-react/ComponentManager"
 import { useForceUpdate } from "./hooks/useForceUpdate"
+import { Terminal, TerminalGlobal } from "./game/Terminal"
+import { useMemo } from "react"
 
-const definitions = [Game, RatScene, ComponentManager]
+const definitions = [Game, RatScene, ComponentManager, Terminal]
 
 const App = () => {
     const rng = useRng()
     const handleRefresh = useForceUpdate()
-    const engine = useEngine(
-        { rng, definitions, onRefresh: handleRefresh },
-        { entity: Game, props: {} },
-        [{ global: GlobalComponentManager, props: {} }]
-    )
+    const engineOptions = useMemo(() => {
+        return {
+            props: { rng, definitions, onRefresh: handleRefresh },
+            root: { entity: Game, props: {} },
+            globals: [
+                { global: GlobalComponentManager, props: {} },
+                { global: TerminalGlobal, props: {} }
+            ]
+        }
+    }, [handleRefresh, rng])
+    const engine = useEngine(engineOptions)
     return (
         <Providers engine={engine}>
             <Global />

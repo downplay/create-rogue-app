@@ -17,7 +17,7 @@ const ComponentVisibleData = defineData<boolean>("HasComponent_Visible")
 let lastId = 0
 
 export const ComponentManager = defineEntity("ComponentManager", () => {
-    // const engine = getEngine()
+    const engine = getEngine()
 
     const slots: Record<
         string,
@@ -41,7 +41,17 @@ export const ComponentManager = defineEntity("ComponentManager", () => {
         const id = (++lastId).toString()
         slots[slot] = slots[slot] || {}
         slots[slot][id] = { component, props }
+        // Timeout prevents an infinite refresh loop,
+        // TODO: Do this more gracefully
+        setTimeout(engine.refresh, 0)
         return id
+    }
+
+    const update = <T>(slot: string, id: string, props: T) => {
+        slots[slot][id] = { ...slots[slot][id], props }
+        // Timeout prevents an infinite refresh loop,
+        // TODO: Do this more gracefully
+        setTimeout(engine.refresh, 0)
     }
 
     const remove = (slot: string, id: string) => {
@@ -51,6 +61,7 @@ export const ComponentManager = defineEntity("ComponentManager", () => {
     return {
         get,
         add,
+        update,
         remove
     }
 })
@@ -60,12 +71,13 @@ export const GlobalComponentManager = defineGlobalInstance(ComponentManager)
 export const hasComponent = <T>(
     component: ComponentType<T>,
     { visible = true, props, slot }: HasComponentOptions<T>
-) => {
+): [show: (visible?: boolean) => void, update: (props: T) => void] => {
     const [isVisible, updateVisible] = hasData(ComponentVisibleData, visible)
     const manager = getGlobalInstance(GlobalComponentManager)
     let handle: string
+    let currentProps = props
     const addComponent = () => {
-        handle = manager.interface.add(slot, component, props)
+        handle = manager.interface.add(slot, component, currentProps)
     }
 
     const removeComponent = () => {
@@ -93,7 +105,14 @@ export const hasComponent = <T>(
         updateVisible(visible)
     }
 
-    return [show]
+    const update = (props: T) => {
+        currentProps = props
+        if (isVisible.value) {
+            manager.interface.update(slot, handle, props)
+        }
+    }
+
+    return [show, update]
 }
 
 export const useComponentSlot = (name: string) => {

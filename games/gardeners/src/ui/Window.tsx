@@ -15,10 +15,11 @@ type WindowProps = {
 
 export const Window = ({ name }: WindowProps) => {
     const components = useComponentSlot(name)
+    // TODO: We need a proper key for the slot
     return (
         <Wrapper>
-            {components.map(({ component: Component, props }) => (
-                <Component {...props} />
+            {components.map(({ component: Component, props }, i) => (
+                <Component key={i} {...props} />
             ))}
         </Wrapper>
     )
