@@ -1,9 +1,9 @@
 {
-  "name": "OldSchoolAdventure",
+  "name": "@hero/old-school-adventure",
   "version": "0.1.1",
   "private": true,
   "dependencies": {
-    "@hero/text": "^0.1.1",
+    "@hero/text": "workspace:*",
     "blessed": "^0.1.81",
     "blessed-contrib": "^4.8.21",
     "eslint-config-prettier": "^8.1.0"

@@ -4,3 +4,5 @@ packages:
   - "packages/herotext/**"
   - "packages/heromath/**"
   - "games/gardeners/**"
+  - "games/hero/**"
+  - "games/osa/**"

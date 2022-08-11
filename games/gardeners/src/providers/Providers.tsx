@@ -1,5 +1,14 @@
-import { ControlsProvider } from "./controls";
+import { WithEngine } from "../engine/types"
+import { ControlsProvider } from "./controls"
+import { EngineProvider } from "./EngineProvider"
 
-export const Providers = ({ children }: React.PropsWithChildren<{}>) => {
-  return <ControlsProvider>{children}</ControlsProvider>;
-};
+export const Providers = ({
+    children,
+    engine
+}: React.PropsWithChildren<{ engine: WithEngine }>) => {
+    return (
+        <EngineProvider value={engine}>
+            <ControlsProvider>{children}</ControlsProvider>
+        </EngineProvider>
+    )
+}

@@ -2,7 +2,6 @@ import { useRef, useLayoutEffect } from "react";
 import { ExecutionResultItem, stringifyResult } from "@hero/text";
 import styled from "styled-components";
 import { Line } from "./Typography";
-import { HeroEngine } from "../engine/types";
 
 const Scroller = styled.div`
   width: 100%;
@@ -13,7 +12,6 @@ const Scroller = styled.div`
 export type TerminalContent = ExecutionResultItem[];
 
 type Props = {
-  engine: HeroEngine;
   content: TerminalContent;
 };
 
@@ -26,7 +24,7 @@ const aggregateContent = (content: TerminalContent) => {
   return aggregated;
 };
 
-export const Terminal = ({ content, engine }: Props) => {
+export const TerminalUI = ({ content }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null!);
   // Scroll to bottom on new message
   useLayoutEffect(() => {

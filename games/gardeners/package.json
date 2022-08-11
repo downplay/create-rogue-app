@@ -1,54 +1,60 @@
 {
-  "name": "gardeners",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@hero/map": "workspace:*",
-    "@hero/math": "workspace:*",
-    "@hero/text": "workspace:*",
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.11.45",
-    "@types/react": "^18.0.15",
-    "@types/react-dom": "^18.0.6",
-    "consola": "^2.15.3",
-    "immer": "^9.0.15",
-    "keycode-js": "^3.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "remeda": "^1.0.1",
-    "styled-components": "^5.3.5",
-    "typescript": "^4.7.4",
-    "web-vitals": "^2.1.4"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@types/styled-components": "^5.1.25"
-  }
+    "name": "gardeners",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "@hero/map": "workspace:*",
+        "@hero/math": "workspace:*",
+        "@hero/text": "workspace:*",
+        "@testing-library/jest-dom": "^5.16.4",
+        "@testing-library/react": "^13.3.0",
+        "@testing-library/user-event": "^13.5.0",
+        "@types/jest": "^27.5.2",
+        "@types/node": "^16.11.45",
+        "@types/react": "^18.0.15",
+        "@types/react-dom": "^18.0.6",
+        "consola": "^2.15.3",
+        "immer": "^9.0.15",
+        "keycode-js": "^3.1.0",
+        "modern-css-reset": "^1.4.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-scripts": "5.0.1",
+        "react-use": "^17.4.0",
+        "remeda": "^1.0.1",
+        "styled-components": "^5.3.5",
+        "three": "^0.143.0",
+        "typescript": "^4.7.4",
+        "web-vitals": "^2.1.4"
+    },
+    "scripts": {
+        "start": "react-app-rewired start",
+        "build": "react-app-rewired build",
+        "test": "react-app-rewired test",
+        "eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "@types/styled-components": "^5.1.25",
+        "@types/three": "^0.143.0",
+        "eslint-config-react-app": "^6.0.0",
+        "react-app-rewired": "^2.2.1"
+    }
 }

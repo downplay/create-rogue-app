@@ -1,6 +1,7 @@
-import { text, commonFunctions } from "../index";
-import { mockRng } from "./testUtils";
-import { render } from "../src/execute";
+import { text } from "../src/text"
+import { commonFunctions } from "../src/commonFunctions"
+import { mockRng } from "./testUtils"
+import { render } from "../src/execute"
 
 // TODO: Early version was simpler, like this:
 // {<20}$speak($slice($number,1))teen
@@ -21,8 +22,8 @@ import { render } from "../src/execute";
 // should % still do anything?
 
 it("Counts up to 9999", () => {
-  const rng = mockRng();
-  const fixture = text`
+    const rng = mockRng()
+    const fixture = text`
 [$speak(1)
 $speak(12)
 $speak(17)
@@ -72,9 +73,9 @@ $speak($number)teen
 and: ($number)
 {0}
 {0%} and $speak($number)
-`;
+`
 
-  expect(render(fixture, rng)).toEqual(`one
+    expect(render(fixture, rng)).toEqual(`one
 twelve
 seventeen
 thirty-four
@@ -83,5 +84,5 @@ two hundred and eighty-five
 three hundred
 five hundred and sixteen
 nine hundred and ninety-nine
-one thousand`);
-});
+one thousand`)
+})

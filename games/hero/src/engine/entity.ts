@@ -1,16 +1,16 @@
-import { merge, text, MainAST } from "@hero/text";
-import { hasPosition, PositionState } from "../mechanics/hasPosition";
-import { hasTile, TileState } from "../mechanics/hasTile";
-import { StoryInstance } from "@hero/text";
-import { base } from "./base";
-import { EngineState } from "./types";
-import { FlagsState } from "./flags";
+import { merge, text, MainAST } from "@hero/text"
+import { hasPosition, PositionState } from "../mechanics/hasPosition"
+import { hasTile, TileState } from "../mechanics/hasTile"
+import { StoryInstance } from "@hero/text"
+import { base } from "./base"
+import { EngineState } from "./types"
+import { FlagsState } from "./flags"
 
-export type EntityState = PositionState & TileState & EngineState & FlagsState;
+export type EntityState = PositionState & TileState & EngineState & FlagsState
 
 export type EntityInstance<T> = StoryInstance<T> & {
-  entityType: string;
-};
+    entityType: string
+}
 
 const baseEntity = base(text`
 ${hasPosition()}
@@ -18,11 +18,11 @@ ${hasTile("☻")}
 
 isEntity:=
 true
-`);
+`)
 
 export const entity = <TState, TGame = {}>(
-  story: MainAST<EntityState & TGame & TState>
+    story: MainAST<EntityState & TGame & TState>
 ): MainAST<EntityState & TState & TGame> => {
-  const main = merge(baseEntity, story);
-  return main;
-};
+    const main = merge(baseEntity, story)
+    return main
+}
