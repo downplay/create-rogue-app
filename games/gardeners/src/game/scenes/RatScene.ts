@@ -3,6 +3,8 @@ import { defineEntity } from "../../engine/entity"
 import { hasStory } from "../../engine/hasStory"
 import { withSprite } from "../../with-three/withSprite"
 
+import RatSprite from "./rat.png"
+
 // const Disease = defineMod("Disease", () => {
 //     const rng = hasRng()
 //     const parent = getModTarget()
@@ -50,7 +52,7 @@ import { withSprite } from "../../with-three/withSprite"
 export const RatMan = defineEntity("RatMan", () => {})
 
 export const RatScene = defineEntity("RatScene", () => {
-    withSprite()
+    withSprite(RatSprite)
     // TODO:
     // - Scene() or isScene() ?
     // - next scene action
