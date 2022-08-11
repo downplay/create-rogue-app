@@ -80,7 +80,6 @@ export const dispatchAction = <P, O>(
                 any,
                 any
             >[]) || []
-        console.log(children)
         return results.concat(
             children.map((child) => dispatchAction(child, action, payload)).flat()
         )

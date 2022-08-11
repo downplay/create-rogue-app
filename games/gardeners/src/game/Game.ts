@@ -35,7 +35,6 @@ export const Game = defineEntity("Game", () => {
 
     const { add, remove } = hasChildren()
     const engine = getEngine()
-    withSprite()
     onCreate(() => {
         add(engine.entities.create(RatScene, {}))
     })

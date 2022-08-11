@@ -23,7 +23,9 @@ export type SceneActionPayload = {
     camera: Camera
 }
 
-const CREATE_SCENE = defineAction<SceneActionPayload, void>("CREATE_SCENE", { cascade: true })
+export const CREATE_SCENE = defineAction<SceneActionPayload, void>("CREATE_SCENE", {
+    cascade: true
+})
 const RENDER_SCENE = defineAction<SceneActionPayload, void>("RENDER_SCENE", { cascade: true })
 
 export const GameCanvas = ({ name, me }: GameCanvasProps) => {
@@ -54,6 +56,7 @@ export const GameCanvas = ({ name, me }: GameCanvasProps) => {
         // do this in a separate effect
         sceneRef.current = new Scene()
         cameraRef.current = new PerspectiveCamera(75, width / height, 0.1, 1000)
+        cameraRef.current.position.z = 5
         rendererRef.current = new WebGLRenderer()
         rendererRef.current.setSize(width, height)
         const container = containerRef.current
