@@ -78,6 +78,7 @@ export type WithEngine = {
     entities: EntityManager
     globals: Record<string, EntityInstance>
     refresh: () => void
+    debug: boolean
 }
 
 export type EntityType<T extends {} = {}, I = void> =

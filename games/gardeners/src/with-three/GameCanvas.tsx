@@ -2,7 +2,7 @@ import { Ref, useCallback, useEffect, useMemo, useRef } from "react"
 import { useMeasure } from "react-use"
 import styled from "styled-components"
 import { Scene, PerspectiveCamera, WebGLRenderer, Camera } from "three"
-import { defineAction, onAction } from "../engine/action"
+import { defineAction, onAction, UPDATE_ENTITY } from "../engine/action"
 import { dispatchAction, getSelf } from "../engine/entity"
 import { EntityInstance } from "../engine/types"
 import { useEngineContext } from "../providers/EngineProvider"
@@ -27,6 +27,9 @@ export const CREATE_SCENE = defineAction<SceneActionPayload, void>("CREATE_SCENE
     cascade: true
 })
 const RENDER_SCENE = defineAction<SceneActionPayload, void>("RENDER_SCENE", { cascade: true })
+export const DESTROY_SCENE = defineAction<SceneActionPayload, void>("DESTROY_SCENE", {
+    cascade: true
+})
 
 export const GameCanvas = ({ name, me }: GameCanvasProps) => {
     const [sizeRef, { width, height /*x, y, top, right, bottom, left*/ }] = useMeasure()
@@ -42,6 +45,11 @@ export const GameCanvas = ({ name, me }: GameCanvasProps) => {
     const rendererRef = useRef<WebGLRenderer>(null!)
     const animationFrameRef = useRef<number>()
     const render = useCallback(() => {
+        // TODO: This should be a function of the game, not the responsibility of
+        // Three integration; and actually this render function will just trigger off
+        // that, but we need a distinct update then render cycle probably. Just need
+        // to make decisions...
+        dispatchAction(me, UPDATE_ENTITY, {})
         dispatchAction(me, RENDER_SCENE, { scene: sceneRef.current, camera: cameraRef.current })
         rendererRef.current.render(sceneRef.current, cameraRef.current)
         animationFrameRef.current = requestAnimationFrame(render)
@@ -105,4 +113,8 @@ export const onSceneCreate = (handler: (payload: SceneActionPayload) => void) =>
 
 export const onSceneRender = (handler: (payload: SceneActionPayload) => void) => {
     onAction(RENDER_SCENE, handler)
+}
+
+export const onSceneDestroy = (handler: (payload: SceneActionPayload) => void) => {
+    onAction(DESTROY_SCENE, handler)
 }

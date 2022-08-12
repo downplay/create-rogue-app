@@ -1,6 +1,14 @@
 import { Object3D, Vector3 } from "three"
+import { onDestroy } from "../engine/action"
 import { dispatchAction, getSelf } from "../engine/entity"
-import { CREATE_SCENE, onSceneCreate, onSceneRender } from "./GameCanvas"
+import { hasPosition } from "../game/mechanics/hasPosition"
+import {
+    CREATE_SCENE,
+    DESTROY_SCENE,
+    onSceneCreate,
+    onSceneRender,
+    SceneActionPayload
+} from "./GameCanvas"
 
 export const hasRootNode = () => {
     const me = getSelf()
@@ -12,10 +20,18 @@ export const hasRootNode = () => {
     let initialized = false
     // TODO: implement hasPosition,
     // subscribe to position updates & update the node accordingly
-    // const position = getPosition()
+    const [position] = hasPosition()
     // node.position.set(position.x,0,position.y)
-    onSceneCreate(({ scene /*, parent */ }) => {
-        console.log("root node create")
+    // TODO: Honestly there is a much better way to trigger scene create/update/destroy
+    // create/destroy should be triggered when adding as a child, when the parent
+    // is available ... we get the THREE node from the parent whether it's a Scene
+    // or a aObject3D ... camera will be a separate withCameraControl or something
+    // for times we want the camera to track an entity or apply e.g. camera wobble
+    let currentPayload: SceneActionPayload
+    onSceneCreate((payload) => {
+        currentPayload = payload
+        const { scene /*, parent */ } = payload
+
         initialized = true
         // TOOD: Parent linkage, it's pretty awkward
         // We just possibly need hasRootNode on everything
@@ -29,6 +45,12 @@ export const hasRootNode = () => {
         // TODO: Seems weird and unneccesary but it'll fix things right now
         if (!initialized) {
             dispatchAction(me, CREATE_SCENE, payload)
+        }
+        node.position.set(position.value.x, position.value.y, position.value.z)
+    })
+    onDestroy(() => {
+        if (initialized) {
+            dispatchAction(me, DESTROY_SCENE, currentPayload)
         }
     })
     return node

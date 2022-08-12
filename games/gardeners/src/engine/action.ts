@@ -16,7 +16,10 @@ export const defineAction = <T, O = T>(
 
 export const DESTROY_ENTITY = defineAction("DESTROY_ENTITY")
 export const CREATE_ENTITY = defineAction("CREATE_ENTITY")
-export const UPDATE_ENTITY = defineAction("UPDATE_ENTITY")
+// TODO: Should not really be a cascade, should just run on all entities with
+// handlers every frame ... maybe global:true rather than cascade:true ... will
+// be more efficient
+export const UPDATE_ENTITY = defineAction("UPDATE_ENTITY", { cascade: true })
 
 export const onAction = <T, O = void>(
     action: ActionDefinition<T, O>,

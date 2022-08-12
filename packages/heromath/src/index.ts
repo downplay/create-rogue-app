@@ -1,10 +1,11 @@
 export type { RNG } from "./rng"
 export { createRng } from "./rng"
-export type { Vector } from "./vector"
+export type { Vector, Vector3 } from "./vector"
 export {
     vector,
     VECTOR_E,
     VECTOR_NE,
+    VECTOR3_ORIGIN,
     VECTOR_ORIGIN,
     VECTOR_N,
     VECTOR_NW,
