@@ -1,14 +1,16 @@
 import {
     createInstance,
     executeInstance,
-    executeText,
     ExecutionContext,
     instanceHas,
     MainAST,
     resumeExecution,
-    StoryInstance
+    stringifyResult
 } from "@hero/text"
-import { Terminal, TerminalGlobal } from "../game/Terminal"
+import { ExecutionResult, ExecutionResultItem, NodeExecutionResult } from "@hero/text/src/types"
+import { isArray, isObject } from "remeda"
+import { TerminalGlobal } from "../game/Terminal"
+import { TerminalContent } from "../ui/TerminalUI"
 import { onCreate, onUpdate } from "./action"
 import { defineData, hasData } from "./data"
 import { getEngine } from "./entity"
@@ -21,6 +23,8 @@ type StoryState = {
     engine: WithEngine
 }
 
+const nonStringifiableTypes = ["trigger"]
+
 export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = {} as T) => {
     // TODO: How do we import data cleanly
     // TODO: Kinda bad that we serialize the entire story here, well, it does
@@ -30,6 +34,36 @@ export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = 
     const [state, updateState] = hasData(StoryData)
     const engine = getEngine()
     const terminal = getGlobalInstance(TerminalGlobal)
+
+    const transformExecutionResult = (result: NodeExecutionResult) => {
+        // TODO: Now there's a serialization problem suddenly. If the terminal is handling
+        // an input for the story we need to know which story to link the result back to.
+        // It's a problem if the game is saved mid-story and we need to reconstruct the state.
+        const terminalOutput: TerminalContent = []
+        for (const item of result) {
+            if (isArray(item)) {
+                const subResults = transformExecutionResult(
+                    item as unknown as ExecutionResultItem[]
+                )
+                terminalOutput.push(...subResults)
+            } else if (
+                isObject(item) &&
+                "type" in item &&
+                nonStringifiableTypes.includes(item.type)
+            ) {
+                switch (item.type) {
+                    case "trigger":
+                        // Just pauses execution
+                        break
+                }
+            } else {
+                // TODO: Make newlines
+                terminalOutput.push(stringifyResult(item))
+            }
+        }
+        return terminalOutput
+    }
+
     onCreate(() => {
         const instance = createInstance<StoryState & T>(template, {
             engine,
@@ -42,15 +76,16 @@ export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = 
             executeInstance(instance, engine.rng, "onSetup")
         }
         const [result, context] = executeInstance(instance, engine.rng)
-        terminal.interface.write(result)
+
+        terminal.interface.write(transformExecutionResult(result))
         updateState(context)
         // return instance
     })
 
     onUpdate(() => {
-        // if (state.value.suspend) {
-        //     const result = resumeExecution(state.value)
-        //     terminal.interface.write(result)
-        // }
+        if (state.value.suspend) {
+            const result = resumeExecution(state.value)
+            terminal.interface.write(transformExecutionResult(result))
+        }
     })
 }

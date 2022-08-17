@@ -31,7 +31,6 @@ export const DESTROY_SCENE = defineAction<SceneActionPayload, void>("DESTROY_SCE
 })
 
 export const GameCanvas = ({ name, me }: GameCanvasProps) => {
-    console.log("ME", me)
     const [sizeRef, { width, height /*x, y, top, right, bottom, left*/ }] = useMeasure()
     const containerRef = useRef<HTMLDivElement>(null!)
     // const engine = useEngineContext()
@@ -44,11 +43,15 @@ export const GameCanvas = ({ name, me }: GameCanvasProps) => {
     const cameraRef = useRef<PerspectiveCamera>(null!)
     const rendererRef = useRef<WebGLRenderer>(null!)
     const animationFrameRef = useRef<number>()
+    // let start = (new Date()).getTime()
+
     const render = useCallback(() => {
         // TODO: This should be a function of the game, not the responsibility of
         // Three integration; and actually this render function will just trigger off
         // that, but we need a distinct update then render cycle probably. Just need
         // to make decisions...
+        // TODO: We should also be sending clock along with update? Or the withClock hook
+        // should update its state on this. We need overall game clock, day clock, battle clock.
         dispatchAction(me, UPDATE_ENTITY, {})
         dispatchAction(me, RENDER_SCENE, { scene: sceneRef.current, camera: cameraRef.current })
         rendererRef.current.render(sceneRef.current, cameraRef.current)
@@ -60,7 +63,6 @@ export const GameCanvas = ({ name, me }: GameCanvasProps) => {
         // TODO: Could be more efficient with use of resources here.
         // Additionally when size is changed we could just use renderer.setSize,
         // do this in a separate effect
-        console.log("NEW SCENE", width, height)
         sceneRef.current = new Scene()
         cameraRef.current = new PerspectiveCamera(75, width / height, 0.1, 1000)
         cameraRef.current.position.y = 1

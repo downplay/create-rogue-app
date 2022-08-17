@@ -1,13 +1,11 @@
-import { IStateElement } from "@hero/text";
+export type MapNode = {
+    type: "Heromap::MapNode"
+    lines: String[]
+    legend: OperationNode[]
+    externals: Record<string, any>
+}
 
-export type MapNode = IStateElement & {
-  type: "Heromap::MapNode";
-  lines: String[];
-  legend: OperationNode[];
-  externals: Record<string, any>;
-};
-
-export type OperationNode = BrushOpNode | OrOpsNode | AndOpsNode;
+export type OperationNode = BrushOpNode | OrOpsNode | AndOpsNode
 /* | InvocationNode */
 
 // export type ExternalNode = {
@@ -17,63 +15,58 @@ export type OperationNode = BrushOpNode | OrOpsNode | AndOpsNode;
 // };
 
 export type OrOpsNode = {
-  type: "Heromap::OrOpsNode";
-  ops: OperationNode[];
-};
+    type: "Heromap::OrOpsNode"
+    ops: OperationNode[]
+}
 
 export type AndOpsNode = {
-  type: "Heromap::AndOpsNode";
-  quanitifier: QuantifierNode;
-  ops: OperationNode[];
-};
+    type: "Heromap::AndOpsNode"
+    quanitifier: QuantifierNode
+    ops: OperationNode[]
+}
 
 export type BrushOpNode = {
-  type: "Heromap::BrushOpNode";
-  op: "apply" | "remove";
-  target: GlyphNode | GlyphsNode | WordNode;
-  brush: BrushNode;
-};
+    type: "Heromap::BrushOpNode"
+    op: "apply" | "remove"
+    target: GlyphNode | GlyphsNode | WordNode
+    brush: BrushNode
+}
 
-export type BrushNodes =
-  | GlyphNode
-  | GlyphsNode
-  | WordNode
-  | AndBrushesNode
-  | OrBrushesNode;
+export type BrushNodes = GlyphNode | GlyphsNode | WordNode | AndBrushesNode | OrBrushesNode
 
 export type BrushNode = {
-  type: "Heromap::BrushNode";
-  brush: BrushNodes;
-  /* | InvocationNode */
-  quantifier?: QuantifierNode;
-};
+    type: "Heromap::BrushNode"
+    brush: BrushNodes
+    /* | InvocationNode */
+    quantifier?: QuantifierNode
+}
 
-type QuantifierNode = NumberNode | FractionNode;
+type QuantifierNode = NumberNode | FractionNode
 
 export type GlyphNode = {
-  type: "Heromap::GlyphNode";
-  glyph: string;
-};
+    type: "Heromap::GlyphNode"
+    glyph: string
+}
 
 export type GlyphsNode = {
-  type: "Heromap::GlyphsNode";
-  glyphs: string[];
-};
+    type: "Heromap::GlyphsNode"
+    glyphs: string[]
+}
 
 export type WordNode = {
-  type: "Heromap::WordNode";
-  path: string[];
-};
+    type: "Heromap::WordNode"
+    path: string[]
+}
 
 export type AndBrushesNode = {
-  type: "Heromap::AndBrushesNode";
-  brushes: BrushNode[];
-};
+    type: "Heromap::AndBrushesNode"
+    brushes: BrushNode[]
+}
 
 export type OrBrushesNode = {
-  type: "Heromap::OrBrushesNode";
-  brushes: BrushNode[];
-};
+    type: "Heromap::OrBrushesNode"
+    brushes: BrushNode[]
+}
 
 // type MatchExpressionNode = {
 //   left: ValueNode;
@@ -91,23 +84,20 @@ export type OrBrushesNode = {
 //     | "notmatch";
 // };
 
-export type ValueNode = StringNode | NumberNode | FractionNode;
+export type ValueNode = StringNode | NumberNode | FractionNode
 
 export type StringNode = {
-  type: "Heromap::StringValue";
-  value: string;
-};
+    type: "Heromap::StringValue"
+    value: string
+}
 
 export type NumberNode = {
-  type:
-    | "Heromap::IntegerValue"
-    | "Heromap::DecimalValue"
-    | "Heromap::PercentageValue";
-  value: number;
-};
+    type: "Heromap::IntegerValue" | "Heromap::DecimalValue" | "Heromap::PercentageValue"
+    value: number
+}
 
 export type FractionNode = {
-  type: "Heromap::FractionValue";
-  numerator: number;
-  denominator: number;
-};
+    type: "Heromap::FractionValue"
+    numerator: number
+    denominator: number
+}

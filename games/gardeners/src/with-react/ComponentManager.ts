@@ -33,7 +33,6 @@ export const ComponentManager = defineEntity("ComponentManager", () => {
     const get = (slot: string) => {
         // TODO: Removing and adding a component causes it to get a new id, so it won't remember
         // state
-        console.log("getting slot", slot, slots[slot])
         return slots[slot] ? Object.entries(slots[slot]).map(([k, v]) => ({ id: k, ...v })) : []
     }
 
@@ -86,7 +85,6 @@ export const hasComponent = <T>(
 
     // TODO: Not exactly "onCreate", maybe "onMount"? Or is this a case of "useEffect"?
     onCreate(() => {
-        console.log("creating")
         if (isVisible.value) {
             addComponent()
         }

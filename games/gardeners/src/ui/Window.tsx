@@ -7,6 +7,7 @@ const Wrapper = styled.div`
     position: relative;
     border-style: double;
     border-width: ${CHAR_HEIGHT}px ${CHAR_WIDTH}px;
+    overflow: auto;
 `
 
 type WindowProps = {

@@ -12,6 +12,7 @@ import RatSprite from "./rat.png"
 import { hasMap } from "../../engine/hasMap"
 import { Grass } from "../scenery/Grass"
 import { hasLight } from "../../with-three/hasLight"
+import { hasRootNode } from "../../with-three/hasRootNode"
 
 // const Disease = defineMod("Disease", () => {
 //     const rng = hasRng()
@@ -70,16 +71,17 @@ const withSplineMovement = ({ speed = 1 }: SplineProps = {}) => {
     // Need whole systems for this, and maybe even move it into story?
     const curve = new SplineCurve([
         new Vector2(0, 0),
-        new Vector2(0.1, 0.3),
-        new Vector2(0.2, 0),
-        new Vector2(0, 0.4),
-        new Vector2(-0.2, 0),
-        new Vector2(-0.1, 0.3),
+        new Vector2(0.05, 0.15),
+        new Vector2(0.1, 0),
+        new Vector2(0, 0.2),
+        new Vector2(-0.1, 0),
+        new Vector2(-0.05, 0.15),
         new Vector2(0, 0)
     ])
     let splineObject: Line
-
-    onSceneCreate(({ scene }) => {
+    const node = hasRootNode()
+    onSceneCreate(() => {
+        console.log(engine)
         if (engine.debug) {
             const points = curve.getPoints(50)
             const geometry = new BufferGeometry().setFromPoints(points)
@@ -88,12 +90,12 @@ const withSplineMovement = ({ speed = 1 }: SplineProps = {}) => {
 
             // Create the final object to add to the scene
             splineObject = new Line(geometry, material)
-            scene.add(splineObject)
+            node.add(splineObject)
         }
     })
 
-    onSceneDestroy(({ scene }) => {
-        scene.remove(splineObject)
+    onSceneDestroy(() => {
+        node.remove(splineObject)
     })
 
     onSceneRender(() => {
@@ -111,7 +113,7 @@ export const RatMan = defineEntity("RatMan", () => {
 export const RatScene = defineEntity("RatScene", () => {
     hasLight()
 
-    hasMap(
+    const { bounds } = hasMap(
         map`
 ......
 ....r.

@@ -50,9 +50,7 @@ export const hasRootNode = () => {
 
         // }
         if (!parent) {
-            console.log("Wiring to SCENE")
             scene.add(node)
-            console.log("SCENE", scene)
         }
     })
     onSceneRender((payload) => {

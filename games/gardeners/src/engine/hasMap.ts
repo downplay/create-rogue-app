@@ -1,5 +1,6 @@
 import { build, MapNode } from "@hero/map"
 import { vector } from "@hero/math"
+import { hasPosition } from "../game/mechanics/hasPosition"
 import { withRng } from "../hooks/useRng"
 import { onCreate } from "./action"
 import { getEngine } from "./entity"
@@ -10,8 +11,9 @@ export const hasMap = (map: MapNode, scope?: Record<string, any>) => {
     const engine = getEngine()
     // TODO: Build should be deferred until stories have run to populate scope
     const result = build(map, rng, scope)
+    const [position, setPosition] = hasPosition()
     const { add, remove } = hasChildren()
-
+    setPosition(vector(-result.bounds.width / 2, 0, -result.bounds.height / 2))
     // TODO: Adjust camera to the bounds
     onCreate(() => {
         for (const cell of result.cells) {
@@ -23,7 +25,13 @@ export const hasMap = (map: MapNode, scope?: Record<string, any>) => {
                 // the board. Basically we need a module that can attach to the child
                 // to handle the node relation
                 const position = vector(cell.x, 0, cell.y)
-                add(engine.entities.create(element.type, element.params), position)
+                add(
+                    engine.entities.create(
+                        element.type in map.externals ? map.externals[element.type] : element.type,
+                        element.params
+                    ),
+                    position
+                )
             }
         }
     })

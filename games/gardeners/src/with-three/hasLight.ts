@@ -1,4 +1,4 @@
-import { AmbientLight, DirectionalLight } from "three"
+import { AmbientLight } from "three"
 import { hasRootNode } from "./hasRootNode"
 
 export const hasLight = () => {

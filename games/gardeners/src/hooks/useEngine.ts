@@ -21,7 +21,6 @@ export type UseEngineOptions = {
 
 export const useEngine = ({ props, root, globals }: UseEngineOptions): WithEngine => {
     return useMemo(() => {
-        console.log("creating engine")
         const engine = createEngine(props)
         try {
             for (const { global, props } of globals) {
