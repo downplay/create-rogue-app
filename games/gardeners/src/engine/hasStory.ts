@@ -3,6 +3,7 @@ import {
     executeInstance,
     executeText,
     ExecutionContext,
+    instanceHas,
     MainAST,
     resumeExecution,
     StoryInstance
@@ -36,7 +37,10 @@ export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = 
         })
         // TODO: don't use the global RNG; create a new one with a seed generated from
         // an RNG from a parent instance etc
-        /*const [result, context] =*/ executeInstance(instance, engine.rng, "onSetup")
+        /*const [result, context] =*/
+        if (instanceHas(instance, "onSetup")) {
+            executeInstance(instance, engine.rng, "onSetup")
+        }
         const [result, context] = executeInstance(instance, engine.rng)
         terminal.interface.write(result)
         updateState(context)

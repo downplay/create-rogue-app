@@ -1,12 +1,13 @@
 import { getEntityContext } from "./entity"
-import { ActionDefinition } from "./types"
+import { ChildInstance } from "./hasChildren"
+import { ActionContext, ActionDefinition, EntityInstance } from "./types"
 
 type ActionOptions = {
     cascade?: boolean
     bubble?: boolean
 }
 
-export const defineAction = <T, O = T>(
+export const defineAction = <T, O = void>(
     name: string,
     options: ActionOptions = {}
     // idGetter?: (payload: T) => string
@@ -42,46 +43,27 @@ export const onUpdate = (handler: () => void) => {
     onAction(UPDATE_ENTITY, handler)
 }
 
-// export const fetchDurableObjectAction = async <T, O>(
-//     namespace: DurableObjectNamespace,
-//     action: ActionDefinition<T, O>,
-//     payload: T
-// ) => {
-//     if (!action.idGetter) {
-//         throw new Error("Action must have idGetter to execute object namespace: " + action.name)
-//     }
-//     const id = action.idGetter(payload)
-//     if (!id) {
-//         throw new Error("Missing id in payload: " + JSON.stringify(payload))
-//     }
-//     const objectId = namespace.idFromName(id)
-//     const instance = namespace.get(objectId)
-//     return instance.fetch("http://localhost/", {
-//         method: "POST",
-//         body: JSON.stringify({ action: action.name, payload })
-//     })
-// }
-
-// export const executeAction = async <T, O>(
-//     namespace: DurableObjectStub | DurableObjectNamespace,
-//     action: ActionDefinition<T, O>,
-//     payload: T
-// ): Promise<O> => {
-//     let response: Response
-//     if ("fetch" in namespace) {
-//         // It's actually a service worker stub (DurableObjectStub is the closest type in cloudflare typings)
-//         // So fetch from the worker; localhost can actually be any domain, it gets ignored, but it's needed
-//         // for the request to parse correctly
-//         response = await namespace.fetch("http://localhost/", {
-//             method: "POST",
-//             body: JSON.stringify({ action: action.name, payload })
-//         })
-//     } else {
-//         response = await fetchDurableObjectAction(namespace, action, payload)
-//     }
-//     const result = (await response.json()) as ResultOrError<O>
-//     if ("error" in result) {
-//         throw new Error(result.error)
-//     }
-//     return result.result
-// }
+export const dispatchAction = <P, O>(
+    instance: EntityInstance<any, any>,
+    action: ActionDefinition<P, O>,
+    payload: P
+): O[] => {
+    const actions = instance.entity.actions[action.name] || []
+    const actionContext: ActionContext = {
+        engine: instance.entity.engine,
+        target: instance
+    }
+    const results = actions.map((h) => h(payload, actionContext))
+    if (action.cascade) {
+        // TODO: Need a helper for acccessing data arbitrarily, also as a hook
+        // which can be reactive
+        // TODO: This is a bad way to cascade actions, we should have a WILDECARD
+        const children =
+            (instance.entity.localData["Entity_Children"]?.data
+                .value as unknown as ChildInstance[]) || []
+        return results.concat(
+            children.map((child) => dispatchAction(child.instance, action, payload)).flat()
+        )
+    }
+    return results
+}

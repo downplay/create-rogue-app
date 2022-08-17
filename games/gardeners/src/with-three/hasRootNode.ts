@@ -1,6 +1,8 @@
 import { Object3D, Vector3 } from "three"
-import { onDestroy } from "../engine/action"
-import { dispatchAction, getSelf } from "../engine/entity"
+import { dispatchAction, onDestroy } from "../engine/action"
+import { getSelf } from "../engine/entity"
+import { onAttachParent } from "../engine/hasChildren"
+import { EntityInstance } from "../engine/types"
 import { hasPosition } from "../game/mechanics/hasPosition"
 import {
     CREATE_SCENE,
@@ -25,9 +27,18 @@ export const hasRootNode = () => {
     // TODO: Honestly there is a much better way to trigger scene create/update/destroy
     // create/destroy should be triggered when adding as a child, when the parent
     // is available ... we get the THREE node from the parent whether it's a Scene
-    // or a aObject3D ... camera will be a separate withCameraControl or something
+    // or a Object3D ... camera will be a separate withCameraControl or something
     // for times we want the camera to track an entity or apply e.g. camera wobble
     let currentPayload: SceneActionPayload
+    let parent: EntityInstance<any, any> | undefined
+    onAttachParent((payload) => {
+        // Link the parent node to this node.
+        // We have node inception now to some degree, and I'm not sure how bad this could get for performance, since we have
+        // basically 3 x Object3D just to link a parent to a child. But it gives a degree of flexibility as we can transform and
+        // orient relative to the parent and relative to local.
+        payload.node.add(node)
+        parent = payload.parent
+    })
     onSceneCreate((payload) => {
         currentPayload = payload
         const { scene /*, parent */ } = payload
@@ -38,10 +49,14 @@ export const hasRootNode = () => {
         // if (parent) {
 
         // }
-        scene.add(node)
+        if (!parent) {
+            console.log("Wiring to SCENE")
+            scene.add(node)
+            console.log("SCENE", scene)
+        }
     })
     onSceneRender((payload) => {
-        console.log("root node render")
+        // console.log("root node render")
         // TODO: Seems weird and unneccesary but it'll fix things right now
         if (!initialized) {
             dispatchAction(me, CREATE_SCENE, payload)

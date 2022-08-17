@@ -23,12 +23,27 @@ export const useEngine = ({ props, root, globals }: UseEngineOptions): WithEngin
     return useMemo(() => {
         console.log("creating engine")
         const engine = createEngine(props)
-        for (const { global, props } of globals) {
-            const name = global.name || entityTypeName(engine, global.entity)
-            const instance = engine.entities.create(global.entity, props)
-            engine.globals[name] = instance
+        try {
+            for (const { global, props } of globals) {
+                const name = global.name || entityTypeName(engine, global.entity)
+                const instance = engine.entities.create(global.entity, props)
+                engine.globals[name] = instance
+            }
+            engine.entities.create(root.entity, root.props)
+        } catch (error: any) {
+            // TODO: This is a pretty hacky way to write an error message, should
+            // come up with something better and more pluggable
+            if (!engine.globals.Terminal) {
+                console.error("No terminal!")
+                throw error
+            }
+            ;(
+                engine.globals.Terminal.interface as unknown as {
+                    write: (message: string) => void
+                }
+            ).write(error.message)
+            console.error(error)
         }
-        engine.entities.create(root.entity, root.props)
         return engine
     }, [props, root, globals])
 }

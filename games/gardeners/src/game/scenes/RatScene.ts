@@ -1,6 +1,6 @@
 import { text } from "@hero/text"
 import { BufferGeometry, Line, LineBasicMaterial, SplineCurve, Vector2 } from "three"
-import { onUpdate } from "../../engine/action"
+import { map } from "@hero/map"
 import { defineEntity, getEngine } from "../../engine/entity"
 import { hasStory } from "../../engine/hasStory"
 import { onSceneCreate, onSceneDestroy, onSceneRender } from "../../with-three/GameCanvas"
@@ -9,6 +9,9 @@ import { hasClock } from "../mechanics/hasClock"
 import { hasPosition } from "../mechanics/hasPosition"
 
 import RatSprite from "./rat.png"
+import { hasMap } from "../../engine/hasMap"
+import { Grass } from "../scenery/Grass"
+import { hasLight } from "../../with-three/hasLight"
 
 // const Disease = defineMod("Disease", () => {
 //     const rng = hasRng()
@@ -53,8 +56,6 @@ import RatSprite from "./rat.png"
 // Rats appear from all directions!
 //   `)
 // }
-
-export const RatMan = defineEntity("RatMan", () => {})
 
 type SplineProps = {
     speed?: number
@@ -102,9 +103,30 @@ const withSplineMovement = ({ speed = 1 }: SplineProps = {}) => {
     })
 }
 
-export const RatScene = defineEntity("RatScene", () => {
+export const RatMan = defineEntity("RatMan", () => {
     withSprite(RatSprite)
     withSplineMovement({ speed: 0.5 })
+})
+
+export const RatScene = defineEntity("RatScene", () => {
+    hasLight()
+
+    hasMap(
+        map`
+......
+....r.
+.r....
+..r...
+....r.
+.r....
+
+. = Grass
+r = Grass
+r = RatMan | RatMan:1/4
+`,
+        { Grass }
+    )
+
     // TODO:
     // - Scene() or isScene() ?
     // - next scene action
@@ -118,16 +140,9 @@ export const RatScene = defineEntity("RatScene", () => {
     // - fight rat(s)
     // - give cheese to get random jump
     hasStory(
-        text`
-Hi folks I'm the ratman!$test
-
-test:
-one
-two
-three
-
-onSetup:
-Boo
+        text`[
+You happen upon a warped individual whose form obeys neither human nor rodent proportions.
+It hisses a request: "Ch...cheese? For meeee?"]
     `,
         {}
     )

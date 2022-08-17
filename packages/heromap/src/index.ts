@@ -1,4 +1,5 @@
-export { virtualGrid, VirtualGrid } from "./src/virtualGrid";
-export { map, parse } from "./src/parse";
-export { build } from "./src/build";
-export { MapNode } from "./src/types";
+export { virtualGrid } from "./virtualGrid"
+export type { VirtualGrid } from "./virtualGrid"
+export { map, parse } from "./parse"
+export { build } from "./build"
+export type { MapNode } from "./types"

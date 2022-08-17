@@ -1,7 +1,6 @@
 import { MainAST, render } from "@hero/text"
 import { isFunction } from "remeda"
-import { CREATE_ENTITY } from "./action"
-import { dispatchAction } from "./entity"
+import { CREATE_ENTITY, dispatchAction } from "./action"
 import {
     WithEngine,
     LABEL_TYPE,
@@ -44,7 +43,10 @@ export const entityManager = (engine: WithEngine) => {
         return acc
     }, {} as Record<string, EntityType>)
 
-    const create = <T extends {} = {}, I = {}>(template: EntityType<T, I>, props: T = {} as T) => {
+    const create = <T extends {} = {}, I = {}>(
+        template: EntityType<T, I> | string,
+        props: T = {} as T
+    ) => {
         // let instance: EntityInstance<I>
         // TODO: Really annoying. Random number generation just isn't happening in jsdom, apparently.
         // So we'll need to run an entire random numbers service just to generate sufficient randomness.
@@ -57,18 +59,22 @@ export const entityManager = (engine: WithEngine) => {
         // Really need to think about this...
 
         // TODO: Also allow creation from named entity:
-        // typeof template === "string" ? engine.entities.templates[template] : template,
+        const createType =
+            typeof template === "string" ? engine.entities.templates[template] : template
+        if (!createType) {
+            throw new Error("Entity type not known: " + template)
+        }
         const id = (nextId + 1).toString()
 
-        if (isFunction(template)) {
+        if (isFunction(createType)) {
             throw new Error("Not implemented yet")
         }
         // TODO: A better form of "isMainAST" than this...
-        else if (template.type === "main") {
+        else if (createType.type === "main") {
             // TODO:
             throw new Error("Not implemented yet")
 
-            // instance = createInstance<EngineState & T>(template, {
+            // instance = createInstance<EngineState & T>(createType, {
             //     engine,
             //     ...props
             // })
@@ -80,7 +86,7 @@ export const entityManager = (engine: WithEngine) => {
             // all this weird construction?
             const context = {
                 id,
-                type: template.type,
+                type: createType.type,
                 global: {},
                 actions: {},
                 localData: {},
@@ -93,7 +99,7 @@ export const entityManager = (engine: WithEngine) => {
                 entity: context
             } as unknown as EntityInstance<T>
 
-            context.instance.interface = (template as EntityDefinition<T, I>).newInstance(
+            context.instance.interface = (createType as EntityDefinition<T, I>).newInstance(
                 context,
                 props
             )

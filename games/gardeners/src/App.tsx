@@ -7,13 +7,12 @@ import { Providers } from "./providers/Providers"
 import { useEngine } from "./hooks/useEngine"
 import { useRng } from "./hooks/useRng"
 import { Game } from "./game/Game"
-import { RatScene } from "./game/scenes/RatScene"
-import { ComponentManager, GlobalComponentManager } from "./with-react/ComponentManager"
+import { GlobalComponentManager } from "./with-react/ComponentManager"
 import { useForceUpdate } from "./hooks/useForceUpdate"
-import { Terminal, TerminalGlobal } from "./game/Terminal"
+import { TerminalGlobal } from "./game/Terminal"
 import { useMemo } from "react"
-
-const definitions = [Game, RatScene, ComponentManager, Terminal]
+import { GlobalMaterialManager } from "./with-three/MaterialManager"
+import { definitions } from "./engine/entity"
 
 const App = () => {
     const rng = useRng()
@@ -24,8 +23,10 @@ const App = () => {
             root: { entity: Game, props: {} },
             globals: [
                 { global: GlobalComponentManager, props: {} },
-                { global: TerminalGlobal, props: {} }
-            ]
+                { global: TerminalGlobal, props: {} },
+                { global: GlobalMaterialManager, props: {} }
+            ],
+            debug: true
         }
     }, [handleRefresh, rng])
     const engine = useEngine(engineOptions)

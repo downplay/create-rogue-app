@@ -1,11 +1,10 @@
-import { Ref, useCallback, useEffect, useMemo, useRef } from "react"
+import { Ref, useCallback, useEffect, useRef } from "react"
 import { useMeasure } from "react-use"
 import styled from "styled-components"
 import { Scene, PerspectiveCamera, WebGLRenderer, Camera } from "three"
-import { defineAction, onAction, UPDATE_ENTITY } from "../engine/action"
-import { dispatchAction, getSelf } from "../engine/entity"
+import { defineAction, dispatchAction, onAction, UPDATE_ENTITY } from "../engine/action"
+import { getSelf } from "../engine/entity"
 import { EntityInstance } from "../engine/types"
-import { useEngineContext } from "../providers/EngineProvider"
 import { hasComponent, HasComponentOptions } from "../with-react/ComponentManager"
 
 type GameCanvasProps = {
@@ -32,9 +31,10 @@ export const DESTROY_SCENE = defineAction<SceneActionPayload, void>("DESTROY_SCE
 })
 
 export const GameCanvas = ({ name, me }: GameCanvasProps) => {
+    console.log("ME", me)
     const [sizeRef, { width, height /*x, y, top, right, bottom, left*/ }] = useMeasure()
     const containerRef = useRef<HTMLDivElement>(null!)
-    const engine = useEngineContext()
+    // const engine = useEngineContext()
     // const { scope } = engine
     // const containerRef = useRef<HTMLDivElement>(null!)
     const sceneRef = useRef<Scene>(null!)
@@ -57,13 +57,13 @@ export const GameCanvas = ({ name, me }: GameCanvasProps) => {
     }, [me])
 
     useEffect(() => {
-        // TODO: Scene and camera, do they need to be created/destroyed here
-        // or can they be reused when the renderer is initialized?
-        // Could be more efficient with use of resources here.
+        // TODO: Could be more efficient with use of resources here.
         // Additionally when size is changed we could just use renderer.setSize,
         // do this in a separate effect
+        console.log("NEW SCENE", width, height)
         sceneRef.current = new Scene()
         cameraRef.current = new PerspectiveCamera(75, width / height, 0.1, 1000)
+        cameraRef.current.position.y = 1
         cameraRef.current.position.z = 5
         rendererRef.current = new WebGLRenderer()
         rendererRef.current.setSize(width, height)
@@ -104,8 +104,22 @@ export const withCanvas = ({
     // Maybe 'instance' should be a required prop of component
     // Actually we really should just pass handlers...
     const me = getSelf()
-    hasComponent(GameCanvas, { props: { name, me }, slot })
+    // const scene = new Scene()
+    // TODO: Bit of a chicken/egg situation here; we need the width/height from the
+    // component in order to create the camera with the correct perspective (and
+    // update based on component size changes). So we can't just create the camera
+    // here and pass to the component. Then we need to receive the camera back
+    // here and expose methods to control the camera. Cameras should even be entities
+    // in their own right as we want different camera types for different game modes
+    // BUT the camera is needed by the rendere. Phew this is fiddly.
+    hasComponent(GameCanvas, { props: { name, me /*, scene, camera*/ }, slot })
 }
+
+// TODO: Should be a way to access scene/camera from whichever closest parent controls
+// them.
+// export const getScene = () => {
+//     const {scene} = getParentInstance()
+// }
 
 export const onSceneCreate = (handler: (payload: SceneActionPayload) => void) => {
     onAction(CREATE_SCENE, handler)

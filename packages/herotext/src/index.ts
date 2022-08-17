@@ -1,5 +1,5 @@
 export type { StoryInstance } from "./instance"
-export { createInstance, executeInstance } from "./instance"
+export { createInstance, executeInstance, instanceHas } from "./instance"
 export { parse, merge, stringifyResult } from "./parse"
 export { text } from "./text"
 export { render, executeText, beginExecution, resumeExecution, inheritStrand } from "./execute"

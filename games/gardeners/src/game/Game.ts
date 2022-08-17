@@ -3,7 +3,7 @@ import { onCreate } from "../engine/action"
 import { defineData, hasData } from "../engine/data"
 import { defineEntity, getEngine, getSelf } from "../engine/entity"
 import { hasChildren } from "../engine/hasChildren"
-import { withCanvas } from "../with-three/GameCanvas"
+import { onSceneCreate, withCanvas } from "../with-three/GameCanvas"
 import { withSprite } from "../with-three/withSprite"
 import { RatScene } from "./scenes/RatScene"
 
@@ -37,6 +37,9 @@ export const Game = defineEntity("Game", () => {
     const engine = getEngine()
     onCreate(() => {
         add(engine.entities.create(RatScene, {}))
+    })
+    onSceneCreate(({ scene }) => {
+        console.log("SCENE", scene)
     })
     // const [party, updateParty] = hasData("Game_Party")
     // const rng = withRng()

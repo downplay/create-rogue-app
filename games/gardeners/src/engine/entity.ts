@@ -14,6 +14,7 @@ let currentContext: EntityContext | undefined
 
 const gatherHooks = <I>(context: EntityContext, callback: () => I) => {
     if (currentContext) {
+        console.log(currentContext, context)
         throw new Error("Cannot define another hooks context from within your build function")
     }
     currentContext = context
@@ -36,11 +37,13 @@ export const getEngine = () => {
     return getEntityContext().engine
 }
 
+export const definitions: EntityType<any, any>[] = []
+
 export const defineEntity = <P extends {} = {}, I = void>(
     type: string,
     build: (props: P) => I
 ): EntityType<P, I> => {
-    return {
+    const defined = {
         type,
         newInstance: (context: EntityContext<P>, props: P) => {
             const iface = gatherHooks(context, () => build(props))
@@ -58,33 +61,8 @@ export const defineEntity = <P extends {} = {}, I = void>(
             return instance
         }
     }
-}
-
-export const dispatchAction = <P, O>(
-    instance: EntityInstance<any, any>,
-    action: ActionDefinition<P, O>,
-    payload: P
-): O[] => {
-    const actions = instance.entity.actions[action.name] || []
-    const actionContext: ActionContext = {
-        engine: instance.entity.engine,
-        target: instance
-    }
-    const results = actions.map((h) => h(payload, actionContext))
-    if (action.cascade) {
-        // TODO: Should this be an array of refs with additional metadata?
-        // TODO: Need a helper for acccessing data arbitrarily, also as a hook
-        // which can be reactive
-        const children =
-            (instance.entity.localData["Entity_Children"]?.data.value as unknown as EntityInstance<
-                any,
-                any
-            >[]) || []
-        return results.concat(
-            children.map((child) => dispatchAction(child, action, payload)).flat()
-        )
-    }
-    return results
+    definitions.push(defined)
+    return defined
 }
 
 export const defineGlobalInstance = <T extends {} = {}, I = void>(
