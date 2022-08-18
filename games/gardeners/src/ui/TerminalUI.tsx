@@ -1,5 +1,4 @@
 import { useRef, useLayoutEffect } from "react"
-import { ExecutionResultItem, stringifyResult } from "@hero/text"
 import styled from "styled-components"
 import { Line } from "./Typography"
 import { isString } from "remeda"
@@ -57,19 +56,23 @@ type Props = {
 const aggregateContent = (content: TerminalContent) => {
     let currentLine = []
     const aggregated = []
-    for (let i = 0; i < content.length; i++) {
-        const item = content[i]
+    let i = 0
+    for (const item of content) {
         if (isString(item)) {
             currentLine.push(item)
         } else {
             switch (item.type) {
                 case "newLine":
+                    aggregated.push(<Line key={++i}>{currentLine}</Line>)
+                    currentLine = []
                     break
                 default:
                     throw new Error("Not supported yet in Terminal: " + item.type)
             }
         }
-        aggregated.push(<Line key={i}>{currentLine}</Line>)
+    }
+    if (currentLine.length) {
+        aggregated.push(<Line key={++i}>{currentLine}</Line>)
     }
     return aggregated
 }
