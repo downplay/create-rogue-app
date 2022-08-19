@@ -26,7 +26,6 @@ type StoryState = {
 const nonStringifiableTypes = ["trigger", "ui"]
 
 export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = {} as T) => {
-    console.log(template)
     // TODO: How do we import data cleanly
     // TODO: Kinda bad that we serialize the entire story here, well, it does
     // ensure it'll work in a future version as long as the AST doesn't change,
@@ -60,6 +59,7 @@ export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = 
                     case "ui": {
                         switch (item.handler) {
                             case "buttonStart":
+                                console.log(result)
                                 // TODO: Pass the strand so the terminal can update it without
                                 // a complicated chain of callbacks
                                 terminalOutput.push({
@@ -67,11 +67,13 @@ export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = 
                                 })
                                 break
                             case "buttonEnd":
+                                console.log(result)
                                 terminalOutput.push({
                                     type: "buttonEnd",
                                     instanceId: me.entity.id,
                                     name: item.name
                                 })
+                                console.log(me.entity)
                                 break
 
                             default:

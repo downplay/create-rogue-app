@@ -174,6 +174,7 @@ export type ExecutionStrand = {
     children: ExecutionStrand[]
     localScope: Record<string, StateElement>
     internalState?: any
+    suspend: boolean
 }
 
 export type TypedValue = PrimitiveValue | ComplexValue | ReturnCommand

@@ -74,6 +74,7 @@ export const entityManager = (engine: WithEngine) => {
             throw new Error("Entity type not known: " + template)
         }
         const id = (nextId + 1).toString()
+        nextId++
 
         if (isFunction(createType)) {
             throw new Error("Not implemented yet")

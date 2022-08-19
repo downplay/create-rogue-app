@@ -31,6 +31,18 @@ const executeTextNode = (node: ContentTextAST) => {
     return [node.text]
 }
 
+// TODO: A bit inefficient, maybe there's a better way with proxy; but otherwise
+// we need to set the suspend value all the way back up the tree and then we don't
+// know where the original suspension was (or do we need to?)
+const isSuspended = (strand: ExecutionStrand): boolean => {
+    return strand.suspend || !!strand.children.find(isSuspended)
+}
+
+const unSuspend = (strand: ExecutionStrand) => {
+    strand.suspend = false
+    strand.children.forEach(unSuspend)
+}
+
 // TODO: This is a bit low-level to be exporting, find a cleaner way to do this
 export const inheritStrand = (parent: ExecutionStrand): ExecutionStrand => ({
     ...parent,
@@ -64,7 +76,7 @@ const executeArrayNode = (
 
         const result = executeNode(choice, context, strand.children[0])
         results.push(...result)
-        if (context.suspend) {
+        if (isSuspended(strand.children[0])) {
             break
         }
         i++
@@ -87,7 +99,7 @@ const valueOfExpression = (
             return value.value as number
         case "compound":
             const results = executeNode(value.value as ContentAST, context, strand)
-            if (context.suspend) {
+            if (isSuspended(strand)) {
                 throw new Error(
                     "Attmempted to suspend during processing of precondition expressions."
                 )
@@ -221,26 +233,33 @@ const executeChoicesNodeAll = (
     const choices = node.content
     const results: ExecutionResultItem[] = []
     let i = 0
-    if (strand.children.length) {
-        // Has already executed
-        i = strand.children[0].path as number
+    // Track which strands are completed, otherwise we re-run them next time
+    if (!strand.internalState) {
+        strand.internalState = {}
     }
     while (i < choices.length) {
+        // Don't execute strands we completed before
+        if (strand.internalState[i]) {
+            i++
+            continue
+        }
         const choice = choices[i]
-        if (!strand.children[0] || strand.children[0].path !== i) {
-            strand.children = [{ ...inheritStrand(strand), path: i }]
+        if (!strand.children[i]) {
+            strand.children[i] = { ...inheritStrand(strand), path: i }
         }
 
         // TODO: We might even need to suspend during precondition matching. Or could
         // just throw an error? Gets super messy otherwise...
-        if (!matchPreconditions(choice, context, strand.children[0])) {
+        if (!matchPreconditions(choice, context, strand.children[i])) {
             i++
             continue
         }
-        const result = executeNode(choice.content, context, strand.children[0])
+        const result = executeNode(choice.content, context, strand.children[i])
         results.push(...result)
-        if (context.suspend) {
-            break
+        // Note: We don't check for suspend here since it's an "all" node, we want
+        // to execute all in "parallel" even if one is suspended
+        if (!isSuspended(strand.children[i])) {
+            strand.internalState[i] = true
         }
         i++
     }
@@ -273,7 +292,7 @@ const resolveLabelPath = (
             // NOTE: Doesn't seem like it makes sense to resolve mid-path; maybe it hurts performance
             // and we can optimise by just removing some unneccessary processing of suspense here
             // (and throw an error)
-            if (context.suspend) {
+            if (isSuspended(childStrand)) {
                 strand.internalState =
                     (strand.internalState || "") +
                     stringifyResult(labelResult.slice(0, labelResult.length - 1))
@@ -379,6 +398,7 @@ const executeFunctionNodeInvocation = (
             i = strand.children[0].path as number
         }
     }
+    let suspend = false
     if (!invoke) {
         while (i < parameters.length) {
             const paramNode = parameters[i]
@@ -389,14 +409,14 @@ const executeFunctionNodeInvocation = (
 
             const result = executeNode(paramNode, context, strand.children[0])
             parameterValues[i].push(...result)
-            if (context.suspend) {
+            if (isSuspended(strand.children[0])) {
+                suspend = true
                 break
             }
             i++
         }
     }
-
-    if (context.suspend) {
+    if (suspend) {
         return [parameterValues[i][parameterValues[i].length - 1]]
     }
 
@@ -435,6 +455,7 @@ const executeSubstitutionNode = (
         // Has already executed
         i = strand.children[0].path as number
     }
+    let suspend = false
     while (i < node.path.length) {
         const path = node.path[i]
 
@@ -453,7 +474,8 @@ const executeSubstitutionNode = (
                 : undefined
         )
         result = results
-        if (context.suspend) {
+        if (isSuspended(strand.children[0])) {
+            suspend = true
             break
         }
         resolveParent = strand.internalState = nextParent
@@ -467,7 +489,7 @@ const executeSubstitutionNode = (
         }
         i++
     }
-    if (!context.suspend) {
+    if (!suspend) {
         result = [resolveParent]
     }
     debug("Substitution", node.path, result)
@@ -486,7 +508,7 @@ const executeAssignmentNode = (
     strand.children[0] = childStrand
     const result = executeNode(node.content, context, childStrand)
     // TODO: Variable could also be content that needs resolving
-    if (context.suspend) {
+    if (isSuspended(childStrand)) {
         const command = result[result.length - 1]
         strand.internalState = [
             ...(strand.internalState || []),
@@ -531,8 +553,7 @@ const executeInputNode = (node: InputAST, context: ExecutionContext, strand: Exe
         debug("Received input", inputStrand.internalState)
         return [inputStrand.internalState as string]
     }
-    // TODO: strand context should be suspended instead
-    context.suspend = true
+    inputStrand.suspend = true
     return [
         {
             type: "input",
@@ -570,7 +591,7 @@ executeNode = (
                 // TODO: Hmm, this could go wrong if MainASTs were embedded recursively,
                 // maybe there's a better way to know if we're at top level, maybe
                 // we should explicitly prevent recursive embeds.
-                if (!context.suspend && node === context.main) {
+                if (!isSuspended(context.root) && node === context.main) {
                     context.finished = true
                 }
                 return result
@@ -600,7 +621,7 @@ executeNode = (
 
                         // Kind of duplication with executeAssignmentNode
                         if (label.mode === "set") {
-                            if (!context.suspend) {
+                            if (!isSuspended(strand)) {
                                 context.state[label.name] =
                                     (strand.internalState || "") + stringifyResult(results)
                             } else {
@@ -645,6 +666,7 @@ export const executeText = (context: ExecutionContext) => {
     // const { rng, entryPoint, initialState } = options;
 
     context.suspend = false
+    unSuspend(context.root)
 
     let entryNode: ContentItemAST | undefined = context.main
     if (context.root.path) {
@@ -655,6 +677,9 @@ export const executeText = (context: ExecutionContext) => {
     }
 
     const results = executeNode(entryNode, context, context.root)
+    if (isSuspended(context.root)) {
+        context.suspend = true
+    }
     return results
 }
 
@@ -667,7 +692,8 @@ export const beginExecution = <T extends {} = {}>(
     const root: ExecutionStrand = {
         path: entryPoint || "",
         localScope: {},
-        children: []
+        children: [],
+        suspend: false
     }
     const context = createContext(main, root, {
         rng,
@@ -677,13 +703,12 @@ export const beginExecution = <T extends {} = {}>(
 }
 
 export const resumeExecution = <T extends {} = {}>(context: ExecutionContext<T>) => {
-    if (!context.suspend) {
+    if (!isSuspended(context.root)) {
         throw new Error("Cannot resume finished context")
     }
     if (context.error) {
         throw new Error("Cannot resume errored context")
     }
-    context.suspend = false
     return executeText(context)
 }
 
@@ -695,7 +720,7 @@ export const render = <T extends {} = {}>(
 ): string => {
     const [result, context] = beginExecution(main, rng, variables, entryPoint)
     // TODO: For both of these Error conditions use a specialised Error object
-    if (context.suspend) {
+    if (isSuspended(context.root)) {
         throw new Error("Cannot render suspended context")
     }
     if (context.error) {

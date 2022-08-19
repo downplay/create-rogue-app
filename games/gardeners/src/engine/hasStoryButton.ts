@@ -18,6 +18,7 @@ export const hasStoryButton = (buttonName: string, handler?: () => void) => {
     const [clicked, setClicked] = hasData(defineData<boolean>("Button_" + buttonName), false)
 
     onAction(BUTTON_CLICK, ({ name }) => {
+        console.log("BUTTON CLICK")
         if (buttonName === name) {
             setClicked(true)
             if (handler) {
@@ -43,8 +44,12 @@ export const hasStoryButton = (buttonName: string, handler?: () => void) => {
         return [{ type: "ui", handler: "buttonStart", strand, name: buttonName }]
     }
     const end: ExternalNodeCallback = (state, context, strand) => {
-        if (!strand.internalState) {
+        if (strand.internalState === undefined) {
+            // First time the strand executes we must return the button; subsequent
+            // runs we return nothing and still suspend
             strand.internalState = false
+            strand.suspend = true
+            return [{ type: "ui", handler: "buttonEnd", strand, name: buttonName }]
         }
         if (clicked.value && !strand.internalState) {
             strand.internalState = true
@@ -58,8 +63,8 @@ export const hasStoryButton = (buttonName: string, handler?: () => void) => {
         // But for strand to work we'd have to serialize the strand (in terminal output) so every
         // strand then has an id. Doesn't really work. Or we have to regenerate terminal content
         // completely on reload. Click action works for now but it's a bit around the houses.
-        context.suspend = true
-        return [{ type: "ui", handler: "buttonEnd", strand, name: buttonName }]
+        strand.suspend = true
+        return ""
     }
     return [start, end]
 }

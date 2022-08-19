@@ -19,7 +19,7 @@ export const executor = <I, S = {}>(
             return ""
         }
         strand.internalState = result
-        context.suspend = true
+        strand.suspend = true
         // TODO: Not sure of the usefulness of handler, maybe it should
         // be optional.
         return [{ type: "trigger", strand, handler: "executor" }]

@@ -89,6 +89,7 @@ const aggregateContent = (content: TerminalContent, entities: EntityManager) => 
                     }
                     const handler = () => {
                         const instance = entities.get(item.instanceId)
+                        console.log(instance)
                         dispatchAction(instance, BUTTON_CLICK, { name: item.name })
                     }
                     currentLine.push(
