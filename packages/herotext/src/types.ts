@@ -135,21 +135,28 @@ export type LabelAST = Omit<ContentItemAST, "type"> & {
     content: ContentAST | ScopeValue | null
 }
 
-export type ReturnCommand = {
-    type: "updateGlobal" | "updateLocal" | "input" | "trigger"
-}
-
-export type ReturnCommandUpdate<T extends {}> = Omit<ReturnCommand, "type"> & {
+export type ReturnCommandUpdate<T extends {} = {}> = {
     type: "updateGlobal" | "updateLocal"
     values: T
 }
 
-export type ReturnCommandInput = Omit<ReturnCommand, "type"> & {
+export type ReturnCommandInput = {
     type: "input" | "trigger"
     yieldValue?: any
     strand: ExecutionStrand
     handler: string
 }
+
+export type ReturnCommandUI = Omit<ReturnCommandInput, "type"> & {
+    type: "ui"
+    // TODO: Handler + method needed or are we fine here?
+    name: string
+    // method: string
+    // TODO: We could type the options (for purpose of formatting UI)
+    options?: Record<string, any>
+}
+
+export type ReturnCommand = ReturnCommandUpdate | ReturnCommandInput | ReturnCommandUI
 
 // TODO: There's a bunch of weird overlap, Scalar vs ExecutionResultItem, also with heromaps.
 // Also will need vector etc.

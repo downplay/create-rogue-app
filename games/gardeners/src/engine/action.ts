@@ -5,6 +5,7 @@ import { ActionContext, ActionDefinition, EntityInstance } from "./types"
 type ActionOptions = {
     cascade?: boolean
     bubble?: boolean
+    global?: boolean
 }
 
 export const defineAction = <T, O = void>(

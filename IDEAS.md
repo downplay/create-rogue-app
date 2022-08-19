@@ -1,3 +1,8 @@
+# Beings
+
+Moonicorn (unicorn+moon) - wears a space helmet
+Snapdragon
+
 # Stonehenge
 
 (Optional approach: in the distance atop a hill you observe a series of stones silhouetted in stark relief against the (night?) sky. (A plume of thick smoke rises from the circle's center.) What will you do?

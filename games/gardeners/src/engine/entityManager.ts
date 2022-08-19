@@ -43,6 +43,15 @@ export const entityManager = (engine: WithEngine) => {
         return acc
     }, {} as Record<string, EntityType>)
 
+    const instances: Record<string, EntityInstance> = {}
+
+    const get = (id: string) => {
+        if (!instances[id]) {
+            throw new Error("Entity instance not found: " + id)
+        }
+        return instances[id]
+    }
+
     const create = <T extends {} = {}, I = {}>(
         template: EntityType<T, I> | string,
         props: T = {} as T
@@ -104,6 +113,7 @@ export const entityManager = (engine: WithEngine) => {
                 props
             )
 
+            instances[id] = context.instance
             dispatchAction(context.instance, CREATE_ENTITY, {})
             return context.instance
         }
@@ -111,7 +121,8 @@ export const entityManager = (engine: WithEngine) => {
 
     const manager = {
         templates: entitiesMap,
-        create
+        create,
+        get
     }
 
     return manager
