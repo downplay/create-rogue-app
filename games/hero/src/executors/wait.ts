@@ -17,7 +17,7 @@ const executor = <I, S = {}>(
             return ""
         }
         strand.internalState = result
-        return [/*...results,*/ { type: "trigger" }]
+        return [/*...results,*/ { type: "trigger", strand, handler: "Wait" }]
     }
 }
 

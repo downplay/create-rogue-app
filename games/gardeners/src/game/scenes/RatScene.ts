@@ -81,7 +81,6 @@ const withSplineMovement = ({ speed = 1 }: SplineProps = {}) => {
     let splineObject: Line
     const node = hasRootNode()
     onSceneCreate(() => {
-        console.log(engine)
         if (engine.debug) {
             const points = curve.getPoints(50)
             const geometry = new BufferGeometry().setFromPoints(points)

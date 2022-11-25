@@ -7,13 +7,13 @@ import {
     resumeExecution,
     stringifyResult
 } from "@hero/text"
-import { ExecutionResult, ExecutionResultItem, NodeExecutionResult } from "@hero/text/src/types"
+import { ExecutionResultItem, NodeExecutionResult } from "@hero/text/src/types"
 import { isArray, isObject } from "remeda"
 import { TerminalGlobal } from "../game/Terminal"
 import { TerminalContent } from "../ui/TerminalUI"
 import { onCreate, onUpdate } from "./action"
 import { defineData, hasData } from "./data"
-import { getEngine, getEntityContext, getSelf } from "./entity"
+import { getEngine, getSelf } from "./entity"
 import { getGlobalInstance } from "./global"
 import { WithEngine } from "./types"
 
@@ -92,23 +92,23 @@ export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = 
         return terminalOutput
     }
 
-    onCreate(() => {
-        const instance = createInstance<StoryState & T>(template, {
-            engine,
-            ...initialState
-        })
-        // TODO: don't use the global RNG; create a new one with a seed generated from
-        // an RNG from a parent instance etc
-        /*const [result, context] =*/
-        if (instanceHas(instance, "onSetup")) {
-            executeInstance(instance, engine.rng, "onSetup")
-        }
-        const [result, context] = executeInstance(instance, engine.rng)
-
-        terminal.interface.write(transformExecutionResult(result))
-        updateState(context)
-        // return instance
+    // onCreate(() => {
+    const instance = createInstance<StoryState & T>(template, {
+        engine,
+        ...initialState
     })
+    // TODO: don't use the global RNG; create a new one with a seed generated from
+    // an RNG from a parent instance etc
+    /*const [result, context] =*/
+    if (instanceHas(instance, "onSetup")) {
+        executeInstance(instance, engine.rng, "onSetup")
+    }
+    const [result, context] = executeInstance(instance, engine.rng)
+
+    terminal.interface.write(transformExecutionResult(result))
+    updateState(context)
+    // return instance
+    // })
 
     onUpdate(() => {
         if (state.value.suspend) {
@@ -116,4 +116,6 @@ export const hasStory = <T = undefined>(template: MainAST<T>, initialState: T = 
             terminal.interface.write(transformExecutionResult(result))
         }
     })
+
+    return state.value.state as T
 }
