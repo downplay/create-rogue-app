@@ -76,7 +76,7 @@ const createLabelFromObject = (key: string, value: any): LabelAST => {
 let externalIndex = 0
 
 export const text = <T extends {} = {}>(
-    input: TemplateStringsArray,
+    input: TemplateStringsArray | string[],
     ...interpolations: (
         | Record<string, number>
         | ExternalNodeCallback<T>
