@@ -51,7 +51,7 @@ const createLabelFromObject = (key: string, value: any): LabelAST => {
             type: "external",
             callback: value
         } as ExternalAST
-    } else if (value.type) {
+    } else if ("type" in value) {
         // TODO: More thorough checks whether it's a valid AST or ScopeValue
         content = value as ContentAST
     } else if (typeof value === "object") {
@@ -128,7 +128,7 @@ export const text = <T extends {} = {}>(
             labels: externals
         })
         return main
-    } catch (e) {
-        return errorMain(e.message)
+    } catch (e: any) {
+        return errorMain(e.message || e)
     }
 }

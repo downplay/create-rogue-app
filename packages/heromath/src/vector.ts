@@ -10,6 +10,7 @@ declare type DefinitelyVector<T> = Extract<T, Vector> extends never ? Vector : E
 // TODO: 3D vectors
 export const isVector = <T>(test: T | Vector): test is DefinitelyVector<T> =>
     test &&
+    typeof test === "object" &&
     "x" in test &&
     "y" in test &&
     Object.keys(test).length === 2 &&
@@ -20,11 +21,15 @@ export const vector: {
     (x: number, y: number, z: number): Vector3
     (x: number, y: number): Vector
     (v: Vector): Vector
-} = (x, y?, z?) => {
-    if (typeof z === "number") {
+} = ((x, y?, z?) => {
+    if (z !== undefined && typeof z === "number") {
         return { x, y, z }
     }
     return typeof x === "number" ? { x, y: y as number } : x
+}) as {
+    (x: number, y: number, z: number): Vector3
+    (x: number, y: number): Vector
+    (v: Vector): Vector
 }
 //  ? { x, y } : x;
 
