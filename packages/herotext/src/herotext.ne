@@ -229,7 +229,7 @@ const main = (content, labels) => ({
 });
 
 const choice = (content, preconditions) => {
-  const result = { type: "choice", content, weight: 10, preconditions: [] };
+  const result = { type: "choice", content, weight: 1, preconditions: [] };
   if (preconditions) {
     preconditions.forEach((cond) => {
       if (/*cond.type === "number" || */ cond.type === "percent") {
@@ -272,7 +272,7 @@ const numberValue = (value) => {
     toParse = value.slice(0, value.length - 1);
     return {
       type: "percent",
-      value: Number(toParse),
+      value: Number(toParse) / 100,
     };
   }
   return {
