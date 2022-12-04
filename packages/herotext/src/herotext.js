@@ -14,59 +14,59 @@ function id(x) {
 }
 
 const assign = {
-    match: /\$[a-zA-Z0-9]+=/u,
+    match: /\$[a-zA-Z0-9]+=/,
     push: "nospace",
     value: (x) => x.slice(1, x.length - 1)
 }
 const bassign = {
-    match: /\$\[[a-zA-Z0-9 ]+\]=/u,
+    match: /\$\[[a-zA-Z0-9 ]+\]=/,
     push: "nospace",
     value: (x) => x.slice(2, x.length - 2)
 }
 
-const sub = { match: /\$[a-zA-Z0-9]+/u, value: (x) => x.slice(1), push: "subpath" }
-const bsub = { match: /\$\[/u, push: "sublabel" }
-const newline = { match: /(?:\r\n|\r|\n)/u, lineBreaks: true }
-const space = { match: /[ \t]+/u, lineBreaks: false }
+const sub = { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1), push: "subpath" }
+const bsub = { match: /\$\[/, push: "sublabel" }
+const newline = { match: /(?:\r\n|\r|\n)/, lineBreaks: true }
+const space = { match: /[ \t]+/, lineBreaks: false }
 const input = "$?"
 
-const escape = { match: /\\[\\\[\]\{\}\$|:\/]/u, value: (x) => x[1] }
-const lineComment = { match: /\/\/.*$/u }
-const blockComment = { match: /\/\*/u, push: "comment" }
+const escape = { match: /\\[\\\[\]\{\}\$|:\/]/, value: (x) => x[1] }
+const lineComment = { match: /\/\/.*$/ }
+const blockComment = { match: /\/\*/, push: "comment" }
 
 const lexer = moo.states({
     line: {
-        bang: /^!/u,
+        bang: /^!/,
         assign,
         bassign,
         sub,
         bsub,
         input,
         labeleqmerge: {
-            match: /^[a-zA-Z0-9 ]+:=~/u,
+            match: /^[a-zA-Z0-9 ]+:=~/,
             value: (x) => x.slice(0, x.indexOf(":"))
         },
         labeleq: {
-            match: /^[a-zA-Z0-9 ]+:=/u,
+            match: /^[a-zA-Z0-9 ]+:=/,
             value: (x) => x.slice(0, x.indexOf(":"))
         },
         labelplusmerge: {
-            match: /^[a-zA-Z0-9 ]+:\+~/u,
+            match: /^[a-zA-Z0-9 ]+:\+~/,
             value: (x) => x.slice(0, x.indexOf(":")),
             push: "labelend"
         },
         labelplus: {
-            match: /^[a-zA-Z0-9 ]+:\+/u,
+            match: /^[a-zA-Z0-9 ]+:\+/,
             value: (x) => x.slice(0, x.indexOf(":")),
             push: "labelend"
         },
         labelmerge: {
-            match: /^[a-zA-Z0-9 ]+:~/u,
+            match: /^[a-zA-Z0-9 ]+:~/,
             value: (x) => x.slice(0, x.indexOf(":")),
             push: "labelend"
         },
         label: {
-            match: /^[a-zA-Z0-9 ]+:/u,
+            match: /^[a-zA-Z0-9 ]+:/,
             value: (x) => x.slice(0, x.indexOf(":")),
             push: "labelend"
         },
@@ -107,13 +107,13 @@ const lexer = moo.states({
         // TODO: nospace is kinda broken anyway, would be nice to switch to moo.fallback, but the precondition
         // catch-all does it instead; would need a weird group of most non-alphanumeric chars instead
         string: {
-            match: /(?:\$\$|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/u,
+            match: /(?:\$\$|\\[\\\[\]\$\{\}|]|\\u[a-fA-F0-9]{4}|[^\\\{\}\$\s|\[\]])+/,
             lineBreaks: false
         },
         "{": { match: "{", push: "precondition" },
         "[": { match: "[", push: "group" },
         "|": "|",
-        nospaceend: { match: /(?=[^])/u, lineBreaks: true, pop: 1 }
+        nospaceend: { match: /(?=[^])/, lineBreaks: true, pop: 1 }
     },
     labelend: {
         newline: { ...newline, pop: 1 },
@@ -122,7 +122,7 @@ const lexer = moo.states({
     },
     labelparams: {
         // TODO: support spaces in var names
-        varname: { match: /\$[a-zA-Z0-9]+/u, value: (x) => x.slice(1) },
+        varname: { match: /\$[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
         "?": "?",
         ",": ",",
         ")": { match: ")", pop: 1 },
@@ -132,13 +132,13 @@ const lexer = moo.states({
         blockComment
     },
     subpath: {
-        path: { match: /\.[a-zA-Z0-9]+/u, value: (x) => x.slice(1) },
-        bpath: { match: /\.\[/u, next: "sublabel" },
+        path: { match: /\.[a-zA-Z0-9]+/, value: (x) => x.slice(1) },
+        bpath: { match: /\.\[/, next: "sublabel" },
         "(": { match: "(", next: "funcparams" },
-        pathend: { match: /(?=[^])/u, pop: 1, lineBreaks: true }
+        pathend: { match: /(?=[^])/, pop: 1, lineBreaks: true }
     },
     sublabel: {
-        string: { match: /[a-zA-Z0-9 ]+/u },
+        string: { match: /[a-zA-Z0-9 ]+/ },
         assign,
         bassign,
         sub,
@@ -165,8 +165,8 @@ const lexer = moo.states({
         string: moo.fallback
     },
     precondition: {
-        number: /-?[0-9]+(?:\.[0-9]+)?%?/u,
-        compare: /(?:[<>=!]=?|~=?)/u,
+        number: /-?[0-9]+(?:\.[0-9]+)?\%?/,
+        compare: /(?:[<>=!]=?|~=?)/,
         sub,
         bsub,
         "[": { match: "[", push: "group" },
@@ -240,7 +240,7 @@ const main = (content, labels) => ({
 })
 
 const choice = (content, preconditions) => {
-    const result = { type: "choice", content, weight: 10, preconditions: [] }
+    const result = { type: "choice", content, weight: 1, preconditions: [] }
     if (preconditions) {
         preconditions.forEach((cond) => {
             if (/*cond.type === "number" || */ cond.type === "percent") {
@@ -283,7 +283,7 @@ const numberValue = (value) => {
         toParse = value.slice(0, value.length - 1)
         return {
             type: "percent",
-            value: Number(toParse)
+            value: Number(toParse) / 100
         }
     }
     return {
