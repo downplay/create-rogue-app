@@ -64,13 +64,13 @@ export const equals = (a: Vector, b: Vector): boolean => a.x === b.x && a.y === 
 /**
  * Given two corners which could be NE/NW/SE/SW, recomposes as NW & SE corners
  */
-export const sortCorners = (a: Vector, b: Vector): [Vector, Vector] => {
+export const sortCorners = (a: Vector, b: Vector) => {
     // TODO: Probably slightly more optimised version of this
     const minX = Math.min(a.x, b.x)
     const minY = Math.min(a.y, b.y)
     const maxX = Math.max(a.x, b.x)
     const maxY = Math.max(a.y, b.y)
-    return [vector(minX, minY), vector(maxX, maxY)]
+    return [vector(minX, minY), vector(maxX, maxY)] as const
 }
 
 export const iterateQuad = (a: Vector, b: Vector, callback: (value: Vector) => void) => {
@@ -107,3 +107,9 @@ export const length = (of: Vector) => Math.sqrt(of.x * of.x + of.y * of.y)
 export const normalize = (value: Vector) => multiply(value, 1 / length(value))
 
 export const copy = (source: Vector) => ({ x: source.x, y: source.y })
+
+export const rotate = (v: Vector, r: number) => {
+    const cosr = Math.cos(r)
+    const sinr = Math.sin(r)
+    return vector(v.x * cosr - v.y * sinr, v.x * sinr + v.y * cosr)
+}
