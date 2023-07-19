@@ -29,6 +29,7 @@
     "dependencies": {
         "@hero/math": "workspace:*",
         "@types/moo": "^0.5.4",
+        "@types/nearley": "^2.11.2",
         "@types/ramda": "^0.27.38",
         "flatted": "^3.1.1",
         "moo": "^0.5.1",

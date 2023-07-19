@@ -26,5 +26,6 @@ export {
     mapQuad,
     sortCorners,
     vectorKey,
-    isVector
+    isVector,
+    rotate
 } from "./vector"
