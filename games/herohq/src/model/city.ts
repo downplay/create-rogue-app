@@ -1,0 +1,5 @@
+const BuildingsData = [
+    {
+        id: "Hq"
+    }
+]
