@@ -1,12 +1,16 @@
-import { Atom, atom } from "jotai"
+import { Atom, PrimitiveAtom, atom, SetStateAction } from "jotai"
 import { atomFamily, atomWithStorage } from "jotai/utils"
-import { Hero, heroFamily, heroesAtomsAtom } from "./hero"
+import { Hero, heroFamily } from "./hero"
 import { bunkRoomAtom } from "./hq"
+import { isFunction } from "remeda"
 
 export const rosterSizeAtom = atom((get) => {
     const bunkRoom = get(bunkRoomAtom)
     return bunkRoom.beds.length
 })
+
+export const rosterHeroesAtom = atomWithStorage<string[]>("Roster", [])
+export const rosterHeroesAtomsAtom = atom((get) => get(rosterHeroesAtom).map(heroFamily))
 
 export const activeHeroIdAtom = atomWithStorage<string | undefined>("activeHeroId", undefined)
 
@@ -19,18 +23,29 @@ export const activeHeroAtom = atom((get) => {
 })
 
 const heroIsActiveFamily = atomFamily((heroAtom: Atom<Hero>) => {
-    return atom((get) => {
-        const activeId = get(activeHeroIdAtom)
-        const hero = get(heroAtom)
-        return hero.id === activeId
-    })
+    return atom(
+        (get) => {
+            const activeId = get(activeHeroIdAtom)
+            const hero = get(heroAtom)
+            return hero.id === activeId
+        },
+        (get, set, value: SetStateAction<boolean>) => {
+            const hero = get(heroAtom)
+            const current = get(activeHeroIdAtom) === hero.id
+            if (isFunction(value) ? value(current) : value) {
+                set(activeHeroIdAtom, hero.id)
+            } else if (current) {
+                set(activeHeroIdAtom, undefined)
+            }
+        }
+    )
 })
 
 type RosterSlot = { index: number } & (
     | {
           type: "hero"
-          hero: Atom<Hero>
-          active: Atom<boolean>
+          hero: PrimitiveAtom<Hero>
+          active: PrimitiveAtom<boolean>
       }
     | {
           type: "empty"
@@ -42,7 +57,7 @@ type RosterSlot = { index: number } & (
 )
 
 export const rosterAtom = atom<RosterSlot[]>((get) => {
-    const heroAtoms = get(heroesAtomsAtom)
+    const heroAtoms = get(rosterHeroesAtomsAtom)
     const slots: RosterSlot[] = heroAtoms.map((hero, i) => ({
         index: i,
         type: "hero",

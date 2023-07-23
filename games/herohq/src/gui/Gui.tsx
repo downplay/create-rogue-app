@@ -2,6 +2,8 @@ import { atomWithStorage } from "jotai/utils"
 import styled from "@emotion/styled"
 import { useAtom } from "jotai"
 import { Roster } from "./Roster"
+import { useGameLoop } from "../model/game"
+import { Modals } from "./Modals"
 
 type GuiState =
     | {
@@ -25,12 +27,15 @@ const Cell = styled.div<{ name: string }>`
 
 export const Gui = () => {
     const [state, setState] = useAtom(guiStateAtom)
-
+    useGameLoop()
     return (
-        <Grid>
-            <Cell name="roster">
-                <Roster />
-            </Cell>
-        </Grid>
+        <>
+            <Grid>
+                <Cell name="roster">
+                    <Roster />
+                </Cell>
+            </Grid>
+            <Modals />
+        </>
     )
 }

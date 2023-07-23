@@ -1,6 +1,7 @@
 import { atomWithStorage } from "jotai/utils"
 import { mapIds, mapSequence } from "./util"
 import { atom } from "jotai"
+import { Cost } from "./account"
 
 // const RoomsData = [
 //     {
@@ -11,13 +12,6 @@ import { atom } from "jotai"
 //         ]
 //     }
 // ]
-
-type CostResource = {
-    type: "coin" | "fame" | "lore" | ""
-    amount: number
-}
-
-type Cost = number | CostResource[]
 
 type UpgradeEffect = {
     type: "add"
@@ -75,7 +69,13 @@ type AppliedUpgrade = {
     id: string
 }
 
-const bunkRoomUpgrades = atomWithStorage<AppliedUpgrade[]>("BunkRoom:Upgrades", [])
+const bunkRoomUpgrades = atomWithStorage<AppliedUpgrade[]>("BunkRoom:Upgrades", [
+    { id: "BunkRoom:1" },
+    { id: "BunkRoom:2" },
+    { id: "BunkRoom:3" },
+    { id: "BunkRoom:4" },
+    { id: "BunkRoom:5" }
+])
 
 export const bunkRoomAtom = atom((get) => {
     const upgrades = get(bunkRoomUpgrades)

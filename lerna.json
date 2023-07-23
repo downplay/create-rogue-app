@@ -1,20 +1,5 @@
 {
-  "version": "independent",
-  "packages": ["packages/*", "games/*"],
-  "npmClient": "yarn",
-  "npmClientArgs": ["--no-optional"],
-  "useWorkspaces": true,
-  "command": {
-    "run": {
-      "npmClient": "yarn"
-    },
-    "publish": {
-      "npmClient": "yarn",
-      "message": "chore(release): publish"
-    },
-    "version": {
-      "npmClient": "yarn",
-      "message": "chore(release): version"
-    }
-  }
+    "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+    "useWorkspaces": true,
+    "version": "0.2.1"
 }

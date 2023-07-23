@@ -14,28 +14,44 @@ export type Hero = {
     level: number
 }
 
-export const heroesAtom = atomWithStorage<Hero[]>("roster", [])
-export const heroesAtomsAtom = splitAtom(heroesAtom)
-export const heroesMapAtom = atom((get) => {
-    const atoms = get(heroesAtomsAtom)
-    return atoms.reduce((acc, cur) => {
-        const hero = get(cur)
-        acc[hero.id] = cur
-        return acc
-    }, {} as Record<string, PrimitiveAtom<Hero>>)
-})
-export const heroFamily = atomFamily((id: string) =>
-    atom(
-        (get) => {
-            const hero = get(heroesMapAtom)[id]
-            return get(hero)
-        },
-        (get, set, update: SetStateAction<Hero>) => {
-            const hero = get(heroesMapAtom)[id]
-            set(hero, update)
-        }
-    )
+// export const heroesMapAtom = atom((get) => {
+//     const atoms = get(heroesAtomsAtom)
+//     return atoms.reduce((acc, cur) => {
+//         const hero = get(cur)
+//         acc[hero.id] = cur
+//         return acc
+//     }, {} as Record<string, PrimitiveAtom<Hero>>)
+// })
+
+// Should never appear. We just need it to satisfy the signature of atomWithStorage as we
+// are cheating a little to initialize the hero.
+const UNINITIALIZED_HERO: Hero = {
+    id: "UNIN",
+    name: "Unin",
+    level: 0,
+    status: "Initializing",
+    class: "Buggy"
+}
+
+export const heroFamily = atomFamily(
+    (id: string | Hero) =>
+        typeof id === "string"
+            ? atomWithStorage<Hero>("Hero:" + id, UNINITIALIZED_HERO)
+            : atomWithStorage<Hero>("Hero:" + id.id, id),
+    (a, b) => (typeof a === "string" ? a : a.id) === (typeof b === "string" ? b : b.id)
 )
+
+// atom(
+//     (get) => {
+//         const hero = get(heroesMapAtom)[id]
+//         return get(hero)
+//     },
+//     (get, set, update: SetStateAction<Hero>) => {
+//         const hero = get(heroesMapAtom)[id]
+//         set(hero, update)
+//     }
+// )
+// )
 
 const heroCurrentHealthFamily = atomFamily((id: string) => atomWithStorage("health:" + id, 0))
 

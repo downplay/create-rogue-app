@@ -1,26 +1,27 @@
 {
-  "name": "create-rogue-app-workspaces",
-  "version": "0.3.0",
-  "private": true,
-  "workspaces": [
-    "packages/herotext",
-    "packages/heromap",
-    "packages/heromath",
-    "games/osa",
-    "games/hero"
-  ],
-  "scripts": {
-    "test": "yarn workspaces run test",
-    "bootstrap": "lerna bootstrap",
-    "build": "lerna run build",
-    "watch": "lerna run watch --parallel",
-    "grammar": "yarn workspaces run grammar",
-    "start": "cd games/hero && yarn start",
-    "osa": "cd games/osa && yarn start"
-  },
-  "devDependencies": {
-    "cross-env": "^7.0.3",
-    "lerna": "^4.0.0",
-    "npm-run-all": "^4.1.5"
-  }
+    "name": "create-rogue-app-workspaces",
+    "version": "0.3.0",
+    "private": true,
+    "workspaces": [
+        "packages/herotext",
+        "packages/heromap",
+        "packages/heromath",
+        "games/hero",
+        "games/herohq",
+        "games/osa"
+    ],
+    "scripts": {
+        "test": "yarn workspaces run test",
+        "bootstrap": "lerna bootstrap",
+        "build": "lerna run build",
+        "watch": "lerna run watch --parallel",
+        "grammar": "yarn workspaces run grammar",
+        "start": "cd games/hero && yarn start",
+        "osa": "cd games/osa && yarn start"
+    },
+    "devDependencies": {
+        "cross-env": "^7.0.3",
+        "lerna": "^7.1.4",
+        "npm-run-all": "^4.1.5"
+    }
 }
