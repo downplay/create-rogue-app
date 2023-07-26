@@ -12,7 +12,10 @@
     "dependencies": {
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
+        "@react-three/drei": "^9.79.4",
+        "@react-three/fiber": "^8.13.5",
         "@types/seedrandom": "^3.0.5",
+        "@types/three": "^0.154.0",
         "jotai": "^2.2.2",
         "random": "^4.1.0",
         "react": "^18.2.0",
@@ -20,7 +23,8 @@
         "react-icons": "^4.10.1",
         "remeda": "^1.24.0",
         "rodal": "^2.1.0",
-        "seedrandom": "^3.0.5"
+        "seedrandom": "^3.0.5",
+        "three": "^0.154.0"
     },
     "devDependencies": {
         "@swc/plugin-emotion": "^2.5.69",

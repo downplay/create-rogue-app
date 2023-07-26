@@ -11,11 +11,22 @@ const Grid = styled.div`
     flex-direction: column;
 `
 
+const VITALS_THEME = {
+    health: {
+        symbol: "♥",
+        color: "#f00"
+    }
+} as const
+
+const Bar = styled.div<{ color: string }>`
+    background-color: ${({ color }) => color};
+`
+
 // TODO: Draw a bar, add colour and icon, friendly format the numbers
-const VitalBar = ({ value }: { value: Vital }) => (
-    <>
-        ♥ {value.current} / {value.maximum}
-    </>
+const VitalBar = ({ value, type }: { value: Vital; type: "health" }) => (
+    <Bar color={VITALS_THEME[type].color}>
+        {VITALS_THEME[type].symbol} {value.hp} / {value.maximum}
+    </Bar>
 )
 
 const HeroWrapper = styled.div<{ active: boolean }>`
@@ -49,7 +60,7 @@ export const HeroCard = ({
             <br />
             Currently {hero.status}
             <br />
-            <VitalBar value={vitals.health} />
+            <VitalBar type="health" value={vitals.health} />
         </HeroWrapper>
     )
 }

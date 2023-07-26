@@ -1,7 +1,13 @@
 // TODO: For now we have a single pool of recruits from an unnamed source. We need to add
 // choice of where to recruit from (or maybe as you unlock new recruitment places it will just add to the pool?)
 
-import { Atom, atom } from "jotai"
+/* A dump of some tags, perks etc which could be applied to recruits and adjust the value.
+
+Accident Prone - starts at 1/2 HP. higher chance for critical misses.
+
+*/
+
+import { PrimitiveAtom, atom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
 import seedrandom from "seedrandom"
 import { Random } from "random"
@@ -19,8 +25,9 @@ const NAMES = ["Bob", "Ted", "Fred", "Mike", "Lilly", "Amy", "Jane", "Mary"]
 const CLASSES = ["Fighter", "Wizard", "Ranger"]
 
 export type Interviewee = {
+    id: string
     cost: Cost
-    hero: Atom<Hero>
+    hero: PrimitiveAtom<Hero>
 }
 
 export const recruitsAtom = atom((get) => {
@@ -46,12 +53,17 @@ export const recruitsAtom = atom((get) => {
             status: "Seeking Job"
         }
         interviewees.push({
+            id: hero.id,
             cost: Math.ceil(weight * 10),
-            // Note: Here's the kicker. I can't issue a set to go and update the storage
+            // Note: Here's the kicker. I can't issue a set() to go and update the storage
             // on this hero. Instead I'm abusing the way family equality works, hero family
             // can take either a string or Hero and we can use the eq function. So long
             // as this is definitely the first atom that ever accesses the family for this
             // id everything will be ok (and as far as I can see it should be!)
+            // Well now I found the one problem with this, the storage is never saved if
+            // the atom is never updated. So when we recruit we just have to issue one
+            // save on the hero and they get stored. (Fine anyway, and we'll never need them
+            // again).
             hero: heroFamily(hero)
         })
     }

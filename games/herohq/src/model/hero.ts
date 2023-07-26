@@ -2,7 +2,8 @@ import { Atom, PrimitiveAtom, SetStateAction, atom } from "jotai"
 import { atomFamily, atomWithStorage, splitAtom } from "jotai/utils"
 
 export type Vital = {
-    current: number
+    hp: number
+    fraction: number
     maximum: number
 }
 
@@ -53,7 +54,7 @@ export const heroFamily = atomFamily(
 // )
 // )
 
-const heroCurrentHealthFamily = atomFamily((id: string) => atomWithStorage("health:" + id, 0))
+const heroCurrentHealthFamily = atomFamily((id: string) => atomWithStorage("health:" + id, 1))
 
 const heroMaxHealthFamily = atomFamily((id: string) =>
     atom((get) => {
@@ -65,10 +66,15 @@ const heroMaxHealthFamily = atomFamily((id: string) =>
 )
 
 export const heroHealthFamily = atomFamily<string, Atom<Vital>>((id: string) => {
-    return atom((get) => ({
-        current: get(heroCurrentHealthFamily(id)),
-        maximum: get(heroMaxHealthFamily(id))
-    }))
+    return atom((get) => {
+        const maximum = get(heroMaxHealthFamily(id))
+        const fraction = get(heroCurrentHealthFamily(id))
+        return {
+            hp: Math.round(fraction * maximum),
+            fraction,
+            maximum
+        }
+    })
 })
 
 export const heroVitalsFamily = atomFamily((id: string) => {

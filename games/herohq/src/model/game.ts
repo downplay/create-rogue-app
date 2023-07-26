@@ -34,6 +34,10 @@ const gameTimeAtom = atom(
 )
 
 export const useGameLoop = () => {
+    // TODO: We'll also need to store something in storage so we can simulate time passed
+    // when AFK. Also be careful of multiple windows being open! (we could actually even support
+    // this e.g. if you want to monitor different heroes on different screens, once storage
+    // is moved to server and everything is websockets)
     const lastTick = useRef(new Date())
     const [gameTime, setGameTime] = useAtom(gameTimeAtom)
     // TODO: Really we want different components to modularly register some kind of onTick
