@@ -56,15 +56,16 @@ export const BugRender = ({ id }: MonsterProps) => {
         }
         return legs
     }, [time])
-    // TODO: Loads of detail like facial features, feet, knee ball. Let's get this working first
+    // TODO: Loads of detail like facial features, feet. Let's get this working first
     // tho.
+    // TODO: We could actually also manage destructible limbs. We would need to be notified somehow
+    // by the game loop. At that point we get current world position of the limb (maybe with ref to the Ball)
+    // and start rendering it outside the group with ragdoll physics. Would look awesome.
     return (
         <group rotation={ORIENT_FORWARDS} position={[0, 2.5, 0]}>
             <Ball size={5}>
                 {legs.map((l) => (
                     <Position key={l.index} at={l.position}>
-                        {/* // TODO: For memoisation of vector calcs, make these param arrays
-                    // memoised as well (or static) */}
                         <Ball size={1} />
                         <Rod length={3} caps={0.5} rotate={l.rotate}>
                             <Position at={0}>

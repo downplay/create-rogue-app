@@ -5,6 +5,9 @@ import { Euler, Matrix4, Vector3 } from "three"
 import { useMemo } from "react"
 import { OrbitControls } from "@react-three/drei"
 import { PedeRender } from "../monsters/PedeRender"
+import { HumanRender } from "../dungeon/characters/HumanRender"
+import { Room } from "../dungeon/levels/Room"
+import { Quad } from "../model/dungeon"
 
 const ORIGIN = new Vector3(0, 0, 0)
 const UP = new Vector3(0, 1, 0)
@@ -13,13 +16,15 @@ const DEFAULT_CAMERA = {
     fov: 45,
     near: 0.1,
     far: 1000,
-    position: [-10, 20, -50]
+    position: [-10, 20, 50] as const
 }
+
+const DEFAULT_ROOM: Quad = { x: -5, y: -5, width: 10, height: 10 }
 
 export const Dungeon = () => {
     // const hero = useAtom(activeHeroAtom)
     // const dungeon = useAtom(dungeonAtom)
-    const lightPosition = useVector(10, 10, -10)
+    const lightPosition = useVector(10, 10, 20)
     // const cameraPosition = useVector(-5, 10, -20)
     // const cameraRotation = useMemo(() => {
     //     const m = new Matrix4().lookAt(cameraPosition, ORIGIN, UP)
@@ -31,7 +36,10 @@ export const Dungeon = () => {
             <pointLight position={lightPosition} />
             <ambientLight intensity={0.5} />
             {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}
-            <PedeRender id="Monster:Bug:1" />
+            {/* <BugRender id="Monster:Bug:1" /> */}
+            {/* <PedeRender id="Monster:Bug:1" /> */}
+            <Room id="Room:1" area={DEFAULT_ROOM} />
+            <HumanRender id="Monster:Bug:1" />
         </Canvas>
     )
 }

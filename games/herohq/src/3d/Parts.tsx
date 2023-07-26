@@ -3,7 +3,7 @@ import { PropsWithChildren, createContext, useContext, useMemo } from "react"
 import { Vector3, Euler, Quaternion, Matrix3, Matrix4 } from "three"
 import { isNumber } from "remeda"
 
-export type Direction = [x: number, y: number, z: number]
+export type Direction = readonly [x: number, y: number, z: number]
 
 const ORIGIN = new Vector3(0, 0, 0)
 const UNIT = [1, 1, 1] as const
@@ -94,12 +94,16 @@ export const Ball = ({ size = UNIT, children }: PropsWithChildren<{ size: Vector
                 // TODO: Honestly we need to implement a functional Vector library or find a good one
                 const unit = new Vector3(0, 0.5, 0)
                 unit.applyEuler(euler)
+                const normal = unit.clone()
                 if (isNumber(size)) {
                     unit.multiplyScalar(size)
+                    normal.divideScalar(size)
                 } else {
-                    unit.multiply(toVector3(size))
+                    const vectorSize = toVector3(size)
+                    unit.multiply(vectorSize)
+                    normal.divide(vectorSize)
                 }
-                return [unit, unit.clone().normalize()] as const
+                return [unit, normal.normalize()] as const
             }
         }
     }, [size])

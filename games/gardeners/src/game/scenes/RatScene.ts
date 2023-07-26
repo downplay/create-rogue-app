@@ -123,7 +123,7 @@ export const RatScene = defineEntity("RatScene", () => {
 
 . = Grass
 r = Grass
-r = RatMan | RatMan:1/4
+r = Rat | RatMan:1/4
 `,
         { Grass }
     )
