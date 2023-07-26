@@ -4,6 +4,7 @@ import { useVector } from "./hooks"
 import { Euler, Matrix4, Vector3 } from "three"
 import { useMemo } from "react"
 import { OrbitControls } from "@react-three/drei"
+import { PedeRender } from "../monsters/PedeRender"
 
 const ORIGIN = new Vector3(0, 0, 0)
 const UP = new Vector3(0, 1, 0)
@@ -12,7 +13,7 @@ const DEFAULT_CAMERA = {
     fov: 45,
     near: 0.1,
     far: 1000,
-    position: [-10, 30, -50]
+    position: [-10, 20, -50]
 }
 
 export const Dungeon = () => {
@@ -30,7 +31,7 @@ export const Dungeon = () => {
             <pointLight position={lightPosition} />
             <ambientLight intensity={0.5} />
             {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}
-            <BugRender id="Monster:Bug:1" />
+            <PedeRender id="Monster:Bug:1" />
         </Canvas>
     )
 }

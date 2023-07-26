@@ -6,13 +6,16 @@ import { Ball, Direction, Position, Rod } from "../3d/Parts"
 import { Euler } from "three"
 
 // TODO: Some advanced bugs might have different numbers of legs
-const LEG_PAIRS_COUNT = 3
+const LEG_PAIRS_COUNT = 24
 const LEG_CYCLE_SPEED = 1
 const LEG_SIDE_AMOUNT = 0.08
 
 const ORIENT_FORWARDS = new Euler(-0.5 * Math.PI, 0, 0)
 
-export const BugRender = ({ id }: MonsterProps) => {
+// TODO: It's not at all working in the way hoped or as horrific as required.
+// Should be more like a series of bug bodies strung together.
+
+export const PedeRender = ({ id }: MonsterProps) => {
     const time = useAtomValue(gameTimeTicksAtom)
     const legs = useMemo(() => {
         let legs = []
@@ -41,8 +44,8 @@ export const BugRender = ({ id }: MonsterProps) => {
                     // can e.g. wield weapons, wear jewellery
                     index: (left ? "L" : "R") + (n + 1),
                     position: [
-                        (left ? -1 : 1) * ((n + 1) / (LEG_PAIRS_COUNT + 1)),
-                        -0.3,
+                        ((n + 1) / (LEG_PAIRS_COUNT + 1)) * 0.5 + (left ? -0.75 : 0.25),
+                        -0.2,
                         0
                     ] as const,
                     // TODO: We should be more efficient with the time-based
@@ -60,21 +63,19 @@ export const BugRender = ({ id }: MonsterProps) => {
     // tho.
     return (
         <group rotation={ORIENT_FORWARDS} position={[0, 2.5, 0]}>
-            <Ball size={5}>
+            <Rod length={10} caps={2}>
                 {legs.map((l) => (
                     <Position key={l.index} at={l.position}>
                         {/* // TODO: For memoisation of vector calcs, make these param arrays
                     // memoised as well (or static) */}
-                        <Ball size={1} />
-                        <Rod length={3} caps={0.5} rotate={l.rotate}>
+                        <Rod length={3} caps={0.1} rotate={l.rotate}>
                             <Position at={0}>
-                                <Ball size={1} />
-                                <Rod length={5} caps={0.4} rotate={l.knee} />
+                                <Rod length={5} caps={0.1} rotate={l.knee} />
                             </Position>
                         </Rod>
                     </Position>
                 ))}
-            </Ball>
+            </Rod>
         </group>
     )
 }
