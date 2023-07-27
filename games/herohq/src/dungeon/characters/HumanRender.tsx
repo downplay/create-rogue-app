@@ -2,6 +2,9 @@ import { useMemo } from "react"
 import { Ball, Position, Rod } from "../../3d/Parts"
 import { Vector3 } from "three"
 import { makeToonMaterial } from "../../3d/materials"
+import { useAtomValue } from "jotai"
+import { actorMovementFamily } from "../../model/hero"
+import { gameTimeTicksAtom } from "../../model/game"
 
 const NeckPosition = new Vector3(0, 0, 0)
 
@@ -9,7 +12,14 @@ const SKIN_MATERIAL = makeToonMaterial(0, 0.4, 0.5)
 const BODY_MATERIAL = makeToonMaterial(0.5, 0.1, 0.1)
 const LEG_MATERIAL = makeToonMaterial(0.66, 0.4, 0.3)
 
+const CYCLE_SPEED = 1
+
 export const HumanRender = ({ id }: { id: string }) => {
+    const movement = useAtomValue(actorMovementFamily("Hero:" + id))
+    const animate = !!movement.target
+    const time = useAtomValue(gameTimeTicksAtom)
+    const cycle = time * CYCLE_SPEED // * speed
+
     const bodySize = useMemo(() => [1.5, 4, 0.5] as const, [])
     const neckLength = useMemo(() => 0.5, [])
     const neckRadius = useMemo(() => 0.5, [])
@@ -41,18 +51,26 @@ export const HumanRender = ({ id }: { id: string }) => {
                 tag: "Leg:1",
                 handed: "Left",
                 position: [-0.8, 0, 0] as const,
-                hip: [-0.2, 0.1, 0] as const,
-                knee: [0, 0.4, 0] as const
+                hip: [-0.2, -0.2 + (animate ? 0.4 * Math.sin(cycle * Math.PI * 2) : 0), 0] as const,
+                knee: [0, 0.4 + (animate ? 0.2 * Math.sin(cycle * Math.PI * 2) : 0), 0] as const
             },
             {
                 tag: "Leg:2",
                 handed: "Right",
                 position: [0.8, 0, 0] as const,
-                hip: [0.2, -0.4, 0] as const,
-                knee: [0, 0.5, 0] as const
+                hip: [
+                    0.2,
+                    -0.2 + (animate ? 0.4 * Math.sin((cycle + 0.5) * Math.PI * 2) : 0),
+                    0
+                ] as const,
+                knee: [
+                    0,
+                    0.4 + (animate ? 0.2 * Math.sin((cycle + 0.5) * Math.PI * 2) : 0),
+                    0
+                ] as const
             }
         ],
-        []
+        [cycle]
     )
     // TODO: If we base offset on the legs position or the cycle we can get some bobbing
     const offset = useMemo(() => [0, 4.2, 0] as const, [])

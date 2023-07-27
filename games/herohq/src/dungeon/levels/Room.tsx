@@ -1,6 +1,9 @@
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { Quad, UNITS_PER_CELL } from "../../model/dungeon"
 import { Vector3 } from "three"
+import { ThreeEvent } from "@react-three/fiber"
+import { useAtom } from "jotai"
+import { heroControlAtom } from "../../model/hero"
 
 // TODO: Floor/wall can be extracted as a "Tile" component with a height range and material
 
@@ -9,6 +12,8 @@ import { Vector3 } from "three"
 const FLOOR_DEFAULT_MATERIAL = <meshStandardMaterial color="darkslategrey" />
 
 const Floor = ({ area }: { area: Quad }) => {
+    const [heroControl, setHeroControl] = useAtom(heroControlAtom)
+
     const boxArgs = useMemo(
         () =>
             [area.width * UNITS_PER_CELL, 1, area.width * UNITS_PER_CELL] as [
@@ -28,8 +33,19 @@ const Floor = ({ area }: { area: Quad }) => {
 
         [area]
     )
+
+    const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
+        const gameX = e.point.x / UNITS_PER_CELL
+        const gameY = e.point.z / UNITS_PER_CELL
+        setHeroControl({
+            type: "WalkTo",
+            target: { x: gameX, y: gameY }
+        })
+    }, [])
+
+    // TODO: Handle mouse move etc events and display a target
     return (
-        <mesh position={boxPosition} receiveShadow>
+        <mesh position={boxPosition} receiveShadow onClick={handleClick}>
             <boxGeometry args={boxArgs} />
             {FLOOR_DEFAULT_MATERIAL}
         </mesh>

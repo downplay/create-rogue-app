@@ -2,6 +2,8 @@ import { atom, useAtom } from "jotai"
 import { useCallback, useEffect, useRef } from "react"
 import { recruitsSeedAtom, recruitsSeedTimeAtom } from "./recruits"
 import { generateSeed } from "./rng"
+import { rosterHeroesAtom } from "./roster"
+import { heroFamily, heroLoopFamily } from "./hero"
 
 export const gameTimeTicksAtom = atom(0)
 
@@ -30,6 +32,16 @@ const gameTimeAtom = atom(
         }
 
         set(gameTimeTicksAtom, nextTime)
+
+        const heroes = get(rosterHeroesAtom)
+        for (const h of heroes) {
+            // const hero = get(heroLoopFamily(h))
+            set(heroLoopFamily(h), {
+                type: "tick",
+                time: nextTime,
+                delta: update.delta
+            })
+        }
     }
 )
 
@@ -50,8 +62,8 @@ export const useGameLoop = () => {
         lastTick.current = currentTick
 
         // Here we are actually proccing the time passed
-
         setGameTime({ type: "increment", delta: passedTime / 1000 })
+        // TODO: Use Three's frame handler instead for performance?
         requestAnimationFrame(handleTick)
     }, [])
     useEffect(() => {

@@ -31,7 +31,7 @@ export const BugRender = ({ id }: MonsterProps) => {
                 // TODO: It's sort of accidental that opposite legs are opposite time because of the
                 // rotation direction. We should have a slightly more sophisticated leg sequencing because
                 // it doesn't look quite natural rn
-                const cycle = n / LEG_PAIRS_COUNT + +time * LEG_CYCLE_SPEED
+                const cycle = n / LEG_PAIRS_COUNT + time * LEG_CYCLE_SPEED
                 const side = Math.cos(cycle * 2 * Math.PI) * LEG_SIDE_AMOUNT
                 // Only taking half of the cycle for lift
                 const lift = Math.max(0, Math.sin((cycle + (!left ? 0 : 0.5)) * 2 * Math.PI))

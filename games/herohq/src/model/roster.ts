@@ -1,6 +1,6 @@
 import { Atom, PrimitiveAtom, atom, SetStateAction } from "jotai"
 import { atomFamily, atomWithStorage } from "jotai/utils"
-import { Hero, heroFamily } from "./hero"
+import { Hero, activeHeroIdAtom, heroFamily } from "./hero"
 import { bunkRoomAtom } from "./hq"
 import { isFunction } from "remeda"
 
@@ -11,16 +11,6 @@ export const rosterSizeAtom = atom((get) => {
 
 export const rosterHeroesAtom = atomWithStorage<string[]>("Roster", [])
 export const rosterHeroesAtomsAtom = atom((get) => get(rosterHeroesAtom).map(heroFamily))
-
-export const activeHeroIdAtom = atomWithStorage<string | undefined>("activeHeroId", undefined)
-
-export const activeHeroAtom = atom((get) => {
-    const id = get(activeHeroIdAtom)
-    if (id) {
-        return get(heroFamily(id))
-    }
-    return undefined
-})
 
 const heroIsActiveFamily = atomFamily((heroAtom: Atom<Hero>) => {
     return atom(
