@@ -1,5 +1,4 @@
 import { Canvas } from "@react-three/fiber"
-import { BugRender } from "../monsters/BugRender"
 import { useVector } from "./hooks"
 import { Euler, Matrix4, Vector3 } from "three"
 import { useMemo } from "react"
@@ -8,6 +7,7 @@ import { PedeRender } from "../monsters/PedeRender"
 import { HumanRender } from "../dungeon/characters/HumanRender"
 import { Room } from "../dungeon/levels/Room"
 import { Quad } from "../model/dungeon"
+import { BugRender } from "../dungeon/monsters/BugRender"
 
 const ORIGIN = new Vector3(0, 0, 0)
 const UP = new Vector3(0, 1, 0)
@@ -21,6 +21,8 @@ const DEFAULT_CAMERA = {
 
 const DEFAULT_ROOM: Quad = { x: -5, y: -5, width: 10, height: 10 }
 
+const ROTATE_Y_180 = new Euler(0, Math.PI, 0)
+
 export const Dungeon = () => {
     // const hero = useAtom(activeHeroAtom)
     // const dungeon = useAtom(dungeonAtom)
@@ -31,15 +33,16 @@ export const Dungeon = () => {
     //     return new Euler().setFromRotationMatrix(m)
     // }, [cameraPosition])
     return (
-        <Canvas camera={DEFAULT_CAMERA}>
+        <Canvas camera={DEFAULT_CAMERA} shadows>
             <OrbitControls />
-            <pointLight position={lightPosition} />
-            <ambientLight intensity={0.5} />
+            <ambientLight intensity={0.1} />
             {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}
-            {/* <BugRender id="Monster:Bug:1" /> */}
+            <BugRender id="Monster:Bug:1" />
             {/* <PedeRender id="Monster:Bug:1" /> */}
             <Room id="Room:1" area={DEFAULT_ROOM} />
-            <HumanRender id="Monster:Bug:1" />
+            <group position={[5, 0, -15]} rotation={ROTATE_Y_180}>
+                <HumanRender id="Monster:Bug:1" />
+            </group>
         </Canvas>
     )
 }

@@ -1,5 +1,5 @@
 import { Vector3 as Vector } from "@react-three/fiber"
-import { PropsWithChildren, createContext, useContext, useMemo } from "react"
+import { PropsWithChildren, ReactElement, createContext, useContext, useMemo } from "react"
 import { Vector3, Euler, Quaternion, Matrix3, Matrix4 } from "three"
 import { isNumber } from "remeda"
 
@@ -86,7 +86,13 @@ export const Position = ({ at, children }: PropsWithChildren<{ at: Vector }>) =>
     )
 }
 
-export const Ball = ({ size = UNIT, children }: PropsWithChildren<{ size: Vector }>) => {
+const DEFAULT_MATERIAL = <meshStandardMaterial color="hotpink" />
+
+export const Ball = ({
+    size = UNIT,
+    children,
+    material = DEFAULT_MATERIAL
+}: PropsWithChildren<{ size: Vector; material?: ReactElement<any, any> }>) => {
     const childContext = useMemo(() => {
         return {
             surface: (direction: Vector) => {
@@ -109,12 +115,12 @@ export const Ball = ({ size = UNIT, children }: PropsWithChildren<{ size: Vector
     }, [size])
     return (
         <>
-            <mesh scale={size}>
+            <mesh scale={size} castShadow>
                 {/* TODO: Implement LOD somehow. e.g. the 8,8 should increase to something much higher
                 close up. And we will probably want to switch in more textures, maybe bump maps,
                 maybe even render more advanced algorithmic meshes. */}
                 <sphereGeometry args={[0.5, 16, 16]} />
-                <meshStandardMaterial color="hotpink" />
+                {material}
             </mesh>
             <RenderContext.Provider value={childContext}>{children}</RenderContext.Provider>
         </>
@@ -137,8 +143,14 @@ export const Rod = ({
     length,
     caps = 1,
     rotate,
-    children
-}: PropsWithChildren<{ length: number; rotate?: Direction; caps?: RodCaps }>) => {
+    children,
+    material = DEFAULT_MATERIAL
+}: PropsWithChildren<{
+    length: number
+    rotate?: Direction
+    caps?: RodCaps
+    material?: ReactElement<any, any>
+}>) => {
     const matrix = useMemo(() => {
         if (isNumber(caps)) {
             return new Matrix4().makeScale(caps, length, caps)
@@ -201,9 +213,9 @@ export const Rod = ({
                 {/* TODO: Params here are r1,r2,l,res,res (see docs) We could use r1 and r2 to implement
                 cap ends BUT it means we have to regenerate geometry any time we wanted to change
                 sizes of things, rather than using transforms. Not sure which is preferable. */}
-                <mesh scale={[caps, length, caps]} position={[0, length / 2, 0]}>
+                <mesh scale={[caps, length, caps]} position={[0, length / 2, 0]} castShadow>
                     <cylinderGeometry args={[1, 1, 1, 16, 16]} />
-                    <meshStandardMaterial color="hotpink" />
+                    {material}
                 </mesh>
                 <RenderContext.Provider value={childContext}>{children}</RenderContext.Provider>
             </group>

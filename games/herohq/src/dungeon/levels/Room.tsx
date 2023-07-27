@@ -29,7 +29,7 @@ const Floor = ({ area }: { area: Quad }) => {
         [area]
     )
     return (
-        <mesh position={boxPosition}>
+        <mesh position={boxPosition} receiveShadow>
             <boxGeometry args={boxArgs} />
             {FLOOR_DEFAULT_MATERIAL}
         </mesh>
@@ -58,7 +58,7 @@ const Wall = ({ area }: { area: Quad }) => {
         [area]
     )
     return (
-        <mesh position={boxPosition}>
+        <mesh position={boxPosition} receiveShadow>
             <boxGeometry args={boxArgs} />
             {WALL_DEFAULT_MATERIAL}
         </mesh>

@@ -1,9 +1,10 @@
 import { useMemo } from "react"
-import { MonsterProps } from "../model/monster"
 import { useAtomValue } from "jotai"
-import { gameTimeTicksAtom } from "../model/game"
-import { Ball, Direction, Position, Rod } from "../3d/Parts"
 import { Euler } from "three"
+import { MonsterProps } from "../../model/monster"
+import { gameTimeTicksAtom } from "../../model/game"
+import { Ball, Direction, Position, Rod } from "../../3d/Parts"
+import { makeToonMaterial } from "../../3d/materials"
 
 // TODO: Some advanced bugs might have different numbers of legs
 const LEG_PAIRS_COUNT = 3
@@ -11,6 +12,9 @@ const LEG_CYCLE_SPEED = 1
 const LEG_SIDE_AMOUNT = 0.08
 
 const ORIENT_FORWARDS = new Euler(-0.5 * Math.PI, 0, 0)
+
+const BODY_MATERIAL = makeToonMaterial(0.6, 0.6, 0.03)
+const LEG_MATERIAL = makeToonMaterial(0.55, 0.4, 0.02)
 
 export const BugRender = ({ id }: MonsterProps) => {
     const time = useAtomValue(gameTimeTicksAtom)
@@ -63,14 +67,19 @@ export const BugRender = ({ id }: MonsterProps) => {
     // and start rendering it outside the group with ragdoll physics. Would look awesome.
     return (
         <group rotation={ORIENT_FORWARDS} position={[0, 2.5, 0]}>
-            <Ball size={5}>
+            <Ball size={5} material={BODY_MATERIAL}>
                 {legs.map((l) => (
                     <Position key={l.index} at={l.position}>
-                        <Ball size={1} />
-                        <Rod length={3} caps={0.5} rotate={l.rotate}>
+                        <Ball size={1} material={LEG_MATERIAL} />
+                        <Rod length={3} caps={0.5} rotate={l.rotate} material={LEG_MATERIAL}>
                             <Position at={0}>
-                                <Ball size={1} />
-                                <Rod length={5} caps={0.4} rotate={l.knee} />
+                                <Ball size={1} material={LEG_MATERIAL} />
+                                <Rod
+                                    length={5}
+                                    caps={0.4}
+                                    rotate={l.knee}
+                                    material={LEG_MATERIAL}
+                                />
                             </Position>
                         </Rod>
                     </Position>

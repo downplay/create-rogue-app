@@ -1,9 +1,13 @@
 import { useMemo } from "react"
 import { Ball, Position, Rod } from "../../3d/Parts"
 import { Vector3 } from "three"
-import { rotate } from "../../../../../packages/heromath/src/vector"
+import { makeToonMaterial } from "../../3d/materials"
 
 const NeckPosition = new Vector3(0, 0, 0)
+
+const SKIN_MATERIAL = makeToonMaterial(0, 0.4, 0.5)
+const BODY_MATERIAL = makeToonMaterial(0.5, 0.1, 0.1)
+const LEG_MATERIAL = makeToonMaterial(0.66, 0.4, 0.3)
 
 export const HumanRender = ({ id }: { id: string }) => {
     const bodySize = useMemo(() => [1.5, 4, 0.5] as const, [])
@@ -54,11 +58,11 @@ export const HumanRender = ({ id }: { id: string }) => {
     const offset = useMemo(() => [0, 4.2, 0] as const, [])
     return (
         <group position={offset}>
-            <Ball size={bodySize}>
+            <Ball size={bodySize} material={BODY_MATERIAL}>
                 <Position at={NeckPosition}>
-                    <Rod length={neckLength} caps={neckRadius}>
+                    <Rod length={neckLength} caps={neckRadius} material={SKIN_MATERIAL}>
                         <Position at={NeckPosition}>
-                            <Ball size={headSize} />
+                            <Ball size={headSize} material={SKIN_MATERIAL} />
                         </Position>
                     </Rod>
                 </Position>
@@ -66,9 +70,24 @@ export const HumanRender = ({ id }: { id: string }) => {
                     <Position key={arm.tag} at={arm.position}>
                         {/* // TODO: We need a kind of slot-fill system where the hand can be given a
                     <Slot /> component and name and via a context we can attach accessories to it */}
-                        <Rod length={1.4} caps={0.2} rotate={arm.shoulder}>
+                        <Rod length={1.4} caps={0.2} rotate={arm.shoulder} material={BODY_MATERIAL}>
                             <Position at={0}>
-                                <Rod length={1.7} caps={0.2} rotate={arm.elbow} />
+                                <Rod
+                                    length={1.7}
+                                    caps={0.2}
+                                    rotate={arm.elbow}
+                                    material={BODY_MATERIAL}>
+                                    <Position at={0}>
+                                        <Ball size={0.5} material={SKIN_MATERIAL}>
+                                            {arm.handed === "Left" && (
+                                                // Holding a torch here
+                                                <Position at={0}>
+                                                    <pointLight color="lightyellow" castShadow />
+                                                </Position>
+                                            )}
+                                        </Ball>
+                                    </Position>
+                                </Rod>
                             </Position>
                         </Rod>
                     </Position>
@@ -77,9 +96,14 @@ export const HumanRender = ({ id }: { id: string }) => {
                     <Position key={leg.tag} at={leg.position}>
                         {/* // TODO: We need a kind of slot-fill system where the hand can be given a
                     <Slot /> component and name and via a context we can attach accessories to it */}
-                        <Rod length={1.4} caps={0.2} rotate={leg.hip}>
+                        <Rod length={1.4} caps={0.2} rotate={leg.hip} material={LEG_MATERIAL}>
                             <Position at={0}>
-                                <Rod length={1.7} caps={0.2} rotate={leg.knee} />
+                                <Rod
+                                    length={1.7}
+                                    caps={0.2}
+                                    rotate={leg.knee}
+                                    material={LEG_MATERIAL}
+                                />
                             </Position>
                         </Rod>
                     </Position>
