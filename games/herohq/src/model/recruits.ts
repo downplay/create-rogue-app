@@ -14,6 +14,7 @@ import { Random } from "random"
 import { Hero, heroFamily } from "./hero"
 import { Cost } from "./account"
 import { rosterHeroesAtom } from "./roster"
+import { makeRng } from "./rng"
 
 export const recruitsSeedAtom = atomWithStorage("Recruits:Seed", "flibble")
 export const recruitsSeedTimeAtom = atomWithStorage("Recruits:SeedTimeAtom", 0)
@@ -32,10 +33,9 @@ export type Interviewee = {
 
 export const recruitsAtom = atom((get) => {
     const seed = get(recruitsSeedAtom)
-    const rng = new Random(seedrandom(seed))
+    const rng = makeRng(seed)
     const distribution = rng.logNormal(0.5, 0.5)
     const interviewees: Interviewee[] = []
-    console.log("RESEEDING", seed)
     // TODO: Perfect use case for herotext
     // TODO: Number of interviewees should depend on our fame and other unlocks
     for (let n = 0; n < 3; n++) {

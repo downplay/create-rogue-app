@@ -33,6 +33,27 @@ Bosses!
 
 */
 
+import { atomWithStorage } from "jotai/utils"
+import { ComponentType } from "react"
+import { actorDataFamily } from "./actor"
+
 export type MonsterProps = {
     id: string
 }
+
+type MonsterParams = {
+    renderer: ComponentType<MonsterProps>
+}
+
+export type MonsterDefinition = {
+    type: string
+} & MonsterParams
+
+export const monstersAtom = atomWithStorage<string[]>("monsters", [])
+
+type MonsterData = {
+    level: number
+    // speed: number
+}
+
+export const monsterDataFamily = (id: string) => actorDataFamily<MonsterData>("Data", { level: 1 })

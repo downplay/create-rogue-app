@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef } from "react"
 import { recruitsSeedAtom, recruitsSeedTimeAtom } from "./recruits"
 import { generateSeed } from "./rng"
 import { rosterHeroesAtom } from "./roster"
-import { heroFamily, heroLoopFamily } from "./hero"
+import { dungeonAtom } from "./dungeon"
 
 export const gameTimeTicksAtom = atom(0)
 
@@ -42,6 +42,8 @@ const gameTimeAtom = atom(
                 delta: update.delta
             })
         }
+        const dungeon = get(dungeonAtom)
+        for (const a of dungeon.)
     }
 )
 

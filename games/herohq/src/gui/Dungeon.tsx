@@ -1,19 +1,16 @@
 import { Canvas } from "@react-three/fiber"
-import { useVector } from "./hooks"
-import { Euler, Matrix4, Vector3 } from "three"
-import { useMemo } from "react"
 import { OrbitControls } from "@react-three/drei"
-import { PedeRender } from "../monsters/PedeRender"
-import { HumanRender } from "../dungeon/characters/HumanRender"
 import { Room } from "../dungeon/levels/Room"
 import { Quad } from "../model/dungeon"
 import { BugRender } from "../dungeon/monsters/BugRender"
 import { useAtomValue } from "jotai"
 import { activeHeroIdAtom } from "../model/hero"
 import { Hero } from "../dungeon/Hero"
+import { Actor } from "../dungeon/Actor"
+import { useMemo } from "react"
 
-const ORIGIN = new Vector3(0, 0, 0)
-const UP = new Vector3(0, 1, 0)
+// const ORIGIN = new Vector3(0, 0, 0)
+// const UP = new Vector3(0, 1, 0)
 
 const DEFAULT_CAMERA = {
     fov: 45,
@@ -36,7 +33,11 @@ export const Dungeon = () => {
     //     return new Euler().setFromRotationMatrix(m)
     // }, [cameraPosition])
     const heroId = useAtomValue(activeHeroIdAtom)
-    // const monsters = useAtomValue()
+    // TODO: How do we manage which monsters are being rendered/updated?
+    // For now it's simple enough to only handle monsters in same room as hero and freeze everything
+    // else, but we might want to still animate monsters in other rooms and occasionally have them
+    // walk through an open door.
+    const actors = useAtomValue(actorsAtom)
     return (
         <Canvas camera={DEFAULT_CAMERA} shadows>
             <OrbitControls />
@@ -45,7 +46,11 @@ export const Dungeon = () => {
             {/* <PedeRender id="Monster:Bug:1" /> */}
             <Room id="Room:1" area={DEFAULT_ROOM} />
             <BugRender id="Monster:Bug:1" />
-            {/* {monsters} */}
+            {/* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
+            can optimise for things that aren't really going to move */}
+            {actors.map((m) => (
+                <Actor id={m} />
+            ))}
             {heroId && <Hero id={heroId} />}
         </Canvas>
     )
