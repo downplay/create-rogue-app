@@ -1,10 +1,11 @@
 import { useMemo } from "react"
 import { useAtomValue } from "jotai"
 import { Euler } from "three"
-import { MonsterProps } from "../../model/monster"
 import { gameTimeTicksAtom } from "../../model/game"
 import { Ball, Direction, Position, Rod } from "../../3d/Parts"
 import { makeToonMaterial } from "../../3d/materials"
+import { ActorProps, useModule } from "../../model/actor"
+import { MovementModule } from "../../model/movement"
 
 // TODO: Some advanced bugs might have different numbers of legs
 const LEG_PAIRS_COUNT = 3
@@ -16,8 +17,11 @@ const ORIENT_FORWARDS = new Euler(-0.5 * Math.PI, 0, 0)
 const BODY_MATERIAL = makeToonMaterial(0.6, 0.6, 0.03)
 const LEG_MATERIAL = makeToonMaterial(0.55, 0.4, 0.02)
 
-export const BugRender = ({ id }: MonsterProps) => {
-    const time = useAtomValue(gameTimeTicksAtom)
+export const BugRender = ({ id }: ActorProps) => {
+    const movement = useModule(MovementModule, id)
+    const animate = movement.status === "moving"
+    const currentTime = useAtomValue(gameTimeTicksAtom)
+    const time = animate ? currentTime : 0
     const legs = useMemo(() => {
         let legs = []
         for (let n = 0; n < LEG_PAIRS_COUNT; n++) {

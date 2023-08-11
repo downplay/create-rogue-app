@@ -9,7 +9,7 @@ import { ActorDefinition, DataSpec, LevelData, LocationData, actorFamily } from 
 // of these generators much better. We'll sort of lose the "Room" concept
 // because a room will just be a bunch of wall and floor tiles.
 
-type EntityData = {
+export type EntityData = {
     id?: string
     type: ActorDefinition
     data: DataSpec<any>[]
@@ -32,16 +32,19 @@ const CELL_SIZE = 32
 
 const classicGridLayoutGenerator: DungeonGenerator = ({ level, rng }) => {
     const rooms: RoomData[] = []
-    const irwin = rng.irwinHall(10)
+    const irwin = rng.irwinHall(4)
     // Nothing complicated yet. Just a 4x4 grid of rooms, no missing gaps yet.
     for (let n = 0; n < 4; n++) {
         for (let m = 0; m < 4; m++) {
-            const mapSize = { width: Math.floor(5 + irwin()), height: Math.floor(5 + irwin()) }
+            const mapSize = {
+                width: Math.floor(5 + irwin() * 5),
+                height: Math.floor(5 + irwin() * 5)
+            }
             rooms.push({
                 id: "Room:" + level + ":" + n + ":" + m,
                 area: {
-                    x: rng.int(1, CELL_SIZE - mapSize.width - 1),
-                    y: rng.int(1, CELL_SIZE - mapSize.height - 1),
+                    x: m * CELL_SIZE + rng.int(1, CELL_SIZE - mapSize.width - 1),
+                    y: n * CELL_SIZE + rng.int(1, CELL_SIZE - mapSize.height - 1),
                     ...mapSize
                 },
                 doors: []
@@ -56,7 +59,7 @@ export const generateRooms = (rng: Random, level: number) => {
 }
 
 const randomPlacement: RoomGenerator = ({ room, rng, level }) => {
-    const mobMax = Math.ceil(room.area.width * room.area.height) / 4
+    const mobMax = Math.ceil(room.area.width * room.area.height) / 100
     const dist = rng.logNormal(0.5, 0.5)
     const mobCount = Math.min(mobMax, dist())
     const entities: EntityData[] = []
@@ -86,7 +89,7 @@ export const populateRoom = (props: RoomGeneratorProps) => {
     const { set } = props
     for (const a of actors) {
         const id = "D:" + props.level + ":" + props.room.id + ":" + crypto.randomUUID()
-        set(actorFamily({ id, actor: a.type }), {
+        set(actorFamily(id), {
             type: "initialize",
             actor: a.type,
             data: a.data

@@ -1,9 +1,8 @@
 import { useCallback } from "react"
-import { useAtomValue, Atom, useAtom, PrimitiveAtom, WritableAtom, useSetAtom, atom } from "jotai"
+import { useAtomValue, Atom, useAtom, PrimitiveAtom, useSetAtom, atom } from "jotai"
 import styled from "@emotion/styled"
 
 import { rosterAtom } from "../model/roster"
-import { Hero, heroVitalsFamily, Vital } from "../model/hero"
 import { recruitModalVisibleAtom } from "../model/recruits"
 
 const Grid = styled.div`

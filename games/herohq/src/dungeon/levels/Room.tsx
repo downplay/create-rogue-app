@@ -16,7 +16,7 @@ const Floor = ({ area }: { area: Quad }) => {
 
     const boxArgs = useMemo(
         () =>
-            [area.width * UNITS_PER_CELL, 1, area.width * UNITS_PER_CELL] as [
+            [area.width * UNITS_PER_CELL, 1, area.height * UNITS_PER_CELL] as [
                 number,
                 number,
                 number

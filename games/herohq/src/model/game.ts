@@ -1,10 +1,14 @@
 import { atom, useAtom } from "jotai"
 import { useCallback, useEffect, useRef } from "react"
-import { recruitsSeedAtom, recruitsSeedTimeAtom } from "./recruits"
+import {
+    recruitsAtom,
+    recruitsSeedAtom,
+    recruitsSeedTimeAtom,
+    regenerateRecruits
+} from "./recruits"
 import { generateSeed } from "./rng"
-import { rosterHeroesAtom } from "./roster"
-import { dungeonAtom } from "./dungeon"
-import { GameLoopAction } from "./actor"
+import { GameLoopAction, actorsAtom } from "./actor"
+import { HeroModule } from "./hero"
 
 export const gameTimeTicksAtom = atom(0)
 
@@ -26,10 +30,17 @@ const gameTimeAtom = atom(
 
         // Restock recruits?
         if (get(recruitsSeedTimeAtom) <= nextTime) {
+            const old = get(recruitsAtom)
+            // Destroy old heroes if unbought
+            for (const r of old) {
+                if (!get(HeroModule.family(r.id)).owner) {
+                    set(r.hero, { type: "destroy" })
+                }
+            }
             console.log("Regenerating seed as " + get(recruitsSeedTimeAtom) + " < " + nextTime)
-            // Setting the seed will cause recruits list to regenerate via Jotai magic
             set(recruitsSeedAtom, generateSeed())
             set(recruitsSeedTimeAtom, nextTime + RECRUITS_RESTOCK_INTERVAL)
+            regenerateRecruits(get, set)
         }
 
         set(gameTimeTicksAtom, nextTime)
@@ -43,7 +54,7 @@ const gameTimeAtom = atom(
         }
 
         for (const a of actors) {
-            set(a, { type: "dispatch", action: GameLoopAction, payload })
+            set(a, { type: "action", action: GameLoopAction, payload })
         }
     }
 )

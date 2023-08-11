@@ -1,8 +1,9 @@
 import { Atom, PrimitiveAtom, atom, SetStateAction } from "jotai"
 import { atomFamily, atomWithStorage } from "jotai/utils"
-import { Hero, activeHeroIdAtom, heroFamily } from "./hero"
+import { activeHeroIdAtom } from "./hero"
 import { bunkRoomAtom } from "./hq"
 import { isFunction } from "remeda"
+import { Actor, ActorAtom, actorFamily } from "./actor"
 
 export const rosterSizeAtom = atom((get) => {
     const bunkRoom = get(bunkRoomAtom)
@@ -10,9 +11,9 @@ export const rosterSizeAtom = atom((get) => {
 })
 
 export const rosterHeroesAtom = atomWithStorage<string[]>("Roster", [])
-export const rosterHeroesAtomsAtom = atom((get) => get(rosterHeroesAtom).map(heroFamily))
+export const rosterHeroesAtomsAtom = atom((get) => get(rosterHeroesAtom).map(actorFamily))
 
-const heroIsActiveFamily = atomFamily((heroAtom: Atom<Hero>) => {
+const heroIsActiveFamily = atomFamily((heroAtom: Atom<Actor>) => {
     return atom(
         (get) => {
             const activeId = get(activeHeroIdAtom)
@@ -34,7 +35,7 @@ const heroIsActiveFamily = atomFamily((heroAtom: Atom<Hero>) => {
 type RosterSlot = { index: number } & (
     | {
           type: "hero"
-          hero: PrimitiveAtom<Hero>
+          hero: ActorAtom
           active: PrimitiveAtom<boolean>
       }
     | {

@@ -44,7 +44,11 @@ export const roomsAtom = atomWithStorage<RoomData[]>("Rooms", [])
 export const dungeonSeedAtom = atom("kittyunicornbananashroom")
 
 export const dungeonAtom = atom(
-    (get) => {},
+    (get) => {
+        return {
+            rooms: get(roomsAtom)
+        }
+    },
     (get, set, update: DungeonUpdateCommand) => {
         switch (update.type) {
             case "initialize":
@@ -55,6 +59,7 @@ export const dungeonAtom = atom(
                 for (const room of rooms) {
                     populateRoom({ rng, level: update.level, room, seed, get, set })
                 }
+                set(roomsAtom, rooms)
                 break
         }
     }

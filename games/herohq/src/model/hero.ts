@@ -1,6 +1,54 @@
-import { Atom, atom } from "jotai"
+import { atom } from "jotai"
 import { atomFamily, atomWithStorage } from "jotai/utils"
 import { Position } from "./dungeon"
+import {
+    HealthModule,
+    RenderModule,
+    actorFamily,
+    defineActor,
+    defineData,
+    defineModule
+} from "./actor"
+import { HumanRender } from "../dungeon/characters/HumanRender"
+import { MovementModule, WalkToAction } from "./movement"
+
+export type Vital = {
+    amount: number
+    fraction: number
+    maximum: number
+}
+
+export const NameData = defineData("Name", "Anon")
+export const ClassData = defineData("Class", "Npc")
+const OwnerData = defineData<string | undefined>("Owner", undefined)
+
+export const HeroModule = defineModule(
+    "Hero",
+    (_, { get }) => {
+        const owner = get(OwnerData)
+        return {
+            name: get(NameData),
+            class: get(ClassData),
+            owner,
+            // TODO: Expand status to check current activity
+            status: owner ? "Employed" : "Seeking work"
+        }
+    },
+    () => {}
+)
+
+export const HeroActor = defineActor("Hero", [
+    [RenderModule, { renderer: HumanRender }],
+    HealthModule,
+    MovementModule,
+    HeroModule
+])
+
+export const heroVitalsFamily = atomFamily((id: string) => {
+    return atom((get) => ({
+        health: get(HealthModule.family(id))
+    }))
+})
 
 // export type Hero = Actor & {
 //     name: string
@@ -26,13 +74,13 @@ import { Position } from "./dungeon"
 //     class: "Buggy"
 // }
 
-export const heroFamily = atomFamily(
-    (id: string | Hero) =>
-        typeof id === "string"
-            ? atomWithStorage<Hero>("Hero:" + id, UNINITIALIZED_HERO)
-            : atomWithStorage<Hero>("Hero:" + id.id, id),
-    (a, b) => (typeof a === "string" ? a : a.id) === (typeof b === "string" ? b : b.id)
-)
+// export const heroFamily = atomFamily(
+//     (id: string | Hero) =>
+//         typeof id === "string"
+//             ? atomWithStorage<Hero>("Hero:" + id, UNINITIALIZED_HERO)
+//             : atomWithStorage<Hero>("Hero:" + id.id, id),
+//     (a, b) => (typeof a === "string" ? a : a.id) === (typeof b === "string" ? b : b.id)
+// )
 
 // atom(
 //     (get) => {
@@ -57,7 +105,7 @@ export const activeHeroIdAtom = atomWithStorage<string | undefined>("activeHeroI
 export const activeHeroAtom = atom((get) => {
     const id = get(activeHeroIdAtom)
     if (id) {
-        return get(heroFamily(id))
+        return get(actorFamily(id))
     }
     return undefined
 })
@@ -80,7 +128,11 @@ export const heroControlAtom = atom(
             case "WalkTo":
                 // TODO: We should dispatch a TargetMoveTo action or similar instead
                 // of setting the data ourselves (and hide the data more)
-                set(actorDataFamily(hero.id, MovementData), { target: update.target })
+                set(actorFamily(hero.id), {
+                    type: "action",
+                    action: WalkToAction,
+                    payload: { target: update.target }
+                })
                 break
         }
     }

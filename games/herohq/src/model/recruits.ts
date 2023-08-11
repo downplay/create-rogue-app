@@ -7,14 +7,14 @@ Accident Prone - starts at 1/2 HP. higher chance for critical misses.
 
 */
 
-import { PrimitiveAtom, atom } from "jotai"
+import { Getter, Setter, atom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
-import seedrandom from "seedrandom"
-import { Random } from "random"
-import { Hero, heroFamily } from "./hero"
 import { Cost } from "./account"
 import { rosterHeroesAtom } from "./roster"
 import { makeRng } from "./rng"
+import { ActorAtom, LevelData, actorFamily } from "./actor"
+import { EntityData } from "./generators"
+import { ClassData, HeroActor, NameData } from "./hero"
 
 export const recruitsSeedAtom = atomWithStorage("Recruits:Seed", "flibble")
 export const recruitsSeedTimeAtom = atomWithStorage("Recruits:SeedTimeAtom", 0)
@@ -27,8 +27,11 @@ const CLASSES = ["Fighter", "Wizard", "Ranger"]
 
 export type Interviewee = {
     id: string
+    weight: number
     cost: Cost
-    hero: PrimitiveAtom<Hero>
+    hero: ActorAtom
+    name: string
+    class: string
 }
 
 export const recruitsAtom = atom((get) => {
@@ -37,23 +40,17 @@ export const recruitsAtom = atom((get) => {
     const distribution = rng.logNormal(0.5, 0.5)
     const interviewees: Interviewee[] = []
     // TODO: Perfect use case for herotext
-    // TODO: Number of interviewees should depend on our fame and other unlocks
+    // TODO: Number of interviewees should depend on our fame and other unlocks. We should do this inside a
+    // "Recruiter" actor hooked into the game tick really.
     for (let n = 0; n < 3; n++) {
         // TODO: Play with mu and sigma in the distribution to get the nicest curve. Also we should
         // ensure at least 1 recruit that is within a low limit at least early on so the player
         // can afford it, maybe we should cap max level as well. (Unlockable later).
-        const weight = distribution()
-        console.log("Weight", weight)
         const id = "Hero:" + seed + ":" + n
-        const hero: Hero = {
-            id,
-            level: Math.max(1, Math.floor(Math.log(weight) * 2)),
-            class: rng.choice(CLASSES)!,
-            name: rng.choice(NAMES)!,
-            status: "Seeking Job"
-        }
+        const weight = distribution()
         interviewees.push({
-            id: hero.id,
+            id,
+            weight,
             cost: Math.ceil(weight * 10),
             // Note: Here's the kicker. I can't issue a set() to go and update the storage
             // on this hero. Instead I'm abusing the way family equality works, hero family
@@ -64,12 +61,28 @@ export const recruitsAtom = atom((get) => {
             // the atom is never updated. So when we recruit we just have to issue one
             // save on the hero and they get stored. (Fine anyway, and we'll never need them
             // again).
-            hero: heroFamily(hero)
+            hero: actorFamily(id),
+            name: rng.choice(NAMES)!,
+            class: rng.choice(CLASSES)!
         })
     }
-    console.log(seed, interviewees)
     return interviewees
 })
+
+export const regenerateRecruits = (get: Getter, set: Setter) => {
+    const interviewees = get(recruitsAtom)
+    for (const i of interviewees) {
+        set(i.hero, {
+            type: "initialize",
+            actor: HeroActor,
+            data: [
+                [LevelData, Math.max(1, Math.floor(Math.log(i.weight) * 2))],
+                [NameData, i.name],
+                [ClassData, i.class]
+            ]
+        })
+    }
+}
 
 export const availableRecruitsAtom = atom((get) => {
     const recruits = get(recruitsAtom)

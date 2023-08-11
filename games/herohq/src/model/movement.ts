@@ -1,5 +1,12 @@
 import { Vector2 } from "three"
-import { GameLoopAction, LocationData, SpeedModule, defineData, defineModule } from "./actor"
+import {
+    GameLoopAction,
+    LocationData,
+    SpeedModule,
+    defineAction,
+    defineData,
+    defineModule
+} from "./actor"
 import { Position } from "./dungeon"
 import { VECTOR2_UP, angleBetween } from "./trig"
 
@@ -9,7 +16,9 @@ type ActorMovement = {
 
 const MovementData = defineData<ActorMovement>("Movement", {})
 
-export const MovementModule = defineModule<ActorMovement>(
+export const WalkToAction = defineAction<{ target: Position }>("WalkTo")
+
+export const MovementModule = defineModule(
     "Movement",
     // (atom, get) => {
     //     // TODO: What do we expose here? Maybe more derived data than just the base data?
@@ -17,16 +26,24 @@ export const MovementModule = defineModule<ActorMovement>(
     //     // want to recompute on every one of our own changes.
     //     // Maybe we should export the list of handled events.
     // },
-    ({}, { handle, data, get }) => {
-        const movement = data(MovementData)
-        const location = data(LocationData)
+    (_, { get }) => {
+        const movement = get(MovementData)
+        const status = movement.target ? "moving" : "idle"
+        return {
+            status,
+            movement
+        }
+    },
+    (_, { handle, get, set }) => {
         // Handle events here
         handle(GameLoopAction, (update) => {
-            if (movement.value.target) {
+            const movement = get(MovementData)
+            const location = get(LocationData)
+            if (movement.target) {
                 const speed = get(SpeedModule)
                 const vector = new Vector2(
-                    movement.value.target.x - location.value.position.x,
-                    movement.value.target.y - location.value.position.y
+                    movement.target.x - location.position.x,
+                    movement.target.y - location.position.y
                 )
                 const distance = vector.length()
                 const step = speed * update.delta
@@ -34,26 +51,29 @@ export const MovementModule = defineModule<ActorMovement>(
                 // console.log(vector, VECTOR2_UP.angleTo(vector), direction)
                 // Complete movement when close enough
                 if (distance < step) {
-                    const target = movement.value.target
-                    location.set((l) => ({
+                    const target = movement.target
+                    set(LocationData, (l) => ({
                         ...l,
                         position: target,
                         direction
                     }))
-                    movement.set({ target: undefined })
+                    set(MovementData, { target: undefined })
                     return
                 }
 
                 vector
                     .normalize()
                     .multiplyScalar(speed * update.delta)
-                    .add(new Vector2(location.value.position.x, location.value.position.y))
-                location.set((l) => ({
+                    .add(new Vector2(location.position.x, location.position.y))
+                set(LocationData, (l) => ({
                     ...l,
                     position: { x: vector.x, y: vector.y },
                     direction
                 }))
             }
+        })
+        handle(WalkToAction, ({ target }) => {
+            set(MovementData, { target })
         })
     }
 )
@@ -61,7 +81,7 @@ export const MovementModule = defineModule<ActorMovement>(
 export const WanderingModule = defineModule(
     "Wandering",
     () => undefined,
-    ({}, { handle, rng, get, data }) => {
+    (_, { handle, rng, get, set }) => {
         // handle(MovementCompleteAction, () => {
         //     // TODO: In an ideal world we want to wait for a random amount of time then
         //     // pick a random spot within the current room to move to. This would be
@@ -85,11 +105,12 @@ export const WanderingModule = defineModule(
         // })
         // For a simpler variation we'll just move with a low probability every tick.
         handle(GameLoopAction, ({ delta }) => {
-            const movement = data(MovementData)
-            if (!movement.value.target) {
+            const movement = get(MovementData)
+
+            if (!movement.target) {
                 if (rng.next() < delta) {
                     // TOOD: Actually check size of room
-                    movement.set({ target: { x: rng.float(1, 9), y: rng.float(1, 9) } })
+                    set(MovementData, { target: { x: rng.float(1, 9), y: rng.float(1, 9) } })
                 }
             }
         })
