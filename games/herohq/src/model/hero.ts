@@ -5,12 +5,14 @@ import {
     HealthModule,
     RenderModule,
     actorFamily,
+    defineAction,
     defineActor,
     defineData,
     defineModule
 } from "./actor"
 import { HumanRender } from "../dungeon/characters/HumanRender"
 import { MovementModule, WalkToAction } from "./movement"
+import { PLAYER_ID } from "./player"
 
 export type Vital = {
     amount: number
@@ -21,6 +23,8 @@ export type Vital = {
 export const NameData = defineData("Name", "Anon")
 export const ClassData = defineData("Class", "Npc")
 const OwnerData = defineData<string | undefined>("Owner", undefined)
+
+export const RecruitHeroAction = defineAction("RecruitHero")
 
 export const HeroModule = defineModule(
     "Hero",
@@ -34,7 +38,11 @@ export const HeroModule = defineModule(
             status: owner ? "Employed" : "Seeking work"
         }
     },
-    () => {}
+    (_, { set, handle }) => {
+        handle(RecruitHeroAction, () => {
+            set(OwnerData, PLAYER_ID)
+        })
+    }
 )
 
 export const HeroActor = defineActor("Hero", [

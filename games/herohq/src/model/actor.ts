@@ -1,6 +1,6 @@
 import { atomFamily, atomWithStorage } from "jotai/utils"
 import { Position } from "./dungeon"
-import { ComponentType, useMemo } from "react"
+import { ComponentType, useCallback, useMemo } from "react"
 import { Random } from "random"
 import { Atom, PrimitiveAtom, WritableAtom, atom, useAtom, useAtomValue } from "jotai"
 import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
@@ -103,7 +103,7 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
         getter,
         initialize,
         family: atomFamily((id: string) => {
-            const optsAtom = atom(defaultOpts!)
+            const optsAtom = atom<Opts>((defaultOpts || ({} as Opts))!)
             const handlers: Record<string, ((payload: any) => void)[]> = {}
             let readContext: ModuleGetterContext
             let writeContext: ModuleContext<Get>
@@ -243,7 +243,8 @@ export const defineActor = (name: string, modules: ModuleSpec<any, any>[]): Acto
 // TODO: Just a bit worried about having an atomic array for this. If we create and destroy
 // a large number of actors this op will get pretty expensive. Could end up more efficient to mutate
 // this array and find a way of only updating atoms for the important derived stuff (e.g. visible actors)
-export const actorIdsAtom = atomWithStorage<string[]>("Actors", [])
+export const actorIdsAtom = atom<string[]>([])
+// export const actorIdsAtom = atomWithStorage<string[]>("Actors", [])
 
 // TODO: use splitatom to make it more efficient?
 export const actorsAtom = atom((get) => get(actorIdsAtom).map((id) => actorFamily(id)))
@@ -269,7 +270,7 @@ export const actorFamily = atomFamily((id: string) => {
                     // Initialize modules
                     for (const m of update.actor.modules) {
                         const module = isArray(m) ? m[0] : m
-                        const opts = isArray(m) ? m[1] : undefined
+                        const opts = isArray(m) ? m[1] || {} : {}
                         set(module.family(id), { type: "initialize", opts })
                         modules.push(module)
 
@@ -307,6 +308,18 @@ export const useModule = <Opts, Get>(module: ModuleDefinition<Opts, Get>, id: st
     const atom = module.family(id)
     const value = useAtomValue(atom)
     return value as Get
+}
+
+export const useActor = (idOrAtom: string | ActorAtom) => {
+    const [actor, setActor] = useAtom(
+        typeof idOrAtom === "string" ? actorFamily(idOrAtom) : idOrAtom
+    )
+    const dispatch = useCallback(
+        <T>(action: ActionDefinition<T>, payload: T) =>
+            setActor({ type: "action", action, payload }),
+        [setActor]
+    )
+    return [actor, dispatch] as const
 }
 
 export const GameLoopAction = defineAction<{ time: number; delta: number }>("GameLoop")
@@ -350,6 +363,10 @@ const LevelUpgradeModule = defineModule<{}, { level: number; upgradeCost: number
 
 const CurrentHealthData = defineData("CurrentHealth", 1)
 
+type HealthModuleOpts = {
+    multiplier?: number
+}
+
 const MaxHealthModule = defineModule<HealthModuleOpts, number>(
     "MaxHealth",
     ({ multiplier = 1 }, { id, get }) => {
@@ -360,11 +377,7 @@ const MaxHealthModule = defineModule<HealthModuleOpts, number>(
     }
 )
 
-type HealthModuleOpts = {
-    multiplier?: number
-}
-
-export const HealthModule = defineModule("Health", ({}, { id, get }) => {
+export const HealthModule = defineModule("Health", (_, { id, get }) => {
     const maximum = get(MaxHealthModule)
     const fraction = get(CurrentHealthData)
     return {

@@ -1,4 +1,4 @@
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import {
     Interviewee,
     availableRecruitsAtom,
@@ -9,24 +9,46 @@ import {
 import { useCallback } from "react"
 import { HeroCard } from "./Roster"
 import { gameTimeTicksAtom } from "../model/game"
-import { generateSeed } from "../model/rng"
+import { generateSeed, rngAtom } from "../model/rng"
 import { rosterHeroesAtom } from "../model/roster"
 import { CoinValue } from "./Currency"
 import { isNumber } from "remeda"
+import { roomsAtom } from "../model/dungeon"
+import { TeleportAction } from "../model/movement"
+import { useActor } from "../model/actor"
+import { RecruitHeroAction } from "../model/hero"
 
 // const wrapHeroFamily = atomFamily((hero: Hero) => atom((get) => hero))
 
 const RecruitCard = ({ recruit }: { recruit: Interviewee }) => {
     const [heroes, setHeroes] = useAtom(rosterHeroesAtom)
-    const [hero, setHero] = useAtom(recruit.hero)
+    const [hero, dispatch] = useActor(recruit.hero)
+
     const setRecruitVisible = useSetAtom(recruitModalVisibleAtom)
+    const rooms = useAtomValue(roomsAtom)
+    const rng = useAtomValue(rngAtom)
     const handleRecruit = useCallback(() => {
         // TODO: Maybe this should be a set command on the hero themselves, we are effectively
         // setting their owner to be the player themselves
-        setHero(hero)
+        dispatch(RecruitHeroAction, {})
+        // Spawn them immediately in a dungeon room
+        // TODO: They will go to the HQ and we decide when to send them in the dungeon
+        const room = rng.choice(rooms)
+        if (room) {
+            dispatch(TeleportAction, {
+                room: room.id,
+                position: {
+                    x: rng.int(room.area.x, room.area.x + room.area.width),
+                    y: rng.int(room.area.y, room.area.y + room.area.height)
+                },
+                direction: rng.next(),
+                location: "Dungeon:1"
+            })
+        }
+
         setHeroes((list) => [...list, hero.id])
         setRecruitVisible(false)
-    }, [recruit, setHeroes, setRecruitVisible])
+    }, [recruit, setHeroes, setRecruitVisible, rooms])
 
     return (
         <>

@@ -1,8 +1,8 @@
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls } from "@react-three/drei"
 import { Room } from "../dungeon/levels/Room"
-import { Quad, dungeonAtom } from "../model/dungeon"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { dungeonAtom } from "../model/dungeon"
+import { useAtom, useAtomValue } from "jotai"
 import { Actor } from "../dungeon/Actor"
 import { actorIdsAtom } from "../model/actor"
 import { useEffect } from "react"
@@ -16,8 +16,6 @@ const DEFAULT_CAMERA = {
     far: 10000,
     position: [-10, 20, 50] as const
 }
-
-const DEFAULT_ROOM: Quad = { x: -5, y: -5, width: 10, height: 10 }
 
 // const ROTATE_Y_180 = new Euler(0, Math.PI, 0)
 
@@ -37,11 +35,13 @@ export const Dungeon = () => {
     // walk through an open door.
     const actors = useAtomValue(actorIdsAtom)
     const [dungeon, setDungeon] = useAtom(dungeonAtom)
+    console.log(dungeon.rooms)
+
     useEffect(() => {
         setDungeon({ type: "initialize", level: 1 })
     }, [])
     return (
-        <Canvas camera={DEFAULT_CAMERA} shadows draw>
+        <Canvas camera={DEFAULT_CAMERA} shadows>
             <OrbitControls />
             <ambientLight intensity={0.1} />
             {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}

@@ -1,5 +1,6 @@
 import { Vector2 } from "three"
 import {
+    ActorLocation,
     GameLoopAction,
     LocationData,
     SpeedModule,
@@ -17,6 +18,7 @@ type ActorMovement = {
 const MovementData = defineData<ActorMovement>("Movement", {})
 
 export const WalkToAction = defineAction<{ target: Position }>("WalkTo")
+export const TeleportAction = defineAction<Partial<ActorLocation>>("Teleport")
 
 export const MovementModule = defineModule(
     "Movement",
@@ -74,6 +76,9 @@ export const MovementModule = defineModule(
         })
         handle(WalkToAction, ({ target }) => {
             set(MovementData, { target })
+        })
+        handle(TeleportAction, (location) => {
+            set(LocationData, (l) => ({ ...l, ...location }))
         })
     }
 )

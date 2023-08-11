@@ -1,9 +1,11 @@
 import { useCallback } from "react"
-import { useAtomValue, Atom, useAtom, PrimitiveAtom, useSetAtom, atom } from "jotai"
+import { useAtomValue, useAtom, PrimitiveAtom, useSetAtom, atom } from "jotai"
 import styled from "@emotion/styled"
 
 import { rosterAtom } from "../model/roster"
 import { recruitModalVisibleAtom } from "../model/recruits"
+import { HeroModule, Vital, heroVitalsFamily } from "../model/hero"
+import { ActorAtom, LevelData, useData, useModule } from "../model/actor"
 
 const Grid = styled.div`
     display: flex;
@@ -24,7 +26,7 @@ const Bar = styled.div<{ color: string }>`
 // TODO: Draw a bar, add colour and icon, friendly format the numbers
 const VitalBar = ({ value, type }: { value: Vital; type: "health" }) => (
     <Bar color={VITALS_THEME[type].color}>
-        {VITALS_THEME[type].symbol} {value.hp} / {value.maximum}
+        {VITALS_THEME[type].symbol} {value.amount} / {value.maximum}
     </Bar>
 )
 
@@ -43,7 +45,7 @@ export const HeroCard = ({
     // vitals logic potentially as well.
     active: activeAtom = activeDefault
 }: {
-    hero: Atom<Hero>
+    hero: ActorAtom
     active?: PrimitiveAtom<boolean>
 }) => {
     const [active, setActive] = useAtom(activeAtom)
@@ -52,12 +54,14 @@ export const HeroCard = ({
     const handleSelectHero = useCallback(() => {
         setActive(true)
     }, [setActive])
+    const heroData = useModule(HeroModule, hero.id)
+    const level = useData(LevelData, hero.id)
     return (
         <HeroWrapper onClick={handleSelectHero} active={active}>
-            {hero.name} ({hero.class})<br />
-            Level {hero.level}
+            {heroData.name} ({heroData.class})<br />
+            Level {level}
             <br />
-            Currently {hero.status}
+            Currently {heroData.status}
             <br />
             <VitalBar type="health" value={vitals.health} />
         </HeroWrapper>

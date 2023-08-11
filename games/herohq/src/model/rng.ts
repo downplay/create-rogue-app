@@ -1,5 +1,6 @@
 import seedrandom from "seedrandom"
 import random, { RNG, Random } from "random"
+import { atom } from "jotai"
 
 const SEED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("")
 const SEED_BYTES = 32
@@ -15,3 +16,7 @@ export const generateSeed = () => {
 export const makeRng = (seed: string) =>
     // TODO: Raise the bug ticket with Random/seedrandom as we don't need the cast here
     new Random(seedrandom(seed) as unknown as RNG)
+
+export const rngSeedAtom = atom(generateSeed())
+
+export const rngAtom = atom((get) => makeRng(get(rngSeedAtom)))
