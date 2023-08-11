@@ -45,7 +45,7 @@ export const Dungeon = () => {
             {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}
             {/* <PedeRender id="Monster:Bug:1" /> */}
             <Room id="Room:1" area={DEFAULT_ROOM} />
-            <BugRender id="Monster:Bug:1" />
+            {/* <BugRender id="Monster:Bug:1" /> */}
             {/* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
             can optimise for things that aren't really going to move */}
             {actors.map((m) => (

@@ -1,7 +1,10 @@
 import { atomFamily, atomWithStorage } from "jotai/utils"
 import { Position } from "./dungeon"
-import { ComponentType } from "react"
+import { ComponentType, useMemo } from "react"
 import { Random } from "random"
+import { Atom, PrimitiveAtom, WritableAtom, atom, useAtom, useAtomValue } from "jotai"
+import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
+import { isArray } from "remeda"
 
 export type ActorProps = {
     id: string
@@ -22,10 +25,11 @@ type ActionDefinition<T> = {
     defaultPayload?: T
 }
 
-type DataDefinition<Data> = {
+export type DataDefinition<Data> = {
     type: "DATA"
     name: string
     defaultValue: Data
+    family: AtomFamily<string,PrimitiveAtom<Data>>
 }
 
 type ModuleGetterContext = {
@@ -58,14 +62,31 @@ type ModuleContext<Get> = ModuleGetterContext & {
     rng: Random
 }
 
-type ModuleGetter<Opts, Get> = (opts: Opts, context: ModuleContext<Get>) => Get
+type ModuleGetter<Opts, Get> = (opts: Opts, context: ModuleGetterContext) => Get
 type ModuleInitializer<Opts, Get> = (opts: Opts, context: ModuleContext<Get>) => void
+
+type ModuleUpdate<Opts> =  {
+    type: "initialize"
+    opts: Opts
+}
+| {
+    type: "action"
+    action: ActionDefinition<any>
+    payload: any
+}
+| {
+  type: "hydrate"
+}
+| {
+    type: "destroy"
+}
 
 type ModuleDefinition<Opts, Get> = {
     type: "MODULE"
     name: string
     getter: ModuleGetter<Opts, Get>
     initialize?: ModuleInitializer<Opts, Get>
+    family: AtomFamily<string, WritableAtom<Get, [ModuleUpdate<Opts>], void>>
 }
 
 export const defineModule = <Opts extends {} = {}, Get = undefined>(
@@ -73,7 +94,34 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
     getter: ModuleGetter<Opts, Get>,
     initialize?: ModuleInitializer<Opts, Get>
 ): ModuleDefinition<Opts, Get> => {
-    return { type: "MODULE", name, getter, initialize }
+    return { type: "MODULE", name, getter, initialize, family: atomFamily((id:string)=>{
+        const opts = atom<Opts>(undefined!)
+        const handlers = {}
+        return atom(
+        (get) => {
+            const context : ModuleGetterContext = {
+                id,
+                get: (value) => get(value.family(id))
+            }
+            return getter(get(opts), context)
+        },
+        (get,set,update:ModuleUpdate<Opts>)=>{
+            const context : ModuleContext<Get> = {
+                id,
+                get: (value) => get(value.family(id)),
+                data: 
+            }
+    
+            switch (update.type) {
+                case "initialize":
+                    if (initialize) {
+                        initialize(update.opts, context)
+                    }
+                    case "action":
+
+                }
+        }
+    ) }
 }
 
 // initialize: (data:Data, opts:Opts, set:Setter)=>Data|undefined) => {
@@ -89,6 +137,86 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
 //     }
 // }
 
+type ActorUpdate =
+    | {
+          type: "initialize"
+          actor: ActorDefinition
+          data: DataSpec<any>[]
+      }
+    | {
+          type: "action"
+          action: ActionDefinition<any>
+          payload: any
+      }
+      | {
+        type: "hydrate"
+    }
+  | {
+          type: "destroy"
+      }
+
+export const defineData = <Data>(name: string, defaultValue: Data): DataDefinition<Data> => {
+    return {
+        type: "DATA",
+        name,
+        defaultValue,
+        family: atomFamily((id: string) => atomWithStorage("Actor:" + id + ":" + name, defaultValue))
+    }
+}
+
+const ActorTypeData = defineData("ActorType", "Unknown")
+
+export const actorFamily = atomFamily(
+    (id:string) => {
+        return atom(
+            (get) => {},
+            (get, set, update: ActorUpdate) => {
+                switch (update.type) {
+                    case "initialize":
+                        set(ActorTypeData.family(id),update.actor.type)
+                        // Initialize any data first
+                        for (const d of update.data) {
+                            set(d[0].family(id), d[1])
+                        }
+                        // Initialize modules
+                        for (const m of update.actor.modules) {
+                            const module = isArray(m) ? m[0] : m
+                            const opts = isArray(m) ? m[1] : undefined
+                            set(module.family(id), {type:"initialize", opts})
+                            // module.initialize()
+                        }
+
+                        break
+                        case "hydrate":
+                            const actorType = get(actorTypeFamily(id))
+                            // TODO: We'll need to look up the actor somewhere and reinstate
+                            // all their modules
+                            throw new Error("Not implemented, rehydrate: " + actorType)
+                            break
+                    
+                    case "destroy":
+                        break
+                    case "action":
+                        break
+                }
+            }
+        )
+    },
+    (a, b) => a.id === b.id && 
+)
+
+const actorModuleFamily = atomFamily(
+    ({ id, module }: { id: string; module: ModuleDefinition<any, any> }) => {
+        return module.family(id)
+    }
+)
+
+export const useModule = <Opts, Get>(module: ModuleDefinition<Opts, Get>, id: string) => {
+    const atom = actorModuleFamily({ id, module })
+    const value = useAtomValue(atom)
+    return value as Get
+}
+
 export const defineAction = <Payload>(
     name: string,
     defaultPayload?: Payload
@@ -102,23 +230,34 @@ export const defineAction = <Payload>(
     }
 }
 
-export const defineData = <Data>(name: string, defaultValue: Data): DataDefinition<Data> => {
-    return {
-        type: "DATA",
-        name,
-        defaultValue
-    }
+export type ModuleSpec<Data, Opts> =
+    | [module: ModuleDefinition<Data, Opts>, options: Opts]
+    | ModuleDefinition<Data, Opts>
+
+export type DataSpec<Data> = [data: DataDefinition<Data>, value: Data]
+
+export type ActorDefinition = {
+    type: "ACTOR"
+    name: string
+    modules: ModuleSpec<any, any>[]
 }
 
-type ModuleSpec<Data, Opts> = [module: ModuleDefinition<Data, Opts>, options: Opts]
-
-export const defineActor = (name: string, modules: ModuleSpec<any, any>[]) => {
+export const defineActor = (name: string, modules: ModuleSpec<any, any>[]): ActorDefinition => {
     return {
         type: "ACTOR",
         name,
         modules
     }
 }
+
+// TODO: Just a bit worried about having an atomic array for this. If we create and destroy
+// a large number of actors this op will get pretty expensive. Could end up more efficient to mutate
+// this array and find a way of only updating atoms for the important derived stuff (e.g. visible actors)
+const actorIdsAtom = atomWithStorage("Actors", [])
+
+const actorsAtom = atom((get) => {
+    get(actorIdsAtom).map((id) => actorFamily(id))
+})
 
 // export const actorFamily = atomFamily((id: string, def: ActorDefinition) =>
 //     atom(
@@ -147,7 +286,7 @@ export const RenderModule = defineModule(
     ({ renderer = DefaultRenderer }: RenderModuleOpts) => renderer
 )
 
-const LevelData = defineData("Level", 1)
+export const LevelData = defineData("Level", 1)
 
 const LevelUpgradeModule = defineModule<{}, { level: number; upgradeCost: number }>(
     "LevelUpgrade",
@@ -168,10 +307,6 @@ const LevelUpgradeModule = defineModule<{}, { level: number; upgradeCost: number
 
 //         })
 // })
-
-export const actorDataFamily = <T>(datum: string, defaultValue: T) => {
-    return atomFamily((id: string) => atomWithStorage("Actor:" + id + ":" + datum, defaultValue))
-}
 
 // const actorCurrentHealthFamily = actorDataFamily("Health", 1)
 

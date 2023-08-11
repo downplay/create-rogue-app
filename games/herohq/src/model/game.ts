@@ -4,6 +4,7 @@ import { recruitsSeedAtom, recruitsSeedTimeAtom } from "./recruits"
 import { generateSeed } from "./rng"
 import { rosterHeroesAtom } from "./roster"
 import { dungeonAtom } from "./dungeon"
+import { GameLoopAction } from "./actor"
 
 export const gameTimeTicksAtom = atom(0)
 
@@ -33,17 +34,17 @@ const gameTimeAtom = atom(
 
         set(gameTimeTicksAtom, nextTime)
 
-        const heroes = get(rosterHeroesAtom)
-        for (const h of heroes) {
-            // const hero = get(heroLoopFamily(h))
-            set(heroLoopFamily(h), {
-                type: "tick",
-                time: nextTime,
-                delta: update.delta
-            })
+        const actors = get(actorsAtom)
+
+        const payload = {
+            type: "tick",
+            time: nextTime,
+            delta: update.delta
         }
-        const dungeon = get(dungeonAtom)
-        for (const a of dungeon.)
+
+        for (const a of actors) {
+            set(a, { type: "dispatch", action: GameLoopAction, payload })
+        }
     }
 )
 
