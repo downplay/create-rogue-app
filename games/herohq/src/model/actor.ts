@@ -1,11 +1,20 @@
 import { atomFamily, atomWithStorage } from "jotai/utils"
-import { Position } from "./dungeon"
 import { ComponentType, useCallback, useMemo } from "react"
 import { Random } from "random"
-import { Atom, PrimitiveAtom, WritableAtom, atom, useAtom, useAtomValue } from "jotai"
+import {
+    Atom,
+    Getter,
+    PrimitiveAtom,
+    Setter,
+    WritableAtom,
+    atom,
+    useAtom,
+    useAtomValue
+} from "jotai"
 import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
 import { isArray } from "remeda"
 import { makeRng } from "./rng"
+import { Position } from "./spacial"
 
 export type ActorProps = {
     id: string
@@ -36,6 +45,7 @@ export type DataDefinition<Data> = {
 type ModuleGetterContext = {
     id: string
     get: ValueGetter
+    getAtom: Getter
 }
 
 type ActionHandler = <T>(action: ActionDefinition<T>, handler: (payload: T) => void) => void
@@ -59,6 +69,7 @@ type ModuleContext<Get> = ModuleGetterContext & {
     handle: ActionHandler
     dispatch: ActionDispatcher
     set: <Data>(data: DataDefinition<Data>, nextValue: Data | ((prev: Data) => Data)) => void
+    setAtom: Setter
     self: () => Get
     rng: Random
 }
@@ -105,46 +116,43 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
         family: atomFamily((id: string) => {
             const optsAtom = atom<Opts>((defaultOpts || ({} as Opts))!)
             const handlers: Record<string, ((payload: any) => void)[]> = {}
-            let readContext: ModuleGetterContext
-            let writeContext: ModuleContext<Get>
             const self = atom(
                 (get) => {
-                    if (!readContext) {
-                        readContext = {
-                            id,
-                            get: (value) => get(value.family(id))
-                        }
-                    } else {
-                        readContext.get = (value) => get(value.family(id))
+                    const readContext: ModuleGetterContext = {
+                        id,
+                        get: (value) => get(value.family(id)),
+                        getAtom: get
                     }
                     const opts = get(optsAtom)
                     return getter(opts, readContext)
                 },
                 (get, set, update: ModuleUpdate<Opts>) => {
-                    writeContext ||= {
-                        id,
-                        get: (value) => get(value.family(id)),
-                        set: (data, nextValue) => set(data.family(id), nextValue),
-                        handle: (action, handler) => {
-                            handlers[action.name] ||= []
-                            handlers[action.name].push(handler)
-                            // TODO: Do we need some cleanup? Can actions be added/removed?
-                        },
-                        dispatch: (action, payload) => {
-                            if (handlers[action.name]) {
-                                for (const h of handlers[action.name]) {
-                                    h(payload)
-                                }
-                            }
-                        },
-                        self: () => get(self),
-                        rng: makeRng(id)
-                    }
-
                     switch (update.type) {
                         case "initialize":
                             set(optsAtom, update.opts)
                             if (initialize) {
+                                const writeContext: ModuleContext<Get> = {
+                                    id,
+                                    get: (value) => get(value.family(id)),
+                                    set: (data, nextValue) => set(data.family(id), nextValue),
+                                    getAtom: get,
+                                    setAtom: set,
+                                    handle: (action, handler) => {
+                                        handlers[action.name] ||= []
+                                        handlers[action.name].push(handler)
+                                        // TODO: Do we need some cleanup? Can actions be added/removed?
+                                    },
+                                    dispatch: (action, payload) => {
+                                        if (handlers[action.name]) {
+                                            for (const h of handlers[action.name]) {
+                                                h(payload)
+                                            }
+                                        }
+                                    },
+                                    self: () => get(self),
+                                    rng: makeRng(id)
+                                }
+
                                 initialize(update.opts, writeContext)
                             }
                             break

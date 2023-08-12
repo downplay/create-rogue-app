@@ -1,18 +1,7 @@
 import { atom } from "jotai"
-import { atomWithStorage } from "jotai/utils"
 import { makeRng } from "./rng"
 import { generateRooms, populateRoom } from "./generators"
-
-// TODO: Maybe specify the name more e.g. GamePosition
-export type Position = {
-    x: number
-    y: number
-}
-
-export type Quad = Position & {
-    width: number
-    height: number
-}
+import { roomsAtom } from "./room"
 
 export const UNITS_PER_CELL = 10
 
@@ -20,25 +9,6 @@ type DungeonUpdateCommand = {
     type: "initialize"
     level: number
 }
-
-export type DoorData = {
-    id: string
-    normal: Position
-    position: Position
-    roomId: string
-    doorId: string
-    // TODO: Do we need to know which wall it's on or is normal enough?
-}
-
-export type RoomData = {
-    id: string
-    area: Quad
-    doors: DoorData[]
-}
-
-// TODO: Consider doing like Roster and just storing seeds for floors so we
-// can generate on demand. Maybe overkill tho.
-export const roomsAtom = atomWithStorage<RoomData[]>("Rooms", [])
 
 // TODO: Handle this seed.
 export const dungeonSeedAtom = atom("kittyunicornbananashroom")

@@ -13,10 +13,10 @@ import { generateSeed, rngAtom } from "../model/rng"
 import { rosterHeroesAtom } from "../model/roster"
 import { CoinValue } from "./Currency"
 import { isNumber } from "remeda"
-import { roomsAtom } from "../model/dungeon"
 import { TeleportAction } from "../model/movement"
 import { useActor } from "../model/actor"
 import { RecruitHeroAction } from "../model/hero"
+import { roomsAtom } from "../model/room"
 
 // const wrapHeroFamily = atomFamily((hero: Hero) => atom((get) => hero))
 

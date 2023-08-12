@@ -8,8 +8,9 @@ import {
     defineData,
     defineModule
 } from "./actor"
-import { Position } from "./dungeon"
 import { VECTOR2_UP, angleBetween } from "./trig"
+import { Position } from "./spacial"
+import { roomFamily } from "./room"
 
 type ActorMovement = {
     target?: Position // TODO: target should be a Partial<ActorLocation>
@@ -86,7 +87,7 @@ export const MovementModule = defineModule(
 export const WanderingModule = defineModule(
     "Wandering",
     () => undefined,
-    (_, { handle, rng, get, set }) => {
+    (_, { handle, rng, get, getAtom, set }) => {
         // handle(MovementCompleteAction, () => {
         //     // TODO: In an ideal world we want to wait for a random amount of time then
         //     // pick a random spot within the current room to move to. This would be
@@ -112,10 +113,19 @@ export const WanderingModule = defineModule(
         handle(GameLoopAction, ({ delta }) => {
             const movement = get(MovementData)
 
-            if (!movement.target) {
-                if (rng.next() < delta) {
-                    // TOOD: Actually check size of room
-                    set(MovementData, { target: { x: rng.float(1, 9), y: rng.float(1, 9) } })
+            if (!movement.target && rng.next() < delta) {
+                const location = get(LocationData)
+                if (location.room) {
+                    const room = getAtom(roomFamily(location.room))
+                    if (room) {
+                        set(MovementData, {
+                            // TODO: Some rng pointInArea helpers
+                            target: {
+                                x: rng.float(room.area.x, room.area.x + room.area.width),
+                                y: rng.float(room.area.y, room.area.y + room.area.height)
+                            }
+                        })
+                    }
                 }
             }
         })

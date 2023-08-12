@@ -1,6 +1,5 @@
 import { atom } from "jotai"
 import { atomFamily, atomWithStorage } from "jotai/utils"
-import { Position } from "./dungeon"
 import {
     HealthModule,
     RenderModule,
@@ -13,6 +12,7 @@ import {
 import { HumanRender } from "../dungeon/characters/HumanRender"
 import { MovementModule, WalkToAction } from "./movement"
 import { PLAYER_ID } from "./player"
+import { Position } from "./spacial"
 
 export type Vital = {
     amount: number

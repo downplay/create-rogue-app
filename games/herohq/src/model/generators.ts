@@ -1,9 +1,9 @@
 import { Random } from "random"
-import { RoomData } from "./dungeon"
 import { BugMonster } from "../dungeon/monsters/bug"
 import { Getter, Setter } from "jotai"
 import { ActorDefinition, DataSpec, LevelData, LocationData, actorFamily } from "./actor"
 import { BubbleMonster } from "../dungeon/monsters/bubble"
+import { RoomData } from "./room"
 
 // TODO: Being a bit lazy to get things working. But at least it's working.
 // Need to crowbar in the heromap code asap because it'll inform the shape
@@ -77,7 +77,10 @@ const randomPlacement: RoomGenerator = ({ room, rng, level }) => {
             type: BubbleMonster,
             // TODO: Figure out using storytext to do roomgen / encounters/ monsters / etc
             data: [
-                [LocationData, { location: "D:" + level, position, direction: rng.next() }],
+                [
+                    LocationData,
+                    { location: "D:" + level, position, direction: rng.next(), room: room.id }
+                ],
                 [LevelData, Math.max(1, Math.round(level + dist() * 5 - 2))]
             ]
         })
