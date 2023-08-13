@@ -11,6 +11,7 @@ import {
 import { VECTOR2_UP, angleBetween } from "./trig"
 import { Position } from "./spacial"
 import { roomFamily } from "./room"
+import { CancelAction } from "./player"
 
 type ActorMovement = {
     target?: Position // TODO: target should be a Partial<ActorLocation>
@@ -77,6 +78,9 @@ export const MovementModule = defineModule(
         })
         handle(WalkToAction, ({ target }) => {
             set(MovementData, { target })
+        })
+        handle(CancelAction, () => {
+            set(MovementData, {})
         })
         handle(TeleportAction, (location) => {
             set(LocationData, (l) => ({ ...l, ...location }))

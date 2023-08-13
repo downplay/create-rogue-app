@@ -5,7 +5,8 @@ import styled from "@emotion/styled"
 import { rosterAtom } from "../model/roster"
 import { recruitModalVisibleAtom } from "../model/recruits"
 import { HeroModule, Vital, heroVitalsFamily } from "../model/hero"
-import { ActorAtom, LevelData, useData, useModule } from "../model/actor"
+import { ActorAtom, useData, useModule } from "../model/actor"
+import { LevelData } from "../model/level"
 
 const Grid = styled.div`
     display: flex;

@@ -12,9 +12,9 @@ import { atomWithStorage } from "jotai/utils"
 import { Cost } from "./account"
 import { rosterHeroesAtom } from "./roster"
 import { makeRng } from "./rng"
-import { ActorAtom, LevelData, actorFamily } from "./actor"
-import { EntityData } from "./generators"
+import { ActorAtom, actorFamily } from "./actor"
 import { ClassData, HeroActor, NameData } from "./hero"
+import { LevelData } from "./level"
 
 export const recruitsSeedAtom = atomWithStorage("Recruits:Seed", "flibble")
 export const recruitsSeedTimeAtom = atomWithStorage("Recruits:SeedTimeAtom", 0)

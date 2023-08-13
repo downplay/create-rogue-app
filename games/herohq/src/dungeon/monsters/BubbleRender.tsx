@@ -8,11 +8,12 @@ import { useAtomCallback } from "jotai/utils"
 import { Group } from "three"
 
 const BODY_MATERIAL = makeToonMaterial(0.6, 0.6, 0.03)
+const BODY_MATERIAL_SELECTED = makeToonMaterial(0.4, 0.7, 0.2)
 
 const BOUNCE_SPEED_MULTIPLIER = 3
-const BOUNCE_HEIGHT_MULTIPLIER = 6
+const BOUNCE_HEIGHT_MULTIPLIER = 0.5
 
-export const BubbleRender = ({ id }: ActorProps) => {
+export const BubbleRender = ({ id, selected }: ActorProps) => {
     // const movement = useModule(MovementModule, id)
     // const animate = movement.status === "moving"
     // const currentTime = useAtomRef(gameTimeTicksAtom)
@@ -26,7 +27,7 @@ export const BubbleRender = ({ id }: ActorProps) => {
     })
     return (
         <group ref={groupRef}>
-            <Ball size={5} material={BODY_MATERIAL} />
+            <Ball size={0.8} material={selected ? BODY_MATERIAL : BODY_MATERIAL_SELECTED} />
         </group>
     )
 }

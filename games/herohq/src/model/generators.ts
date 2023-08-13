@@ -1,9 +1,10 @@
 import { Random } from "random"
 import { BugMonster } from "../dungeon/monsters/bug"
 import { Getter, Setter } from "jotai"
-import { ActorDefinition, DataSpec, LevelData, LocationData, actorFamily } from "./actor"
+import { ActorDefinition, DataSpec, LocationData, actorFamily } from "./actor"
 import { BubbleMonster } from "../dungeon/monsters/bubble"
 import { RoomData } from "./room"
+import { LevelData } from "./level"
 
 // TODO: Being a bit lazy to get things working. But at least it's working.
 // Need to crowbar in the heromap code asap because it'll inform the shape

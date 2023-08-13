@@ -1,4 +1,6 @@
-import { defineActor, HealthModule, RenderModule, SpeedModule } from "../../model/actor"
+import { defineActor, RenderModule, SpeedModule } from "../../model/actor"
+import { EnemyModule } from "../../model/enemy"
+import { HealthModule } from "../../model/health"
 import { MovementModule, WanderingModule } from "../../model/movement"
 import { BugRender } from "./BugRender"
 
@@ -8,5 +10,6 @@ export const BugMonster = defineActor("Bug", [
     HealthModule,
     // [LocationModule],
     MovementModule,
-    WanderingModule
+    WanderingModule,
+    EnemyModule
 ])

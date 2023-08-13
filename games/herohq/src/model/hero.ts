@@ -1,7 +1,6 @@
 import { atom } from "jotai"
 import { atomFamily, atomWithStorage } from "jotai/utils"
 import {
-    HealthModule,
     RenderModule,
     actorFamily,
     defineAction,
@@ -13,6 +12,8 @@ import { HumanRender } from "../dungeon/characters/HumanRender"
 import { MovementModule, WalkToAction } from "./movement"
 import { PLAYER_ID } from "./player"
 import { Position } from "./spacial"
+import { FightModule } from "./fight"
+import { HealthModule } from "./health"
 
 export type Vital = {
     amount: number
@@ -49,7 +50,8 @@ export const HeroActor = defineActor("Hero", [
     [RenderModule, { renderer: HumanRender }],
     HealthModule,
     MovementModule,
-    HeroModule
+    HeroModule,
+    FightModule
 ])
 
 export const heroVitalsFamily = atomFamily((id: string) => {

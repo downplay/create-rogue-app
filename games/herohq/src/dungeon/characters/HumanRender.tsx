@@ -21,10 +21,10 @@ export const HumanRender = ({ id }: { id: string }) => {
     const time = useAtomValue(gameTimeTicksAtom)
     const cycle = time * CYCLE_SPEED // * speed
 
-    const bodySize = useMemo(() => [1.5, 4, 0.5] as const, [])
-    const neckLength = useMemo(() => 0.5, [])
-    const neckRadius = useMemo(() => 0.5, [])
-    const headSize = useMemo(() => 1.5, [])
+    const bodySize = useMemo(() => [0.15, 0.4, 0.05] as const, [])
+    const neckLength = useMemo(() => 0.05, [])
+    const neckRadius = useMemo(() => 0.05, [])
+    const headSize = useMemo(() => 0.15, [])
     // TODO: It seems like Left and Right are mixed up. Probably we don't understand z axis. Will need to fix
     // this and go through a load of things again!
     const arms = useMemo(
@@ -74,7 +74,7 @@ export const HumanRender = ({ id }: { id: string }) => {
         [cycle]
     )
     // TODO: If we base offset on the legs position or the cycle we can get some bobbing
-    const offset = useMemo(() => [0, 4.2, 0] as const, [])
+    const offset = useMemo(() => [0, 0.42, 0] as const, [])
     return (
         <group position={offset}>
             <Ball size={bodySize} material={BODY_MATERIAL}>
@@ -89,15 +89,19 @@ export const HumanRender = ({ id }: { id: string }) => {
                     <Position key={arm.tag} at={arm.position}>
                         {/* // TODO: We need a kind of slot-fill system where the hand can be given a
                     <Slot /> component and name and via a context we can attach accessories to it */}
-                        <Rod length={1.4} caps={0.2} rotate={arm.shoulder} material={BODY_MATERIAL}>
+                        <Rod
+                            length={0.14}
+                            caps={0.02}
+                            rotate={arm.shoulder}
+                            material={BODY_MATERIAL}>
                             <Position at={0}>
                                 <Rod
-                                    length={1.7}
-                                    caps={0.2}
+                                    length={0.17}
+                                    caps={0.02}
                                     rotate={arm.elbow}
                                     material={BODY_MATERIAL}>
                                     <Position at={0}>
-                                        <Ball size={0.5} material={SKIN_MATERIAL}>
+                                        <Ball size={0.05} material={SKIN_MATERIAL}>
                                             {arm.handed === "Left" && (
                                                 // Holding a torch here
                                                 <Position at={0}>
@@ -115,11 +119,11 @@ export const HumanRender = ({ id }: { id: string }) => {
                     <Position key={leg.tag} at={leg.position}>
                         {/* // TODO: We need a kind of slot-fill system where the hand can be given a
                     <Slot /> component and name and via a context we can attach accessories to it */}
-                        <Rod length={1.4} caps={0.2} rotate={leg.hip} material={LEG_MATERIAL}>
+                        <Rod length={0.14} caps={0.02} rotate={leg.hip} material={LEG_MATERIAL}>
                             <Position at={0}>
                                 <Rod
-                                    length={1.7}
-                                    caps={0.2}
+                                    length={0.17}
+                                    caps={0.02}
                                     rotate={leg.knee}
                                     material={LEG_MATERIAL}
                                 />

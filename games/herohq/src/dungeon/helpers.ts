@@ -7,15 +7,7 @@ import { Euler } from "three"
 
 // with a useRef and update them with a useEffect rather than useMemo?
 export const useLocationToPosition = (location: ActorLocation) => {
-    return useMemo(
-        () =>
-            [
-                location.position.x * UNITS_PER_CELL,
-                0,
-                location.position.y * UNITS_PER_CELL
-            ] as const,
-        [location]
-    )
+    return useMemo(() => [location.position.x, 0, location.position.y] as const, [location])
 }
 
 export const useLocationToRotation = (location: ActorLocation) => {

@@ -1,4 +1,4 @@
-import { Canvas } from "@react-three/fiber"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { OrbitControls } from "@react-three/drei"
 import { Room } from "../dungeon/levels/Room"
 import { dungeonAtom } from "../model/dungeon"
@@ -40,6 +40,11 @@ export const Dungeon = () => {
     useEffect(() => {
         setDungeon({ type: "initialize", level: 1 })
     }, [])
+
+    // useFrame((e) => {
+    //     e.events.handlers?.onPointerMove({target})
+    // })
+
     return (
         <Canvas camera={DEFAULT_CAMERA} shadows>
             <OrbitControls />

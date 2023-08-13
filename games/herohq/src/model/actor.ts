@@ -1,16 +1,7 @@
 import { atomFamily, atomWithStorage } from "jotai/utils"
-import { ComponentType, useCallback, useMemo } from "react"
+import { ComponentType, useCallback } from "react"
 import { Random } from "random"
-import {
-    Atom,
-    Getter,
-    PrimitiveAtom,
-    Setter,
-    WritableAtom,
-    atom,
-    useAtom,
-    useAtomValue
-} from "jotai"
+import { Getter, PrimitiveAtom, Setter, WritableAtom, atom, useAtom, useAtomValue } from "jotai"
 import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
 import { isArray } from "remeda"
 import { makeRng } from "./rng"
@@ -18,6 +9,7 @@ import { Position } from "./spacial"
 
 export type ActorProps = {
     id: string
+    selected: boolean
 }
 
 // type ModuleCommand<Opts> =
@@ -56,7 +48,10 @@ type ActionDispatcher = <T>(
     actorId?: string
 ) => void
 
-type ValueGetter = <Data>(value: ModuleDefinition<any, Data> | DataDefinition<Data>) => Data
+type ValueGetter = <Data>(
+    value: ModuleDefinition<any, Data> | DataDefinition<Data>,
+    actorId?: string
+) => Data
 
 // type DataInterface<Data> = {
 //     value: Data
@@ -120,7 +115,7 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
                 (get) => {
                     const readContext: ModuleGetterContext = {
                         id,
-                        get: (value) => get(value.family(id)),
+                        get: (value, actorId) => get(value.family(actorId || id)),
                         getAtom: get
                     }
                     const opts = get(optsAtom)
@@ -142,8 +137,14 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
                                         handlers[action.name].push(handler)
                                         // TODO: Do we need some cleanup? Can actions be added/removed?
                                     },
-                                    dispatch: (action, payload) => {
-                                        if (handlers[action.name]) {
+                                    dispatch: (action, payload, actorId) => {
+                                        if (actorId) {
+                                            set(actorFamily(actorId), {
+                                                type: "action",
+                                                action,
+                                                payload
+                                            })
+                                        } else if (handlers[action.name]) {
                                             for (const h of handlers[action.name]) {
                                                 h(payload)
                                             }
@@ -344,62 +345,6 @@ export const RenderModule = defineModule(
     undefined,
     { renderer: DefaultRenderer }
 )
-
-export const LevelData = defineData("Level", 1)
-
-const LevelUpgradeModule = defineModule<{}, { level: number; upgradeCost: number }>(
-    "LevelUpgrade",
-    ({}, { get }) => {
-        const level = get(LevelData)
-        return {
-            level,
-            upgradeCost: Math.pow(2, level) * 10
-        }
-    }
-)
-
-// const GainXPAction = defineAction("GainXP")
-// const GainLevelAction = defineAction("GainLevel")
-
-// const LevelModule = defineModule("Level", ({update,action})=>{
-//         action(GainXPAction, ()=>{
-
-//         })
-// })
-
-// const actorCurrentHealthFamily = actorDataFamily("Health", 1)
-
-const CurrentHealthData = defineData("CurrentHealth", 1)
-
-type HealthModuleOpts = {
-    multiplier?: number
-}
-
-const MaxHealthModule = defineModule<HealthModuleOpts, number>(
-    "MaxHealth",
-    ({ multiplier = 1 }, { id, get }) => {
-        const level = get(LevelData)
-        // TODO: Hero will have a series of upgrades which may affect health as well as
-        // body stat, equips and temporary effects
-        return Math.ceil((10 + level * 2) * multiplier)
-    }
-)
-
-export const HealthModule = defineModule("Health", (_, { id, get }) => {
-    const maximum = get(MaxHealthModule)
-    const fraction = get(CurrentHealthData)
-    return {
-        amount: Math.round(fraction * maximum),
-        fraction,
-        maximum
-    }
-})
-
-// type ActorJob = {
-
-// }
-
-// export const heroJobFamily =  atomFamily((id: string) => atomWithStorage()
 
 export type ActorLocation = {
     location: string

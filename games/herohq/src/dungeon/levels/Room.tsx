@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from "react"
-import { Quad, UNITS_PER_CELL } from "../../model/dungeon"
 import { Vector3 } from "three"
 import { ThreeEvent } from "@react-three/fiber"
-import { useAtom } from "jotai"
+import { useSetAtom } from "jotai"
 import { heroControlAtom } from "../../model/hero"
+import { Quad } from "../../model/spacial"
 
 // TODO: Floor/wall can be extracted as a "Tile" component with a height range and material
 
@@ -12,31 +12,18 @@ import { heroControlAtom } from "../../model/hero"
 const FLOOR_DEFAULT_MATERIAL = <meshStandardMaterial color="darkslategrey" />
 
 const Floor = ({ area }: { area: Quad }) => {
-    const [heroControl, setHeroControl] = useAtom(heroControlAtom)
+    const setHeroControl = useSetAtom(heroControlAtom)
 
-    const boxArgs = useMemo(
-        () =>
-            [area.width * UNITS_PER_CELL, 1, area.height * UNITS_PER_CELL] as [
-                number,
-                number,
-                number
-            ],
-        [area]
-    )
+    const boxArgs = useMemo(() => [area.width, 1, area.height] as [number, number, number], [area])
     const boxPosition = useMemo(
-        () =>
-            new Vector3(
-                (area.x + area.width / 2) * UNITS_PER_CELL,
-                -0.5,
-                (area.y + area.height / 2) * UNITS_PER_CELL
-            ),
+        () => new Vector3(area.x + area.width / 2, -0.5, area.y + area.height / 2),
 
         [area]
     )
 
     const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
-        const gameX = e.point.x / UNITS_PER_CELL
-        const gameY = e.point.z / UNITS_PER_CELL
+        const gameX = e.point.x
+        const gameY = e.point.z
         setHeroControl({
             type: "WalkTo",
             target: { x: gameX, y: gameY }
@@ -55,22 +42,9 @@ const Floor = ({ area }: { area: Quad }) => {
 const WALL_DEFAULT_MATERIAL = <meshStandardMaterial color="lightslategrey" />
 
 const Wall = ({ area }: { area: Quad }) => {
-    const boxArgs = useMemo(
-        () =>
-            [area.width * UNITS_PER_CELL, 10, area.height * UNITS_PER_CELL] as [
-                number,
-                number,
-                number
-            ],
-        [area]
-    )
+    const boxArgs = useMemo(() => [area.width, 1, area.height] as [number, number, number], [area])
     const boxPosition = useMemo(
-        () =>
-            new Vector3(
-                (area.x + area.width / 2) * UNITS_PER_CELL,
-                5,
-                (area.y + area.height / 2) * UNITS_PER_CELL
-            ),
+        () => new Vector3(area.x + area.width / 2, 0.5, area.y + area.height / 2),
         [area]
     )
     return (
