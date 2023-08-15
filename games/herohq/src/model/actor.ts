@@ -297,6 +297,7 @@ export const actorFamily = atomFamily((id: string) => {
         (get, set, update: ActorUpdate) => {
             switch (update.type) {
                 case "initialize": {
+                    // TODO: Confusing use of name vs type (type means something else on defs)
                     set(ActorTypeData.family(id), update.actor.name)
                     set(ActorCreatedData.family(id), get(gameTimeTicksAtom))
                     // Initialize any data first

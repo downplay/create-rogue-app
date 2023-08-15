@@ -15,6 +15,7 @@ import { CancelAction, PLAYER_ID } from "./player"
 import { Position } from "./spacial"
 import { FightModule } from "./fight"
 import { HealthModule } from "./health"
+import { InventoryModule } from "./item"
 
 export type Vital = {
     amount: number
@@ -53,7 +54,11 @@ export const HeroActor = defineActor("Hero", [
     SpeedModule,
     MovementModule,
     HeroModule,
-    FightModule
+    FightModule,
+    // [EquipmentModule, {slots: [
+
+    // ]}]
+    InventoryModule
 ])
 
 export const heroVitalsFamily = atomFamily((id: string) => {

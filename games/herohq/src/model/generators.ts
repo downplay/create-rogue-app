@@ -74,8 +74,8 @@ const randomPlacement: RoomGenerator = ({ room, rng, level }) => {
             y: room.area.y + rng.float(room.area.height)
         }
         entities.push({
-            // type: BugMonster,
-            type: BubbleMonster,
+            type: BugMonster,
+            // type: BubbleMonster,
             // TODO: Figure out using storytext to do roomgen / encounters/ monsters / etc
             data: [
                 [
