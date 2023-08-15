@@ -24,43 +24,54 @@ export const Actor = ({ id }: { id: string }) => {
         selectedInteractionActorIdAtom
     )
 
-    const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
-        if (activeHeroId) {
-            dispatch(InteractionAction, {
-                interactor: activeHeroId,
-                point: e.point,
-                mode: "perform"
-            })
-        }
-        // const gameX = e.point.x / UNITS_PER_CELL
-        // const gameY = e.point.z / UNITS_PER_CELL
-        // setHeroControl({
-        //     type: "WalkTo",
-        //     target: { x: gameX, y: gameY }
-        // })
-    }, [])
+    const handleClick = useCallback(
+        (e: ThreeEvent<MouseEvent>) => {
+            console.log("INTERACTION")
+            e.stopPropagation()
+            if (activeHeroId) {
+                dispatch(InteractionAction, {
+                    interactor: activeHeroId,
+                    point: e.point,
+                    mode: "perform"
+                })
+            }
+            // const gameX = e.point.x / UNITS_PER_CELL
+            // const gameY = e.point.z / UNITS_PER_CELL
+            // setHeroControl({
+            //     type: "WalkTo",
+            //     target: { x: gameX, y: gameY }
+            // })
+        },
+        [activeHeroId]
+    )
 
-    const handleSelect = useCallback((e: ThreeEvent<MouseEvent>) => {
-        setSelectedInteractionActorId(id)
-        if (activeHeroId) {
-            dispatch(InteractionAction, {
-                interactor: activeHeroId,
-                point: e.point,
-                mode: "previewOn"
-            })
-        }
-    }, [])
+    const handleSelect = useCallback(
+        (e: ThreeEvent<MouseEvent>) => {
+            setSelectedInteractionActorId(id)
+            if (activeHeroId) {
+                dispatch(InteractionAction, {
+                    interactor: activeHeroId,
+                    point: e.point,
+                    mode: "previewOn"
+                })
+            }
+        },
+        [activeHeroId]
+    )
 
-    const handleDeselect = useCallback((e: ThreeEvent<MouseEvent>) => {
-        setSelectedInteractionActorId(undefined)
-        if (activeHeroId) {
-            dispatch(InteractionAction, {
-                interactor: activeHeroId,
-                point: e.point,
-                mode: "previewOff"
-            })
-        }
-    }, [])
+    const handleDeselect = useCallback(
+        (e: ThreeEvent<MouseEvent>) => {
+            setSelectedInteractionActorId(undefined)
+            if (activeHeroId) {
+                dispatch(InteractionAction, {
+                    interactor: activeHeroId,
+                    point: e.point,
+                    mode: "previewOff"
+                })
+            }
+        },
+        [activeHeroId]
+    )
 
     const isSelected = useMemo(
         () => selectedInteractionActorId === id,

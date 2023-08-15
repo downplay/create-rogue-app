@@ -1,20 +1,21 @@
-import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { OrbitControls } from "@react-three/drei"
+import { Canvas } from "@react-three/fiber"
 import { Room } from "../dungeon/levels/Room"
 import { dungeonAtom } from "../model/dungeon"
 import { useAtom, useAtomValue } from "jotai"
 import { Actor } from "../dungeon/Actor"
 import { actorIdsAtom } from "../model/actor"
 import { useEffect } from "react"
+import { FollowCamera } from "../3d/FollowCamera"
 
 // const ORIGIN = new Vector3(0, 0, 0)
 // const UP = new Vector3(0, 1, 0)
 
 const DEFAULT_CAMERA = {
     fov: 45,
-    near: 10,
-    far: 10000,
-    position: [-10, 20, 50] as const
+    near: 1,
+    far: 1000,
+    position: [10, 20, 50] as const,
+    rotation: [0.25 * Math.PI, 0, 0] as const
 }
 
 // const ROTATE_Y_180 = new Euler(0, Math.PI, 0)
@@ -47,7 +48,8 @@ export const Dungeon = () => {
 
     return (
         <Canvas camera={DEFAULT_CAMERA} shadows>
-            <OrbitControls />
+            {/* <OrbitControls /> */}
+            <FollowCamera />
             <ambientLight intensity={0.1} />
             {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}
             {/* <PedeRender id="Monster:Bug:1" /> */}
@@ -60,7 +62,6 @@ export const Dungeon = () => {
             {actors.map((m) => (
                 <Actor id={m} key={m} />
             ))}
-            {/* {heroId && <Hero id={heroId} />} */}
         </Canvas>
     )
 }

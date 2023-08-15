@@ -1,4 +1,5 @@
-import { defineAction, defineData, defineModule } from "./actor"
+import { defineData, defineModule } from "./actor"
+import { DieAction } from "./death"
 import { ReceiveHitAction } from "./fight"
 import { LevelData } from "./level"
 import { CancelAction } from "./player"
@@ -18,7 +19,6 @@ const MaxHealthModule = defineModule<HealthModuleOpts, number>(
         return Math.ceil((10 + level * 2) * multiplier)
     }
 )
-export const DieAction = defineAction<{ killer: string }>("Die")
 
 export const HealthModule = defineModule(
     "Health",

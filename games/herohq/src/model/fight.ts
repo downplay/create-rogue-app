@@ -1,5 +1,5 @@
-import { GameLoopAction, LocationData, defineAction, defineData, defineModule } from "./actor"
-import { gameTimeTicksAtom } from "./game"
+import { LocationData, defineAction, defineData, defineModule, gameTimeTicksAtom } from "./actor"
+import { GameLoopAction } from "./game"
 import { WalkToAction } from "./movement"
 import { CancelAction } from "./player"
 
@@ -17,16 +17,18 @@ type Attack = {
     activate: number
 }
 
+const DEFAULT_ATTACK = {
+    start: 0,
+    speed: 1,
+    activated: false
+}
+
 export const AttackData = defineData<{
     attack?: Attack
     start: number
     speed: number
     activated: boolean
-}>("Attack", {
-    start: 0,
-    speed: 1,
-    activated: false
-})
+}>("Attack", DEFAULT_ATTACK)
 
 export const ReceiveHitAction = defineAction<{ source: string; attack: Attack; power: number }>(
     "ReceiveHit"
@@ -67,7 +69,11 @@ export const FightModule = defineModule(
             ) {
                 const power = Math.max(0, Math.ceil(powerNormal() * 10))
                 if (power > 0) {
-                    dispatch(ReceiveHitAction, { source: id, attack: current.attack, power })
+                    dispatch(
+                        ReceiveHitAction,
+                        { source: id, attack: current.attack, power },
+                        target
+                    )
                 } else {
                     // visually represent a miss
                     // bad misses based on high negative could make player vulnerable
@@ -80,6 +86,10 @@ export const FightModule = defineModule(
         }
 
         const attackOrMove = (target: string) => {
+            const current = get(AttackData)
+            if (current.attack) {
+                attack(target)
+            }
             const location = get(LocationData)
             const targetLocation = get(LocationData, target)
             // TODO: Should be a helper (exists in heromath?)
@@ -97,6 +107,7 @@ export const FightModule = defineModule(
         }
 
         handle(CancelAction, () => {
+            set(AttackData, DEFAULT_ATTACK)
             set(AttackTargetData, {})
         })
         handle(AttackTargetAction, ({ target }) => {

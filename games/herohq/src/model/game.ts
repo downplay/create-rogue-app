@@ -7,10 +7,10 @@ import {
     regenerateRecruits
 } from "./recruits"
 import { generateSeed } from "./rng"
-import { GameLoopAction, actorsAtom } from "./actor"
 import { HeroModule } from "./hero"
+import { actorsAtom, defineAction, gameTimeTicksAtom } from "./actor"
 
-export const gameTimeTicksAtom = atom(0)
+export const GameLoopAction = defineAction<{ time: number; delta: number }>("GameLoop")
 
 type SetGameTimeAction = {
     type: "increment"
@@ -77,6 +77,7 @@ export const useGameLoop = () => {
 
         // Here we are actually proccing the time passed
         setGameTime({ type: "increment", delta: passedTime / 1000 })
+
         // TODO: Use Three's frame handler instead for performance?
         requestAnimationFrame(handleTick)
     }, [])

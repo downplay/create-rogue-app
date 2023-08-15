@@ -17,7 +17,6 @@ const Floor = ({ area }: { area: Quad }) => {
     const boxArgs = useMemo(() => [area.width, 1, area.height] as [number, number, number], [area])
     const boxPosition = useMemo(
         () => new Vector3(area.x + area.width / 2, -0.5, area.y + area.height / 2),
-
         [area]
     )
 

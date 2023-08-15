@@ -1,9 +1,8 @@
 import { useMemo } from "react"
-import { MonsterProps } from "../model/monster"
 import { useAtomValue } from "jotai"
-import { gameTimeTicksAtom } from "../model/game"
-import { Ball, Direction, Position, Rod } from "../3d/Parts"
+import { Ball, Direction, Position, Rod } from "../../3d/Parts"
 import { Euler } from "three"
+import { ActorProps, gameTimeTicksAtom } from "../../model/actor"
 
 // TODO: Some advanced bugs might have different numbers of legs
 const LEG_PAIRS_COUNT = 24
@@ -15,7 +14,7 @@ const ORIENT_FORWARDS = new Euler(-0.5 * Math.PI, 0, 0)
 // TODO: It's not at all working in the way hoped or as horrific as required.
 // Should be more like a series of bug bodies strung together.
 
-export const PedeRender = ({ id }: MonsterProps) => {
+export const PedeRender = ({ id }: ActorProps) => {
     const time = useAtomValue(gameTimeTicksAtom)
     const legs = useMemo(() => {
         let legs = []

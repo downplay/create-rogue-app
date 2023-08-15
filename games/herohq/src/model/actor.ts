@@ -1,11 +1,22 @@
-import { atomFamily, atomWithStorage } from "jotai/utils"
-import { ComponentType, useCallback } from "react"
+import { RESET, atomFamily, atomWithStorage } from "jotai/utils"
+import { ComponentType, MutableRefObject, useCallback, useEffect, useRef } from "react"
 import { Random } from "random"
-import { Getter, PrimitiveAtom, Setter, WritableAtom, atom, useAtom, useAtomValue } from "jotai"
+import {
+    Atom,
+    Getter,
+    PrimitiveAtom,
+    Setter,
+    WritableAtom,
+    atom,
+    useAtom,
+    useAtomValue
+} from "jotai"
 import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
 import { isArray } from "remeda"
 import { makeRng } from "./rng"
 import { Position } from "./spacial"
+
+export const gameTimeTicksAtom = atom(0)
 
 export type ActorProps = {
     id: string
@@ -21,23 +32,36 @@ export type ActorProps = {
 //           type: "Event"
 //       }
 
-type ActionDefinition<T> = {
-    type: "ACTION"
-    name: string
-    defaultPayload?: T
-}
-
 export type DataDefinition<Data> = {
     type: "DATA"
     name: string
     defaultValue: Data
-    family: AtomFamily<string, PrimitiveAtom<Data>>
+    family: AtomFamily<string, ReturnType<typeof atomWithStorage<Data>>>
 }
 
 type ModuleGetterContext = {
     id: string
     get: ValueGetter
     getAtom: Getter
+}
+
+export type ActionDefinition<T> = {
+    type: "ACTION"
+    name: string
+    defaultPayload?: T
+}
+
+export const defineAction = <Payload>(
+    name: string,
+    defaultPayload?: Payload
+): ActionDefinition<Payload> => {
+    {
+        return {
+            type: "ACTION",
+            name,
+            defaultPayload
+        }
+    }
 }
 
 type ActionHandler = <T>(action: ActionDefinition<T>, handler: (payload: T) => void) => void
@@ -67,6 +91,7 @@ type ModuleContext<Get> = ModuleGetterContext & {
     setAtom: Setter
     self: () => Get
     rng: Random
+    spawn: (actor: ActorDefinition, data?: DataSpec<any>[]) => string
 }
 
 type ModuleGetter<Opts, Get> = (opts: Opts, context: ModuleGetterContext) => Get
@@ -128,7 +153,7 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
                             if (initialize) {
                                 const writeContext: ModuleContext<Get> = {
                                     id,
-                                    get: (value) => get(value.family(id)),
+                                    get: (value, actorId) => get(value.family(actorId || id)),
                                     set: (data, nextValue) => set(data.family(id), nextValue),
                                     getAtom: get,
                                     setAtom: set,
@@ -138,20 +163,23 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
                                         // TODO: Do we need some cleanup? Can actions be added/removed?
                                     },
                                     dispatch: (action, payload, actorId) => {
-                                        if (actorId) {
-                                            set(actorFamily(actorId), {
-                                                type: "action",
-                                                action,
-                                                payload
-                                            })
-                                        } else if (handlers[action.name]) {
-                                            for (const h of handlers[action.name]) {
-                                                h(payload)
-                                            }
-                                        }
+                                        set(actorFamily(actorId || id), {
+                                            type: "action",
+                                            action,
+                                            payload
+                                        })
                                     },
                                     self: () => get(self),
-                                    rng: makeRng(id)
+                                    rng: makeRng(id),
+                                    spawn: (actor, data = []) => {
+                                        const id = actor.name + ":" + crypto.randomUUID()
+                                        set(actorFamily(id), {
+                                            type: "initialize",
+                                            actor,
+                                            data: data
+                                        })
+                                        return id
+                                    }
                                 }
 
                                 initialize(update.opts, writeContext)
@@ -215,25 +243,16 @@ export const defineData = <Data>(name: string, defaultValue: Data): DataDefiniti
 }
 
 const ActorTypeData = defineData("ActorType", "Unknown")
-
-export const defineAction = <Payload>(
-    name: string,
-    defaultPayload?: Payload
-): ActionDefinition<Payload> => {
-    {
-        return {
-            type: "ACTION",
-            name,
-            defaultPayload
-        }
-    }
-}
+export const ActorCreatedData = defineData("ActorCreated", 0)
 
 export type ModuleSpec<Data, Opts> =
     | [module: ModuleDefinition<Data, Opts>, options: Opts]
     | ModuleDefinition<Data, Opts>
 
-export type DataSpec<Data> = [data: DataDefinition<Data>, value: Data]
+export type DataSpec<Data> = [
+    data: DataDefinition<Data>,
+    value: Data | (({ rng }: { rng: Random }) => Data)
+]
 
 export type ActorDefinition = {
     type: "ACTOR"
@@ -258,7 +277,12 @@ export const actorIdsAtom = atom<string[]>([])
 // TODO: use splitatom to make it more efficient?
 export const actorsAtom = atom((get) => get(actorIdsAtom).map((id) => actorFamily(id)))
 
-export type Actor = { id: string; modules: ModuleDefinition<any, any>[] }
+export type Actor = {
+    id: string
+    modules: ModuleDefinition<any, any>[]
+    type: string
+    created: number
+}
 
 export type ActorAtom = WritableAtom<Actor, [ActorUpdate], void>
 
@@ -266,12 +290,15 @@ export const actorFamily = atomFamily((id: string) => {
     const modules: ModuleDefinition<any, any>[] = []
     return atom(
         (get) => {
-            return { id, modules } as Actor
+            const type = get(ActorTypeData.family(id))
+            const created = get(ActorCreatedData.family(id))
+            return { id, modules, type, created } as Actor
         },
         (get, set, update: ActorUpdate) => {
             switch (update.type) {
-                case "initialize":
+                case "initialize": {
                     set(ActorTypeData.family(id), update.actor.name)
+                    set(ActorCreatedData.family(id), get(gameTimeTicksAtom))
                     // Initialize any data first
                     for (const d of update.data) {
                         set(d[0].family(id), d[1])
@@ -282,13 +309,13 @@ export const actorFamily = atomFamily((id: string) => {
                         const opts = isArray(m) ? m[1] || {} : {}
                         set(module.family(id), { type: "initialize", opts })
                         modules.push(module)
-
                         // module.initialize()
                     }
                     const newActors = get(actorIdsAtom).slice()
                     newActors.push(id)
                     set(actorIdsAtom, newActors)
                     break
+                }
                 case "hydrate":
                     const actorType = get(ActorTypeData.family(id))
                     // TODO: We'll need to look up the actor somewhere and reinstate
@@ -296,6 +323,12 @@ export const actorFamily = atomFamily((id: string) => {
                     throw new Error("Not implemented, rehydrate: " + actorType)
                     break
                 case "destroy":
+                    const newActors = get(actorIdsAtom).filter((a) => a !== id)
+                    // TODO: Record a list of data we have so we can go and delete them all
+                    set(ActorTypeData.family(id), RESET)
+                    set(ActorCreatedData.family(id), RESET)
+
+                    set(actorIdsAtom, newActors)
                     break
                 case "action":
                     for (const m of modules) {
@@ -313,10 +346,62 @@ export const useData = <Data>(data: DataDefinition<Data>, id: string) => {
     return value as Data
 }
 
+export const undefinedAtom = atom(undefined)
+
+/**
+ * Gets an atom value but keeps it updated on a ref.
+ *
+ * @param atom
+ * @returns
+ */
+export const useAtomRef = <T>(atom: Atom<T>) => {
+    const value = useAtomValue(atom)
+    const ref = useRef(value)
+    useEffect(() => {
+        ref.current = value
+    }, [value])
+    return ref
+}
+
+/**
+ * Gets an atom value but keeps it updated on a ref. The atom can optionally be undefined and we
+ * maintain hooks stability by swapping in undefinedAtom.
+ * @param atom
+ * @returns
+ */
+export const useAtomRefUnstable = <T, A extends Atom<T> | undefined>(
+    atom: A
+): MutableRefObject<T | (undefined extends A ? undefined : never)> => {
+    const value = useAtomValue(atom === undefined ? undefinedAtom : atom) as
+        | T
+        | (undefined extends A ? undefined : never)
+    const ref = useRef<T | (undefined extends A ? undefined : never)>(value)
+    useEffect(() => {
+        ref.current = value
+    }, [value])
+    return ref
+}
+
 export const useModule = <Opts, Get>(module: ModuleDefinition<Opts, Get>, id: string) => {
     const atom = module.family(id)
     const value = useAtomValue(atom)
     return value as Get
+}
+
+export const useModuleRef = <Data, Id extends string | undefined>(
+    moduleOrData: ModuleDefinition<any, Data> | DataDefinition<Data>,
+    id: Id
+): MutableRefObject<Data | (undefined extends Id ? undefined : never)> => {
+    const atom = (id === undefined ? undefinedAtom : moduleOrData.family(id)) as PrimitiveAtom<
+        Data | (undefined extends Id ? undefined : never)
+    >
+    const value = useAtomValue(atom)
+    const ref = useRef(value)
+    useEffect(() => {
+        ref.current = value
+    }, [value])
+
+    return ref
 }
 
 export const useActor = (idOrAtom: string | ActorAtom) => {
@@ -330,8 +415,6 @@ export const useActor = (idOrAtom: string | ActorAtom) => {
     )
     return [actor, dispatch] as const
 }
-
-export const GameLoopAction = defineAction<{ time: number; delta: number }>("GameLoop")
 
 type RenderModuleOpts = {
     renderer?: ComponentType<ActorProps>

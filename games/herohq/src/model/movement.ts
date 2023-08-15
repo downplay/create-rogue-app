@@ -1,7 +1,6 @@
 import { Vector2 } from "three"
 import {
     ActorLocation,
-    GameLoopAction,
     LocationData,
     SpeedModule,
     defineAction,
@@ -12,6 +11,7 @@ import { VECTOR2_UP, angleBetween } from "./trig"
 import { Position } from "./spacial"
 import { roomFamily } from "./room"
 import { CancelAction } from "./player"
+import { GameLoopAction } from "./game"
 
 type ActorMovement = {
     target?: Position // TODO: target should be a Partial<ActorLocation>

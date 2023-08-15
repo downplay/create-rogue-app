@@ -91,8 +91,9 @@ const DEFAULT_MATERIAL = <meshStandardMaterial color="hotpink" />
 export const Ball = ({
     size = UNIT,
     children,
-    material = DEFAULT_MATERIAL
-}: PropsWithChildren<{ size: Vector; material?: ReactElement<any, any> }>) => {
+    material = DEFAULT_MATERIAL,
+    visible = true
+}: PropsWithChildren<{ size: Vector; material?: ReactElement<any, any>; visible?: boolean }>) => {
     const childContext = useMemo(() => {
         return {
             surface: (direction: Vector) => {
@@ -115,13 +116,15 @@ export const Ball = ({
     }, [size])
     return (
         <>
-            <mesh scale={size} castShadow>
-                {/* TODO: Implement LOD somehow. e.g. the 8,8 should increase to something much higher
+            {visible && (
+                <mesh scale={size} castShadow>
+                    {/* TODO: Implement LOD somehow. e.g. the 8,8 should increase to something much higher
                 close up. And we will probably want to switch in more textures, maybe bump maps,
                 maybe even render more advanced algorithmic meshes. */}
-                <sphereGeometry args={[0.5, 16, 16]} />
-                {material}
-            </mesh>
+                    <sphereGeometry args={[0.5, 16, 16]} />
+                    {material}
+                </mesh>
+            )}
             <RenderContext.Provider value={childContext}>{children}</RenderContext.Provider>
         </>
     )

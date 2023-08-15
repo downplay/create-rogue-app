@@ -3,8 +3,7 @@ import { Ball, Position, Rod } from "../../3d/Parts"
 import { Vector3 } from "three"
 import { makeToonMaterial } from "../../3d/materials"
 import { useAtomValue } from "jotai"
-import { gameTimeTicksAtom } from "../../model/game"
-import { useModule } from "../../model/actor"
+import { ActorProps, gameTimeTicksAtom, useModule } from "../../model/actor"
 import { MovementModule } from "../../model/movement"
 
 const NeckPosition = new Vector3(0, 0, 0)
@@ -15,7 +14,7 @@ const LEG_MATERIAL = makeToonMaterial(0.66, 0.4, 0.3)
 
 const CYCLE_SPEED = 1
 
-export const HumanRender = ({ id }: { id: string }) => {
+export const HumanRender = ({ id }: ActorProps) => {
     const movement = useModule(MovementModule, id)
     const animate = movement.status === "moving"
     const time = useAtomValue(gameTimeTicksAtom)

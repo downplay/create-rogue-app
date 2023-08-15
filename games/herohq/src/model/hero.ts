@@ -2,6 +2,7 @@ import { atom } from "jotai"
 import { atomFamily, atomWithStorage } from "jotai/utils"
 import {
     RenderModule,
+    SpeedModule,
     actorFamily,
     defineAction,
     defineActor,
@@ -10,7 +11,7 @@ import {
 } from "./actor"
 import { HumanRender } from "../dungeon/characters/HumanRender"
 import { MovementModule, WalkToAction } from "./movement"
-import { PLAYER_ID } from "./player"
+import { CancelAction, PLAYER_ID } from "./player"
 import { Position } from "./spacial"
 import { FightModule } from "./fight"
 import { HealthModule } from "./health"
@@ -49,6 +50,7 @@ export const HeroModule = defineModule(
 export const HeroActor = defineActor("Hero", [
     [RenderModule, { renderer: HumanRender }],
     HealthModule,
+    SpeedModule,
     MovementModule,
     HeroModule,
     FightModule
@@ -138,6 +140,11 @@ export const heroControlAtom = atom(
             case "WalkTo":
                 // TODO: We should dispatch a TargetMoveTo action or similar instead
                 // of setting the data ourselves (and hide the data more)
+                set(actorFamily(hero.id), {
+                    type: "action",
+                    action: CancelAction,
+                    payload: {}
+                })
                 set(actorFamily(hero.id), {
                     type: "action",
                     action: WalkToAction,

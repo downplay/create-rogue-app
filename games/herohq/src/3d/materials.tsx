@@ -28,3 +28,11 @@ export const makeToonMaterial = (hue: number, sat: number = 0.5, lum: number = 1
 
     return material
 }
+
+export const makeMetalMaterial = (colorHex: string) => {
+    const color = new Color(colorHex)
+    // TODO: Would be nice to make a metallic toon texture. Need to use texture and envmaps anyway to
+    // make it more metally.
+    const material = <meshStandardMaterial color={color} metalness={0.6} roughness={0.313} />
+    return material
+}

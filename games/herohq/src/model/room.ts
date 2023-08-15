@@ -21,4 +21,4 @@ export type RoomData = {
 // can generate on demand. Maybe overkill tho.
 export const roomsAtom = atomWithStorage<RoomData[]>("Rooms", [])
 
-export const roomFamily = (id: string) => atom((get) => get(roomsAtom).find((r) => r.id === id))
+export const roomFamily = (id?: string) => atom((get) => get(roomsAtom).find((r) => r.id === id))

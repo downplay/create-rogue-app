@@ -1,10 +1,9 @@
 import { useMemo } from "react"
 import { useAtomValue } from "jotai"
 import { Euler } from "three"
-import { gameTimeTicksAtom } from "../../model/game"
 import { Ball, Direction, Position, Rod } from "../../3d/Parts"
 import { makeToonMaterial } from "../../3d/materials"
-import { ActorProps, useModule } from "../../model/actor"
+import { ActorProps, gameTimeTicksAtom, useModule } from "../../model/actor"
 import { MovementModule } from "../../model/movement"
 
 // TODO: Some advanced bugs might have different numbers of legs
