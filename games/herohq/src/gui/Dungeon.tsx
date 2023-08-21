@@ -1,4 +1,5 @@
 import { Canvas } from "@react-three/fiber"
+import { Selection, Select, EffectComposer, Outline } from "@react-three/postprocessing"
 import { Room } from "../dungeon/levels/Room"
 import { dungeonAtom } from "../model/dungeon"
 import { useAtom, useAtomValue } from "jotai"
@@ -14,8 +15,8 @@ const DEFAULT_CAMERA = {
     fov: 45,
     near: 1,
     far: 1000,
-    position: [10, 20, 50] as const,
-    rotation: [0.25 * Math.PI, 0, 0] as const
+    position: [10, 20, 50] as const
+    // rotation: [0.25 * Math.PI, 0, 0] as const
 }
 
 // const ROTATE_Y_180 = new Euler(0, Math.PI, 0)
@@ -59,9 +60,14 @@ export const Dungeon = () => {
             {/* <BugRender id="Monster:Bug:1" /> */}
             {/* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
             can optimise for things that aren't really going to move */}
-            {actors.map((m) => (
-                <Actor id={m} key={m} />
-            ))}
+            <Selection>
+                <EffectComposer multisampling={8} autoClear={false}>
+                    <Outline blur visibleEdgeColor="white" edgeStrength={100} width={1000} />
+                </EffectComposer>
+                {actors.map((m) => (
+                    <Actor id={m} key={m} />
+                ))}
+            </Selection>
         </Canvas>
     )
 }

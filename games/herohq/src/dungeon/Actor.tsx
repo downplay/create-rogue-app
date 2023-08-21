@@ -6,6 +6,7 @@ import { UNITS_PER_CELL } from "../model/dungeon"
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { heroControlAtom, activeHeroAtom, activeHeroIdAtom } from "../model/hero"
 import { InteractionAction } from "../model/player"
+import { Select } from "@react-three/postprocessing"
 
 const selectedInteractionActorIdAtom = atom<string | undefined>(undefined)
 
@@ -80,13 +81,15 @@ export const Actor = ({ id }: { id: string }) => {
 
     // TODO: Also hover state outline etc
     return (
-        <group
-            position={position}
-            rotation={rotation}
-            onClick={handleClick}
-            onPointerOver={handleSelect}
-            onPointerOut={handleDeselect}>
-            <Renderer id={id} selected={isSelected} />
-        </group>
+        <Select enabled={isSelected}>
+            <group
+                position={position}
+                rotation={rotation}
+                onClick={handleClick}
+                onPointerOver={handleSelect}
+                onPointerOut={handleDeselect}>
+                <Renderer id={id} selected={isSelected} />
+            </group>
+        </Select>
     )
 }

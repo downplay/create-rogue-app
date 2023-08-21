@@ -1,4 +1,6 @@
+import { Cost } from "../model/account"
 import { COIN_TIERS, denominate } from "../model/coin"
+import { Button } from "./Button"
 import { IconCoin } from "./icons"
 import styled from "@emotion/styled"
 
@@ -25,5 +27,20 @@ export const CoinValue = ({ amount }: { amount: number }) => {
                 </Coin>
             ))}
         </Coins>
+    )
+}
+
+export const PurchaseButton = ({
+    cost,
+    locked = false,
+    ...rest
+}: { cost: Cost; locked?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) => {
+    // TODO: 1. Check player treasury has enough, disable otherwise.
+    // 2. Handle click and deduct the value before calling handler
+    return (
+        <Button disabled={locked} {...rest}>
+            {/* // TODO: Loop through cost if it's an array and render all the value types */}
+            <CoinValue amount={typeof cost === "number" ? cost : cost[0].amount} />
+        </Button>
     )
 }

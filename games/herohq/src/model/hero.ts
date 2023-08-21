@@ -15,7 +15,7 @@ import { CancelAction, PLAYER_ID } from "./player"
 import { Position } from "./spacial"
 import { FightModule } from "./fight"
 import { HealthModule } from "./health"
-import { InventoryModule } from "./item"
+import { InventoryModule, LootModule } from "./item"
 
 export type Vital = {
     amount: number
@@ -55,6 +55,7 @@ export const HeroActor = defineActor("Hero", [
     MovementModule,
     HeroModule,
     FightModule,
+    LootModule,
     // [EquipmentModule, {slots: [
 
     // ]}]

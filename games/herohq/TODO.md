@@ -1,0 +1,15 @@
+-   Optimise bugrender
+-   Visible lamp in players hand
+    -   Make z work properly on positioning
+-   Inventory popup (fix inventory?)
+-   Rehydration on refresh
+-   Monster attacking player
+-   Corridors between rooms
+-   Wall/floor textures
+-   Mouse zoom/orbit
+-   Smooth camera movement
+-   Equippable items (sword #1 priority)
+-   Animate arm when fighting
+-   Use heromap to generate rooms (throw some scenery around)
+-   Treasury display
+-   Hero upgrades

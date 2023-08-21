@@ -124,9 +124,9 @@ export const ItemModule = defineModule(
 
 const ContainerData = defineData<string[]>("Container", [])
 
-const ContainerModule = defineModule("Container", (_, { get }) => {
+export const ContainerModule = defineModule("Container", (_, { get }) => {
     const data = get(ContainerData)
-    return data
+    return data.map((id) => actorFamily(id))
 })
 
 export const InventoryNode = defineActor("Inventory", [ContainerModule])
@@ -151,15 +151,24 @@ export const InventoryModule = defineModule(
             const actor = getAtom(family)
             // Do we already have this type and is it stackable?
             const { stackable, amount } = get(ItemModule, item)
+            console.log("GETTING", actor.type, stackable, amount)
+            const items = self()
             if (stackable) {
-                const items = self()
                 const stack = items.find(
                     (itemId) => getAtom(actorFamily(itemId)).type === actor.type
                 )
                 if (stack) {
                     // TODO: Maybe should be a MutateStackSizeAction instead of poking around ItemData ourselves
                     setAtom(ItemData.family(stack), (i) => ({ ...i, amount: i.amount + amount }))
+                    // Destroy original item
+                    setAtom(family, { type: "destroy" })
+                } else {
+                    // TODO: Remove item from Room (we need a MoveToContainer action)
+                    set(ContainerData, [...items, item], container)
                 }
+            } else if (container) {
+                // TODO: Remove item from Room (we need a MoveToContainer action)
+                set(ContainerData, [...items, item], container)
             }
         })
     }

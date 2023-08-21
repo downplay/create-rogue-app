@@ -87,7 +87,11 @@ type ValueGetter = <Data>(
 type ModuleContext<Get> = ModuleGetterContext & {
     handle: ActionHandler
     dispatch: ActionDispatcher
-    set: <Data>(data: DataDefinition<Data>, nextValue: Data | ((prev: Data) => Data)) => void
+    set: <Data>(
+        data: DataDefinition<Data>,
+        nextValue: Data | ((prev: Data) => Data),
+        actorId?: string
+    ) => void
     setAtom: Setter
     self: () => Get
     rng: Random
@@ -154,7 +158,8 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
                                 const writeContext: ModuleContext<Get> = {
                                     id,
                                     get: (value, actorId) => get(value.family(actorId || id)),
-                                    set: (data, nextValue) => set(data.family(id), nextValue),
+                                    set: (data, nextValue, actorId) =>
+                                        set(data.family(actorId || id), nextValue),
                                     getAtom: get,
                                     setAtom: set,
                                     handle: (action, handler) => {
