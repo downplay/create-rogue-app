@@ -4,6 +4,7 @@ import { ThreeEvent } from "@react-three/fiber"
 import { useSetAtom } from "jotai"
 import { heroControlAtom } from "../../model/hero"
 import { Quad } from "../../model/spacial"
+import { RigidBody } from "@react-three/rapier"
 
 // TODO: Floor/wall can be extracted as a "Tile" component with a height range and material
 
@@ -31,10 +32,12 @@ const Floor = ({ area }: { area: Quad }) => {
 
     // TODO: Handle mouse move etc events and display a target
     return (
-        <mesh position={boxPosition} receiveShadow onClick={handleClick}>
-            <boxGeometry args={boxArgs} />
-            {FLOOR_DEFAULT_MATERIAL}
-        </mesh>
+        <RigidBody type="fixed">
+            <mesh position={boxPosition} receiveShadow onClick={handleClick}>
+                <boxGeometry args={boxArgs} />
+                {FLOOR_DEFAULT_MATERIAL}
+            </mesh>
+        </RigidBody>
     )
 }
 
@@ -47,10 +50,12 @@ const Wall = ({ area }: { area: Quad }) => {
         [area]
     )
     return (
-        <mesh position={boxPosition} receiveShadow>
-            <boxGeometry args={boxArgs} />
-            {WALL_DEFAULT_MATERIAL}
-        </mesh>
+        <RigidBody type="fixed">
+            <mesh position={boxPosition} receiveShadow>
+                <boxGeometry args={boxArgs} />
+                {WALL_DEFAULT_MATERIAL}
+            </mesh>
+        </RigidBody>
     )
 }
 

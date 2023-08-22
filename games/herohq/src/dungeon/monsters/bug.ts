@@ -12,6 +12,10 @@ const BugDrops: DropTable = [
     // then each of these have a value of normal(x) also weighted by luck, boosted by monster
     // level, and boosted by anything else like hero traits or deities (e.g. gold god will
     // specifically boost coin drops)"
+    [CoinItem, 1 / 2, [[ItemData, { amount: 10 }]]], // ({ rng }) => ({})]]
+    [CoinItem, 1 / 2, [[ItemData, { amount: 10 }]]], // ({ rng }) => ({})]]
+    [CoinItem, 1 / 2, [[ItemData, { amount: 10 }]]], // ({ rng }) => ({})]]
+    [CoinItem, 1 / 2, [[ItemData, { amount: 10 }]]], // ({ rng }) => ({})]]
     [CoinItem, 1 / 2, [[ItemData, { amount: 10 }]]] // ({ rng }) => ({})]]
     // [BugEye, 1/10],
     // [BugPowder, 1/50],

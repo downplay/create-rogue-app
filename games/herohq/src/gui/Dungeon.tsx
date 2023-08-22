@@ -1,11 +1,13 @@
 import { Canvas } from "@react-three/fiber"
-import { Selection, Select, EffectComposer, Outline } from "@react-three/postprocessing"
+import { Selection, EffectComposer, Outline } from "@react-three/postprocessing"
+import { Physics, RigidBody, CuboidCollider } from "@react-three/rapier"
+
 import { Room } from "../dungeon/levels/Room"
 import { dungeonAtom } from "../model/dungeon"
 import { useAtom, useAtomValue } from "jotai"
 import { Actor } from "../dungeon/Actor"
 import { actorIdsAtom } from "../model/actor"
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { FollowCamera } from "../3d/FollowCamera"
 
 // const ORIGIN = new Vector3(0, 0, 0)
@@ -49,25 +51,34 @@ export const Dungeon = () => {
 
     return (
         <Canvas camera={DEFAULT_CAMERA} shadows>
-            {/* <OrbitControls /> */}
-            <FollowCamera />
-            <ambientLight intensity={0.1} />
-            {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}
-            {/* <PedeRender id="Monster:Bug:1" /> */}
-            {dungeon.rooms.map((r) => (
-                <Room key={r.id} id={r.id} area={r.area} />
-            ))}
-            {/* <BugRender id="Monster:Bug:1" /> */}
-            {/* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
+            <Suspense>
+                <Physics>
+                    {/* <OrbitControls /> */}
+                    <FollowCamera />
+                    <ambientLight intensity={0.1} />
+                    {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}
+                    {/* <PedeRender id="Monster:Bug:1" /> */}
+                    {dungeon.rooms.map((r) => (
+                        <Room key={r.id} id={r.id} area={r.area} />
+                    ))}
+                    {/* <BugRender id="Monster:Bug:1" /> */}
+                    {/* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
             can optimise for things that aren't really going to move */}
-            <Selection>
-                <EffectComposer multisampling={8} autoClear={false}>
-                    <Outline blur visibleEdgeColor="white" edgeStrength={100} width={1000} />
-                </EffectComposer>
-                {actors.map((m) => (
-                    <Actor id={m} key={m} />
-                ))}
-            </Selection>
+                    <Selection>
+                        <EffectComposer multisampling={8} autoClear={false}>
+                            <Outline
+                                blur
+                                visibleEdgeColor="white"
+                                edgeStrength={100}
+                                width={1000}
+                            />
+                        </EffectComposer>
+                        {actors.map((m) => (
+                            <Actor id={m} key={m} />
+                        ))}
+                    </Selection>
+                </Physics>
+            </Suspense>
         </Canvas>
     )
 }
