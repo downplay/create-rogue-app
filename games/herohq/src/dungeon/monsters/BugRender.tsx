@@ -5,6 +5,7 @@ import { Ball, Direction, Position, Rod } from "../../3d/Parts"
 import { makeToonMaterial } from "../../3d/materials"
 import { ActorCreatedData, ActorProps, gameTimeTicksAtom, useModule } from "../../model/actor"
 import { MovementModule } from "../../model/movement"
+import { RigidBody } from "@react-three/rapier"
 
 // TODO: Some advanced bugs might have different numbers of legs
 const LEG_PAIRS_COUNT = 3
@@ -145,25 +146,27 @@ export const BugCorpseRender = ({ id }: ActorProps) => {
         return legs
     }, [time])
     return (
-        <group rotation={ORIENT_BACKWARDS} position={[0, 0.25, 0]}>
-            <Ball size={0.5} material={BODY_MATERIAL}>
-                {legs.map((l) => (
-                    <Position key={l.index} at={l.position}>
-                        <Ball size={0.1} material={LEG_MATERIAL} />
-                        <Rod length={0.3} caps={0.05} rotate={l.rotate} material={LEG_MATERIAL}>
-                            <Position at={0}>
-                                <Ball size={0.1} material={LEG_MATERIAL} />
-                                <Rod
-                                    length={0.5}
-                                    caps={0.04}
-                                    rotate={l.knee}
-                                    material={LEG_MATERIAL}
-                                />
-                            </Position>
-                        </Rod>
-                    </Position>
-                ))}
-            </Ball>
-        </group>
+        <RigidBody>
+            <group rotation={ORIENT_BACKWARDS} position={[0, 0.25, 0]}>
+                <Ball size={0.5} material={BODY_MATERIAL}>
+                    {legs.map((l) => (
+                        <Position key={l.index} at={l.position}>
+                            <Ball size={0.1} material={LEG_MATERIAL} />
+                            <Rod length={0.3} caps={0.05} rotate={l.rotate} material={LEG_MATERIAL}>
+                                <Position at={0}>
+                                    <Ball size={0.1} material={LEG_MATERIAL} />
+                                    <Rod
+                                        length={0.5}
+                                        caps={0.04}
+                                        rotate={l.knee}
+                                        material={LEG_MATERIAL}
+                                    />
+                                </Position>
+                            </Rod>
+                        </Position>
+                    ))}
+                </Ball>
+            </group>
+        </RigidBody>
     )
 }

@@ -1,14 +1,19 @@
+import * as THREE from "three"
 import { Canvas } from "@react-three/fiber"
 import { Selection, EffectComposer, Outline } from "@react-three/postprocessing"
-import { Physics, RigidBody, CuboidCollider } from "@react-three/rapier"
+import { Physics } from "@react-three/rapier"
 
 import { Room } from "../dungeon/levels/Room"
 import { dungeonAtom } from "../model/dungeon"
-import { useAtom, useAtomValue } from "jotai"
+import { atom, useAtom, useAtomValue } from "jotai"
 import { Actor } from "../dungeon/Actor"
-import { actorIdsAtom } from "../model/actor"
 import { Suspense, useEffect } from "react"
 import { FollowCamera } from "../3d/FollowCamera"
+import { atomFamily } from "jotai/utils"
+import { LocationData, actorIdsAtom } from "../model/actor"
+
+// https://docs.pmnd.rs/react-three-fiber/advanced/scaling-performance#re-using-geometries-and-materials
+THREE.ColorManagement.enabled = true
 
 // const ORIGIN = new Vector3(0, 0, 0)
 // const UP = new Vector3(0, 1, 0)
@@ -23,7 +28,14 @@ const DEFAULT_CAMERA = {
 
 // const ROTATE_Y_180 = new Euler(0, Math.PI, 0)
 
-export const Dungeon = () => {
+export const visibleActorIdsFamily = atomFamily((location: string) =>
+    atom((get) => {
+        // TODO:
+        return get(actorIdsAtom).filter((id) => get(LocationData.family(id)).location === location)
+    })
+)
+
+export const Dungeon = ({ location }: { location: string }) => {
     // const hero = useAtom(activeHeroAtom)
     // const dungeon = useAtom(dungeonAtom)
     // const lightPosition = useVector(10, 10, 20)
@@ -37,10 +49,9 @@ export const Dungeon = () => {
     // For now it's simple enough to only handle monsters in same room as hero and freeze everything
     // else, but we might want to still animate monsters in other rooms and occasionally have them
     // walk through an open door.
-    const actors = useAtomValue(actorIdsAtom)
     const [dungeon, setDungeon] = useAtom(dungeonAtom)
-    console.log(dungeon.rooms)
-
+    const actors = useAtomValue(visibleActorIdsFamily(location))
+    // console.log(dungeon.rooms)
     useEffect(() => {
         setDungeon({ type: "initialize", level: 1 })
     }, [])
@@ -49,21 +60,17 @@ export const Dungeon = () => {
     //     e.events.handlers?.onPointerMove({target})
     // })
 
+    /* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
+            can optimise for things that aren't really going to move */
     return (
         <Canvas camera={DEFAULT_CAMERA} shadows>
             <Suspense>
                 <Physics>
-                    {/* <OrbitControls /> */}
                     <FollowCamera />
                     <ambientLight intensity={0.1} />
-                    {/* <perspectiveCamera position={cameraPosition} rotation={cameraRotation} /> */}
-                    {/* <PedeRender id="Monster:Bug:1" /> */}
                     {dungeon.rooms.map((r) => (
                         <Room key={r.id} id={r.id} area={r.area} />
                     ))}
-                    {/* <BugRender id="Monster:Bug:1" /> */}
-                    {/* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
-            can optimise for things that aren't really going to move */}
                     <Selection>
                         <EffectComposer multisampling={8} autoClear={false}>
                             <Outline

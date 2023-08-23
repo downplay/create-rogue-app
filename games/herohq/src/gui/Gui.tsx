@@ -66,7 +66,7 @@ export const Gui = () => {
             case "town":
                 return <City />
             case "dungeon":
-                return <Dungeon />
+                return <Dungeon location={"Dungeon:" + state.floor} />
         }
     }, [state])
 

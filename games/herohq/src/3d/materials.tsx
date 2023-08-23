@@ -1,4 +1,15 @@
-import { Color, DataTexture, RedFormat } from "three"
+import { useTexture } from "@react-three/drei"
+import { useMemo } from "react"
+import { isArray } from "remeda"
+import {
+    Color,
+    DataTexture,
+    ObjectSpaceNormalMap,
+    RedFormat,
+    RepeatWrapping,
+    TangentSpaceNormalMap,
+    Vector2
+} from "three"
 
 const TOON_COLORS = 10
 
@@ -35,4 +46,57 @@ export const makeMetalMaterial = (colorHex: string) => {
     // make it more metally.
     const material = <meshStandardMaterial color={color} metalness={0.6} roughness={0.313} />
     return material
+}
+
+export const makeGlassMaterial = (hue: number, sat: number = 0.5, lum: number = 1) => {
+    const color = new Color().setHSL(hue, sat, lum)
+    return (
+        <meshPhysicalMaterial
+            color={color}
+            transmission={1}
+            thickness={0.5}
+            roughness={0.2}
+            transparent={true}
+            opacity={0.9}
+            ior={1.3}
+            iridescenceIOR={1.5}
+            alphaTest={0.5}
+        />
+    )
+}
+
+export type Textures = [base: string, height: string, normal: string, rough: string, ao: string]
+
+const NORMAL_SCALE = new Vector2(0.2, 0.2)
+
+export const useTextureMaterial = (textures: Textures) => {
+    const [colorMap, displacementMap, normalMap, roughnessMap, aoMap] = useTexture(
+        textures,
+        (t) => {
+            ;(isArray(t) ? t : [t]).forEach((t) => {
+                t.wrapS = RepeatWrapping
+                t.wrapT = RepeatWrapping
+                t.repeat.set(2, 2)
+            })
+        }
+    )
+
+    return useMemo(
+        () => (
+            <meshStandardMaterial
+                displacementScale={0.01}
+                map={colorMap}
+                // TODO: Figure out displacement not really working and
+                // also masking item (could set fake physic floor at 0.2 units above 0)
+                // displacementMap={displacementMap}
+                normalMap={normalMap}
+                normalScale={NORMAL_SCALE}
+                // normalMapType={TangentSpaceNormalMap}
+                roughnessMap={roughnessMap}
+                aoMap={aoMap}
+                aoMapIntensity={0.2}
+            />
+        ),
+        [colorMap, displacementMap, normalMap, roughnessMap, aoMap]
+    )
 }

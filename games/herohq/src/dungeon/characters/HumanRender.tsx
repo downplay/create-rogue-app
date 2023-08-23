@@ -14,6 +14,8 @@ const LEG_MATERIAL = makeToonMaterial(0.66, 0.4, 0.3)
 
 const CYCLE_SPEED = 1
 
+const LANTERN_POS = [0, 0, 0.1] as const
+
 export const HumanRender = ({ id }: ActorProps) => {
     const movement = useModule(MovementModule, id)
     const animate = movement.status === "moving"
@@ -74,6 +76,8 @@ export const HumanRender = ({ id }: ActorProps) => {
     )
     // TODO: If we base offset on the legs position or the cycle we can get some bobbing
     const offset = useMemo(() => [0, 0.42, 0] as const, [])
+    /* // TODO: We need a kind of slot-fill system where the hands/legs can be given a
+        <Slot /> component and name and via a context we can attach accessories to it */
     return (
         <group position={offset}>
             <Ball size={bodySize} material={BODY_MATERIAL}>
@@ -86,8 +90,6 @@ export const HumanRender = ({ id }: ActorProps) => {
                 </Position>
                 {arms.map((arm) => (
                     <Position key={arm.tag} at={arm.position}>
-                        {/* // TODO: We need a kind of slot-fill system where the hand can be given a
-                    <Slot /> component and name and via a context we can attach accessories to it */}
                         <Rod
                             length={0.14}
                             caps={0.02}
@@ -103,7 +105,7 @@ export const HumanRender = ({ id }: ActorProps) => {
                                         <Ball size={0.05} material={SKIN_MATERIAL}>
                                             {arm.handed === "Left" && (
                                                 // Holding a torch here
-                                                <Position at={0}>
+                                                <Position at={LANTERN_POS}>
                                                     <pointLight color="lightyellow" castShadow />
                                                 </Position>
                                             )}
@@ -116,8 +118,6 @@ export const HumanRender = ({ id }: ActorProps) => {
                 ))}
                 {legs.map((leg) => (
                     <Position key={leg.tag} at={leg.position}>
-                        {/* // TODO: We need a kind of slot-fill system where the hand can be given a
-                    <Slot /> component and name and via a context we can attach accessories to it */}
                         <Rod length={0.14} caps={0.02} rotate={leg.hip} material={LEG_MATERIAL}>
                             <Position at={0}>
                                 <Rod

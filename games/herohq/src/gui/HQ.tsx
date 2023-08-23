@@ -9,6 +9,7 @@ import { atomWithStorage } from "jotai/utils"
 import { guiStateAtom } from "./Gui"
 import { Button } from "./Button"
 import { PurchaseButton } from "./Currency"
+import { atomWithLocalStorage } from "../model/atomWithLocalStorage"
 
 export type HQRoomId = "barracks" | "garden" | "galley" | "store" | "infirmary" | "study"
 
@@ -87,7 +88,7 @@ const DEFAULT_HQ_ROOM_DATA = {
 }
 
 const hqRoomFamily = (id: string) => {
-    const storage = atomWithStorage("HQ:Room:" + id, DEFAULT_HQ_ROOM_DATA)
+    const storage = atomWithLocalStorage("HQ:Room:" + id, DEFAULT_HQ_ROOM_DATA)
     return storage
     // return atom(
     //     (get) => get(storage),

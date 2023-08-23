@@ -12,7 +12,7 @@ import { atomWithStorage } from "jotai/utils"
 import { Cost } from "./account"
 import { rosterHeroesAtom } from "./roster"
 import { makeRng } from "./rng"
-import { ActorAtom, actorFamily } from "./actor"
+import { ActorAtom, LocationData, actorFamily } from "./actor"
 import { ClassData, HeroActor, NameData } from "./hero"
 import { LevelData } from "./level"
 
@@ -76,6 +76,16 @@ export const regenerateRecruits = (get: Getter, set: Setter) => {
             type: "initialize",
             actor: HeroActor,
             data: [
+                [
+                    LocationData,
+                    {
+                        // TODO: Change location depending on recruiter,
+                        // for avatar thumbnail render with the right background
+                        location: "Bar",
+                        position: { x: 0, y: 0 },
+                        direction: 0.5
+                    }
+                ],
                 [LevelData, Math.max(1, Math.floor(Math.log(i.weight) * 2))],
                 [NameData, i.name],
                 [ClassData, i.class]

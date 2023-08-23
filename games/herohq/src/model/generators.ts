@@ -36,8 +36,10 @@ const classicGridLayoutGenerator: DungeonGenerator = ({ level, rng }) => {
     const rooms: RoomData[] = []
     const irwin = rng.irwinHall(4)
     // Nothing complicated yet. Just a 4x4 grid of rooms, no missing gaps yet.
-    for (let n = 0; n < 4; n++) {
-        for (let m = 0; m < 4; m++) {
+    const roomsX = 1
+    const roomsY = 1
+    for (let n = 0; n < roomsY; n++) {
+        for (let m = 0; m < roomsX; m++) {
             const mapSize = {
                 width: Math.floor(5 + irwin() * 5),
                 height: Math.floor(5 + irwin() * 5)
@@ -74,8 +76,8 @@ const randomPlacement: RoomGenerator = ({ room, rng, level }) => {
             y: room.area.y + rng.float(room.area.height)
         }
         entities.push({
-            // type: BugMonster,
-            type: BubbleMonster,
+            type: BugMonster,
+            // type: BubbleMonster,
             // TODO: Figure out using storytext to do roomgen / encounters/ monsters / etc
             data: [
                 [
@@ -94,7 +96,8 @@ export const populateRoom = (props: RoomGeneratorProps) => {
     const actors = randomPlacement(props)
     const { set } = props
     for (const a of actors) {
-        const id = "D:" + props.level + ":" + props.room.id + ":" + crypto.randomUUID()
+        const id =
+            "D:" + props.level + ":" + props.room.id + ":" + crypto.randomUUID() + ":" + a.type.name
         set(actorFamily(id), {
             type: "initialize",
             actor: a.type,

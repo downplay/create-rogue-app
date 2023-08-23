@@ -5,12 +5,23 @@ import { useSetAtom } from "jotai"
 import { heroControlAtom } from "../../model/hero"
 import { Quad } from "../../model/spacial"
 import { RigidBody } from "@react-three/rapier"
+import {
+    Brick1Texture,
+    Brick2Texture,
+    Brick3Texture,
+    Brick4Texture,
+    Tile1Texture,
+    Tile2Texture,
+    Tile3Texture,
+    Tile4Texture
+} from "../../3d/textures/bricks"
+import { useTextureMaterial } from "../../3d/materials"
 
 // TODO: Floor/wall can be extracted as a "Tile" component with a height range and material
 
 // TODO: Maybe rename height to depth to be less confusing and use height for actual height
 
-const FLOOR_DEFAULT_MATERIAL = <meshStandardMaterial color="darkslategrey" />
+// const FLOOR_DEFAULT_MATERIAL = <meshStandardMaterial color="darkslategrey" />
 
 const Floor = ({ area }: { area: Quad }) => {
     const setHeroControl = useSetAtom(heroControlAtom)
@@ -30,18 +41,20 @@ const Floor = ({ area }: { area: Quad }) => {
         })
     }, [])
 
+    const material = useTextureMaterial(Tile4Texture)
+
     // TODO: Handle mouse move etc events and display a target
     return (
         <RigidBody type="fixed">
             <mesh position={boxPosition} receiveShadow onClick={handleClick}>
                 <boxGeometry args={boxArgs} />
-                {FLOOR_DEFAULT_MATERIAL}
+                {material}
             </mesh>
         </RigidBody>
     )
 }
 
-const WALL_DEFAULT_MATERIAL = <meshStandardMaterial color="lightslategrey" />
+// const WALL_DEFAULT_MATERIAL = <meshStandardMaterial color="lightslategrey" />
 
 const Wall = ({ area }: { area: Quad }) => {
     const boxArgs = useMemo(() => [area.width, 1, area.height] as [number, number, number], [area])
@@ -49,11 +62,12 @@ const Wall = ({ area }: { area: Quad }) => {
         () => new Vector3(area.x + area.width / 2, 0.5, area.y + area.height / 2),
         [area]
     )
+    const material = useTextureMaterial(Brick4Texture)
     return (
         <RigidBody type="fixed">
             <mesh position={boxPosition} receiveShadow>
                 <boxGeometry args={boxArgs} />
-                {WALL_DEFAULT_MATERIAL}
+                {material}
             </mesh>
         </RigidBody>
     )

@@ -15,6 +15,7 @@ import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
 import { isArray } from "remeda"
 import { makeRng } from "./rng"
 import { Position } from "./spacial"
+import { atomWithLocalStorage } from "./atomWithLocalStorage"
 
 export const gameTimeTicksAtom = atom(0)
 
@@ -99,20 +100,21 @@ type ModuleContext<Get> = ModuleGetterContext & {
 }
 
 type ModuleGetter<Opts, Get> = (opts: Opts, context: ModuleGetterContext) => Get
-type ModuleInitializer<Opts, Get> = (opts: Opts, context: ModuleContext<Get>) => void
+type ModuleInitializer<Opts, Get> = (
+    opts: Opts,
+    context: ModuleContext<Get>,
+    hydrate: boolean
+) => void
 
 type ModuleUpdate<Opts> =
     | {
-          type: "initialize"
+          type: "initialize" | "hydrate"
           opts: Opts
       }
     | {
           type: "action"
           action: ActionDefinition<any>
           payload: any
-      }
-    | {
-          type: "hydrate"
       }
     | {
           type: "destroy"
@@ -153,6 +155,7 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
                 (get, set, update: ModuleUpdate<Opts>) => {
                     switch (update.type) {
                         case "initialize":
+                        case "hydrate":
                             set(optsAtom, update.opts)
                             if (initialize) {
                                 const writeContext: ModuleContext<Get> = {
@@ -187,7 +190,7 @@ export const defineModule = <Opts extends {} = {}, Get = undefined>(
                                     }
                                 }
 
-                                initialize(update.opts, writeContext)
+                                initialize(update.opts, writeContext, update.type === "hydrate")
                             }
                             break
                         case "action":
@@ -242,7 +245,7 @@ export const defineData = <Data>(name: string, defaultValue: Data): DataDefiniti
         name,
         defaultValue,
         family: atomFamily((id: string) =>
-            atomWithStorage("Actor:" + id + ":" + name, defaultValue)
+            atomWithLocalStorage("Actor:" + id + ":" + name, defaultValue)
         )
     }
 }
@@ -265,19 +268,26 @@ export type ActorDefinition = {
     modules: ModuleSpec<any, any>[]
 }
 
+const actorDefinitions: Record<string, ActorDefinition> = {}
+
 export const defineActor = (name: string, modules: ModuleSpec<any, any>[]): ActorDefinition => {
-    return {
+    if (actorDefinitions[name]) {
+        throw new Error("Duplicate actor type: " + name)
+    }
+    const def: ActorDefinition = {
         type: "ACTOR",
         name,
         modules
     }
+    actorDefinitions[name] = def
+    return def
 }
 
 // TODO: Just a bit worried about having an atomic array for this. If we create and destroy
 // a large number of actors this op will get pretty expensive. Could end up more efficient to mutate
 // this array and find a way of only updating atoms for the important derived stuff (e.g. visible actors)
-export const actorIdsAtom = atom<string[]>([])
-// export const actorIdsAtom = atomWithStorage<string[]>("Actors", [])
+// export const actorIdsAtom = atom<string[]>([])
+export const actorIdsAtom = atomWithLocalStorage<string[]>("Actors", [])
 
 // TODO: use splitatom to make it more efficient?
 export const actorsAtom = atom((get) => get(actorIdsAtom).map((id) => actorFamily(id)))
@@ -322,13 +332,24 @@ export const actorFamily = atomFamily((id: string) => {
                     set(actorIdsAtom, newActors)
                     break
                 }
-                case "hydrate":
+                case "hydrate": {
                     const actorType = get(ActorTypeData.family(id))
-                    // TODO: We'll need to look up the actor somewhere and reinstate
-                    // all their modules
-                    throw new Error("Not implemented, rehydrate: " + actorType)
+                    const def = actorDefinitions[actorType]
+                    if (!def) {
+                        throw new Error("Unknown actor type: " + actorType + " - " + id)
+                    }
+                    console.log(def)
+                    for (const m of def.modules) {
+                        const module = isArray(m) ? m[0] : m
+                        const opts = isArray(m) ? m[1] || {} : {}
+                        console.log("Hydrating " + module.name + " with ", opts)
+                        set(module.family(id), { type: "hydrate", opts })
+                        modules.push(module)
+                        // module.initialize()
+                    }
                     break
-                case "destroy":
+                }
+                case "destroy": {
                     const newActors = get(actorIdsAtom).filter((a) => a !== id)
                     // TODO: Record a list of data we have so we can go and delete them all
                     set(ActorTypeData.family(id), RESET)
@@ -336,6 +357,7 @@ export const actorFamily = atomFamily((id: string) => {
 
                     set(actorIdsAtom, newActors)
                     break
+                }
                 case "action":
                     for (const m of modules) {
                         set(m.family(id), update)

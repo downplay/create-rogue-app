@@ -1,9 +1,8 @@
 // TODO: Would this be more performant if we return matrices but keep them buffered
 
 import { useMemo } from "react"
-import { ActorLocation } from "../model/hero"
-import { UNITS_PER_CELL } from "../model/dungeon"
 import { Euler } from "three"
+import { ActorLocation } from "../model/actor"
 
 // with a useRef and update them with a useEffect rather than useMemo?
 export const useLocationToPosition = (location: ActorLocation) => {
