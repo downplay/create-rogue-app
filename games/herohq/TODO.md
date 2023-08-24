@@ -1,11 +1,12 @@
+-   Basic theme a bit nicer
 -   Optimise bugrender
--   Visible lamp in players hand
-    -   Make z work properly on positioning
--   Inventory popup (fix inventory?)
+-   Visible lamp in players hand (point light elevated in tree so it's not in the parent structure)
+-   Why are modules getting applied multiple times on refresh
+-   Inventory popup why aren't thumbnails rendered
+-   "Box" and "Sock" parts
 -   Rehydration on refresh
 -   Monster attacking player
--   Corridors between rooms
--   Wall/floor textures
+-   Fix wall/floor textures scaling, maybe just render many cubes
 -   Mouse zoom/orbit
 -   Smooth camera movement
 -   Equippable items (sword #1 priority)
@@ -13,3 +14,11 @@
 -   Use heromap to generate rooms (throw some scenery around)
 -   Treasury display
 -   Hero upgrades
+-   Corridors between rooms
+-   Up and down stairs
+-   Make raycasting and clicking more responsive (bigger hit spheres, continual casting)
+-   Make coins smaller again once easier to click
+-   Update coin position as moved by physics (beware state render cascade)
+-   Bug corpses disappear after time. Fade shadows?
+-   Bug corpse ragdoll / limb destruction
+-   Kinematic player. Ragdoll corpse/unconscious/stun.

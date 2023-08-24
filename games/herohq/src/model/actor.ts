@@ -22,6 +22,7 @@ export const gameTimeTicksAtom = atom(0)
 export type ActorProps = {
     id: string
     selected: boolean
+    mode: "game" | "thumbnail"
 }
 
 // type ModuleCommand<Opts> =
@@ -297,6 +298,7 @@ export type Actor = {
     modules: ModuleDefinition<any, any>[]
     type: string
     created: number
+    destroyed: boolean
 }
 
 export type ActorAtom = WritableAtom<Actor, [ActorUpdate], void>
@@ -307,7 +309,10 @@ export const actorFamily = atomFamily((id: string) => {
         (get) => {
             const type = get(ActorTypeData.family(id))
             const created = get(ActorCreatedData.family(id))
-            return { id, modules, type, created } as Actor
+            if (!type || !type) {
+                return { id, modules: [], type: "", created: 0, destroyed: true } as Actor
+            }
+            return { id, modules, type, created, destroyed: false } as Actor
         },
         (get, set, update: ActorUpdate) => {
             switch (update.type) {
@@ -334,6 +339,7 @@ export const actorFamily = atomFamily((id: string) => {
                 }
                 case "hydrate": {
                     const actorType = get(ActorTypeData.family(id))
+                    console.log("Hydrating", actorType, id)
                     const def = actorDefinitions[actorType]
                     if (!def) {
                         throw new Error("Unknown actor type: " + actorType + " - " + id)
@@ -448,7 +454,7 @@ type RenderModuleOpts = {
     renderer?: ComponentType<ActorProps>
 }
 
-const DefaultRenderer = ({ id }: { id: string }) => id
+const DefaultRenderer = ({ id }: { id: string }) => null
 
 export const RenderModule = defineModule(
     "Render",

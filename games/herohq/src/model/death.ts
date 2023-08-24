@@ -62,6 +62,8 @@ export const DeathModule = defineModule(
             spawn(isArray(corpse) ? corpse[0] : corpse, [
                 ...(isArray(corpse) ? corpse[1] : []),
                 [LocationData, location]
+                // TODO: Compute an angular/linear velocity based off the final blow
+                //[PhysicsData, {angularVelocity:[], linearVelocity:[]}]
             ])
 
             // Finally destroy self

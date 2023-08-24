@@ -1,12 +1,13 @@
 import "sanitize.css"
 import { Gui } from "./gui/Gui"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useAtomValue } from "jotai"
 import { useAtomCallback } from "jotai/utils"
 import { actorFamily, actorIdsAtom } from "./model/actor"
+import { GlobalStyles } from "./gui/GlobalStyles"
 
 const App = () => {
-    const [initialized, setInitialized] = useState(false)
+    const initialized = useRef(false)
     const actorIds = useAtomValue(actorIdsAtom)
     console.log(actorIds)
 
@@ -21,18 +22,24 @@ const App = () => {
     )
 
     useEffect(() => {
-        setTimeout(() => {
-            const ids = readActors()
-            console.log("IDS", ids)
-            for (const id of ids) {
-                console.log("hydrating", id)
-                hydrateActor(id)
-            }
-            setInitialized(true)
-        }, 1000)
+        // In strict mode in development the effect runs twice :(
+        if (initialized.current) {
+            // throw new Error("Effect twiced")
+            return
+        }
+        initialized.current = true
+        const ids = readActors()
+        for (const id of ids) {
+            hydrateActor(id)
+        }
     }, [])
 
-    return <>{initialized ? <Gui /> : null}</>
+    return (
+        <>
+            <GlobalStyles />
+            {initialized ? <Gui /> : null}
+        </>
+    )
 }
 
 export { App }

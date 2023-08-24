@@ -95,7 +95,10 @@ export const Gui = () => {
                     <Roster />
                 </Cell>
             </Grid>
-            <Rodal visible={!!popup.name} onClose={handlePopupClose}>
+            <Rodal
+                visible={!!popup.name}
+                onClose={handlePopupClose}
+                customStyles={{ width: "80%", height: "80%" }}>
                 {popupElement}
             </Rodal>
             <Modals />

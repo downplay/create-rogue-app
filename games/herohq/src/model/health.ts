@@ -50,6 +50,7 @@ export const HealthModule = defineModule(
                 // add a ragdoll module, and a loot module. A corpse behaves a bit liek a chest actually.
                 // It is tempting. Also think about how we would revive a corpse as a zombie.
                 dispatch(CancelAction, undefined)
+                dispatch(CancelAction, undefined, source)
                 dispatch(DieAction, { killer: source })
             }
         })

@@ -20,7 +20,9 @@ export const Actor = ({ id }: { id: string }) => {
 
     const Renderer = useModule(RenderModule, id)
 
-    // TODO: Maybe there's a case for just using local state rather than
+    // TODO: Selection should be another module and implement another wrapper, we can optimise by
+    // not having any of this stuff unless it's needed
+    // TODO: Maybe there's a case for just using local state rather than an atom here
     const [selectedInteractionActorId, setSelectedInteractionActorId] = useAtom(
         selectedInteractionActorIdAtom
     )
@@ -88,7 +90,7 @@ export const Actor = ({ id }: { id: string }) => {
                 onClick={handleClick}
                 onPointerOver={handleSelect}
                 onPointerOut={handleDeselect}>
-                <Renderer id={id} selected={isSelected} />
+                <Renderer id={id} selected={isSelected} mode="game" />
             </group>
         </Select>
     )

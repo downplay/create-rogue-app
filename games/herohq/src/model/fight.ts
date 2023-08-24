@@ -1,4 +1,11 @@
-import { LocationData, defineAction, defineData, defineModule, gameTimeTicksAtom } from "./actor"
+import {
+    LocationData,
+    actorFamily,
+    defineAction,
+    defineData,
+    defineModule,
+    gameTimeTicksAtom
+} from "./actor"
 import { GameLoopAction } from "./game"
 import { WalkToAction } from "./movement"
 import { CancelAction } from "./player"
@@ -50,6 +57,11 @@ export const FightModule = defineModule(
         const attack = (target: string) => {
             //TODO: we need different types of attack, an attack timeline, depends on weapons
             const current = get(AttackData)
+            const targetActor = getAtom(actorFamily(target))
+            if (targetActor.destroyed) {
+                set(AttackData, DEFAULT_ATTACK)
+                return
+            }
             const time = getAtom(gameTimeTicksAtom)
             if (!current.attack) {
                 set(AttackData, {
@@ -75,13 +87,13 @@ export const FightModule = defineModule(
                         target
                     )
                 } else {
-                    // visually represent a miss
+                    // TODO: visually represent a miss
                     // bad misses based on high negative could make player vulnerable
                     // monster blocks could also trigger vuln, separately
                 }
                 set(AttackData, (data) => ({ ...data, activated: true }))
             } else if (time > current.start + current.attack.length / current.speed) {
-                set(AttackData, { start: 0, speed: 1, activated: false })
+                set(AttackData, DEFAULT_ATTACK)
             }
         }
 

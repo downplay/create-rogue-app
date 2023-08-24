@@ -82,7 +82,7 @@ const randomPlacement: RoomGenerator = ({ room, rng, level }) => {
             data: [
                 [
                     LocationData,
-                    { location: "D:" + level, position, direction: rng.next(), room: room.id }
+                    { location: "Dungeon:" + level, position, direction: rng.next(), room: room.id }
                 ],
                 [LevelData, Math.max(1, Math.round(level + dist() * 5 - 2))]
             ]

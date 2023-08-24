@@ -9,7 +9,7 @@ import {
 } from "./actor"
 import { InteractionAction } from "./player"
 import { GameLoopAction } from "./game"
-import { WalkToAction } from "./movement"
+import { TeleportAction, WalkToAction } from "./movement"
 import { CancelAction } from "./player"
 
 export const LootTargetAction = defineAction<{
@@ -139,7 +139,7 @@ export const InventoryModule = defineModule(
         const container = get(InventoryData).container
         return container ? get(ContainerData, container) : []
     },
-    (_, { get, getAtom, set, setAtom, spawn, handle, self }) => {
+    (_, { get, getAtom, set, setAtom, spawn, handle, self, dispatch }) => {
         const data = get(InventoryData)
         let container = data.container
         if (!container) {
@@ -163,11 +163,26 @@ export const InventoryModule = defineModule(
                     // Destroy original item
                     setAtom(family, { type: "destroy" })
                 } else {
-                    // TODO: Remove item from Room (we need a MoveToContainer action)
+                    // TODO: We shouldn't need this teleport. Item location should be determined from its
+                    // container parent. Moving it to the container should be enough. Maybe we need a MoveToContainer
+                    // action (or maybe the TeleportAction is what should be setting ContainerData...?)
+                    set(
+                        LocationData,
+                        { position: { x: 0, y: 0 }, location: "Inventory", direction: 0.5 },
+                        item
+                    )
                     set(ContainerData, [...items, item], container)
                 }
             } else if (container) {
-                // TODO: Remove item from Room (we need a MoveToContainer action)
+                // TODO: We shouldn't need this teleport. Item location should be determined from its
+                // container parent. Moving it to the container should be enough. Maybe we need a MoveToContainer
+                // action (or maybe the TeleportAction is what should be setting ContainerData...?)
+                set(
+                    LocationData,
+                    { position: { x: 0, y: 0 }, location: "Inventory", direction: 0.5 },
+                    item
+                )
+
                 set(ContainerData, [...items, item], container)
             }
         })

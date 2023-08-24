@@ -1,9 +1,10 @@
-import { ContainerModule, InventoryData } from "../model/item"
-import { useModule, ActorAtom, RenderModule, undefinedAtom } from "../model/actor"
+import { ContainerModule, InventoryData, ItemModule } from "../model/item"
+import { useModule, ActorAtom, RenderModule, undefinedAtom, useModuleRef } from "../model/actor"
 import styled from "@emotion/styled"
 import { useAtomValue } from "jotai"
 import { Canvas } from "@react-three/fiber"
 import { activeHeroIdAtom } from "../model/hero"
+import { Euler } from "three"
 
 const Grid = styled.div`
     display: flex;
@@ -12,29 +13,48 @@ const Grid = styled.div`
 
 const FIXED_CAMERA = {
     fov: 45,
-    near: 1,
-    far: 1000,
-    position: [0, 0, 100] as const
+    near: 0.1,
+    far: 100,
+    position: [0, 0, 2] as const
 }
+
+const FixedActorRotate = new Euler(Math.PI / 4, 0, 0)
 
 const FixedActor = ({ id, isSelected = false }: { id: string; isSelected?: boolean }) => {
     const Renderer = useModule(RenderModule, id)
-    return <Renderer id={id} selected={isSelected} />
+    return (
+        <group rotation={FixedActorRotate}>
+            <Renderer id={id} selected={isSelected} mode="thumbnail" />
+        </group>
+    )
 }
 
 const Item = styled.div`
+    position: relative;
     border: solid 2px black;
-    width: 128;
-    height: 128;
+    width: 128px;
+    height: 128px;
+`
+
+const Value = styled.div`
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
 `
 
 const ContainerItem = ({ atom }: { atom: ActorAtom }) => {
     const actor = useAtomValue(atom)
+    const inv = useModule(ItemModule, actor.id)
+
+    console.log("CONTAINER ITEM", actor)
     return (
-        <Item>
-            <Canvas camera={FIXED_CAMERA} frameloop="always">
+        <Item title={actor.type}>
+            <Canvas camera={FIXED_CAMERA} frameloop="demand">
+                <ambientLight intensity={0.1} />
+                <pointLight position={[-10, 10, 20]} />
                 <FixedActor id={actor.id} />
             </Canvas>
+            {inv.stackable ? <Value>{inv.amount}</Value> : null}
         </Item>
     )
 }

@@ -5,7 +5,7 @@ import { Ball, Direction, Position, Rod } from "../../3d/Parts"
 import { makeToonMaterial } from "../../3d/materials"
 import { ActorCreatedData, ActorProps, gameTimeTicksAtom, useModule } from "../../model/actor"
 import { MovementModule } from "../../model/movement"
-import { RigidBody } from "@react-three/rapier"
+import { WithToss } from "../../3d/physics/wrappers"
 
 // TODO: Some advanced bugs might have different numbers of legs
 const LEG_PAIRS_COUNT = 3
@@ -146,8 +146,8 @@ export const BugCorpseRender = ({ id }: ActorProps) => {
         return legs
     }, [time])
     return (
-        <RigidBody>
-            <group rotation={ORIENT_BACKWARDS} position={[0, 0.25, 0]}>
+        <WithToss>
+            <group rotation={ORIENT_FORWARDS} position={[0, 0.25, 0]}>
                 <Ball size={0.5} material={BODY_MATERIAL}>
                     {legs.map((l) => (
                         <Position key={l.index} at={l.position}>
@@ -167,6 +167,6 @@ export const BugCorpseRender = ({ id }: ActorProps) => {
                     ))}
                 </Ball>
             </group>
-        </RigidBody>
+        </WithToss>
     )
 }
