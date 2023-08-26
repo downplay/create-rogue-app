@@ -54,9 +54,9 @@ export const Dungeon = ({ location }: { location: string }) => {
     const actors = useAtomValue(visibleActorIdsFamily(location))
     // console.log(dungeon.rooms)
 
-    useEffect(() => {
-        setDungeon({ type: "initialize", level: 1 })
-    }, [])
+    // useEffect(() => {
+    //     setDungeon({ type: "initialize", level: 1 })
+    // }, [])
 
     // useFrame((e) => {
     //     e.events.handlers?.onPointerMove({target})

@@ -5,7 +5,6 @@ import { makeToonMaterial } from "../../3d/materials"
 import { useAtomValue } from "jotai"
 import { ActorProps, gameTimeTicksAtom, useModule } from "../../model/actor"
 import { MovementModule } from "../../model/movement"
-import { createPortal, useFrame, useThree } from "@react-three/fiber"
 
 const NeckPosition = new Vector3(0, 0, 0)
 
@@ -15,15 +14,13 @@ const LEG_MATERIAL = makeToonMaterial(0.66, 0.4, 0.3)
 
 const CYCLE_SPEED = 1
 
-const LANTERN_POS = [0, 0.2, 1] as const
+const LANTERN_POS = [0, 0, 1] as const
 
 export const HumanRender = ({ id }: ActorProps) => {
     const movement = useModule(MovementModule, id)
     const animate = movement.status === "moving"
     const time = useAtomValue(gameTimeTicksAtom)
     const cycle = time * CYCLE_SPEED // * speed
-    const three = useThree()
-    const portalTarget = three.scene
 
     const bodySize = useMemo(() => [0.15, 0.4, 0.05] as const, [])
     const neckLength = useMemo(() => 0.05, [])
@@ -37,8 +34,8 @@ export const HumanRender = ({ id }: ActorProps) => {
                 tag: "Arm:1",
                 handed: "Left",
                 position: [-0.25, 0, 0] as const,
-                shoulder: [-0.3, -0.5, 0] as const,
-                elbow: [-0.2, 0, 0] as const
+                shoulder: [-0.2, -0.5, 0] as const,
+                elbow: [0.2, -0.5, 0] as const
             },
             {
                 tag: "Arm:2",
@@ -82,47 +79,8 @@ export const HumanRender = ({ id }: ActorProps) => {
     /* // TODO: We need a kind of slot-fill system where the hands/legs can be given a
         <Slot /> component and name and via a context we can attach accessories to it */
 
-    // TODO: Hoisting a position out to world space seems like a pattern we should
-    // be able to reuse (and will need to if this fixes the lighting issue)
-    const lanternPositionRef = useRef<Vector3>()
-    const lanternRef = useRef<PointLight>(null!)
-    const lanternContainerRef = useRef<Mesh>(null!)
-    useEffect(() => {
-        if (lanternRef.current) {
-            lanternRef.current.shadow.camera.near = 0.01
-        }
-    }, [lanternRef.current])
-    useFrame(() => {
-        if (lanternPositionRef.current && lanternRef.current && lanternContainerRef.current) {
-            console.log(
-                new Vector3(
-                    lanternPositionRef.current.x,
-                    lanternPositionRef.current.y,
-                    lanternPositionRef.current.z
-                )
-            )
-            const local = lanternContainerRef.current.worldToLocal(
-                new Vector3(
-                    lanternPositionRef.current.x,
-                    lanternPositionRef.current.y,
-                    lanternPositionRef.current.z
-                )
-            )
-            // console.log("LOCAL", local)
-            lanternRef.current.position.x = local.x
-            lanternRef.current.position.y = local.y
-            lanternRef.current.position.z = local.z
-            lanternContainerRef.current.position.x = 0
-            lanternContainerRef.current.position.y = 0
-            lanternContainerRef.current.position.z = 0
-        }
-    })
-
     return (
         <>
-            <mesh ref={lanternContainerRef}>
-                <pointLight ref={lanternRef} color="lightyellow" castShadow intensity={10} />
-            </mesh>
             <group position={offset}>
                 <Ball size={bodySize} material={BODY_MATERIAL}>
                     <Position at={NeckPosition}>
@@ -148,13 +106,16 @@ export const HumanRender = ({ id }: ActorProps) => {
                                         <Position at={0}>
                                             <Ball size={0.05} material={SKIN_MATERIAL}>
                                                 {arm.handed === "Left" && (
-                                                    // Holding a torch here; we will track position
-                                                    // and place the light at a higher level otherwise
-                                                    // it can't cast shadows on its own parents
-                                                    <PositionRef
-                                                        ref={lanternPositionRef}
-                                                        at={LANTERN_POS}
-                                                    />
+                                                    // Holding a torch here
+                                                    <Position at={LANTERN_POS}>
+                                                        <pointLight
+                                                            color="lightyellow"
+                                                            castShadow
+                                                            shadow-camera-near={0.1}
+                                                            shadow-camera-far={100}
+                                                            intensity={1.5}
+                                                        />
+                                                    </Position>
                                                 )}
                                             </Ball>
                                         </Position>
