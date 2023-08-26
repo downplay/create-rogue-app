@@ -11,6 +11,7 @@ import { Suspense, useEffect } from "react"
 import { FollowCamera } from "../3d/FollowCamera"
 import { atomFamily } from "jotai/utils"
 import { LocationData, actorIdsAtom } from "../model/actor"
+import { GameLoop } from "../model/game"
 
 // https://docs.pmnd.rs/react-three-fiber/advanced/scaling-performance#re-using-geometries-and-materials
 THREE.ColorManagement.enabled = true
@@ -52,6 +53,7 @@ export const Dungeon = ({ location }: { location: string }) => {
     const [dungeon, setDungeon] = useAtom(dungeonAtom)
     const actors = useAtomValue(visibleActorIdsFamily(location))
     // console.log(dungeon.rooms)
+
     useEffect(() => {
         setDungeon({ type: "initialize", level: 1 })
     }, [])
@@ -63,7 +65,8 @@ export const Dungeon = ({ location }: { location: string }) => {
     /* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
             can optimise for things that aren't really going to move */
     return (
-        <Canvas camera={DEFAULT_CAMERA} shadows>
+        <Canvas camera={DEFAULT_CAMERA} shadows="soft">
+            <GameLoop />
             <Suspense>
                 <Physics>
                     <FollowCamera />
@@ -73,12 +76,7 @@ export const Dungeon = ({ location }: { location: string }) => {
                     ))}
                     <Selection>
                         <EffectComposer multisampling={8} autoClear={false}>
-                            <Outline
-                                blur
-                                visibleEdgeColor="white"
-                                edgeStrength={100}
-                                width={1000}
-                            />
+                            <Outline blur visibleEdgeColor={10000} edgeStrength={100} width={500} />
                         </EffectComposer>
                         {actors.map((m) => (
                             <Actor id={m} key={m} />

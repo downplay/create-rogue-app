@@ -5,6 +5,8 @@ import { useAtomValue } from "jotai"
 import { Canvas } from "@react-three/fiber"
 import { activeHeroIdAtom } from "../model/hero"
 import { Euler } from "three"
+import { useDraggable, useDroppable } from "@dnd-kit/core"
+import { PropsWithChildren } from "react"
 
 const Grid = styled.div`
     display: flex;
@@ -31,6 +33,11 @@ const FixedActor = ({ id, isSelected = false }: { id: string; isSelected?: boole
 
 const Item = styled.div`
     position: relative;
+    width: 128px;
+    height: 128px;
+`
+
+const Target = styled(Item)`
     border: solid 2px black;
     width: 128px;
     height: 128px;
@@ -45,11 +52,10 @@ const Value = styled.div`
 const ContainerItem = ({ atom }: { atom: ActorAtom }) => {
     const actor = useAtomValue(atom)
     const inv = useModule(ItemModule, actor.id)
-
-    console.log("CONTAINER ITEM", actor)
+    const { setNodeRef, listeners, attributes } = useDraggable({ id: actor.id })
     return (
-        <Item title={actor.type}>
-            <Canvas camera={FIXED_CAMERA} frameloop="demand">
+        <Item title={actor.type} ref={setNodeRef}>
+            <Canvas camera={FIXED_CAMERA} frameloop="demand" {...listeners} {...attributes}>
                 <ambientLight intensity={0.1} />
                 <pointLight position={[-10, 10, 20]} />
                 <FixedActor id={actor.id} />
@@ -59,12 +65,24 @@ const ContainerItem = ({ atom }: { atom: ActorAtom }) => {
     )
 }
 
+const ContainerTarget = ({
+    id,
+    index,
+    children
+}: PropsWithChildren<{ id: string; index: number }>) => {
+    const { setNodeRef } = useDroppable({ id: id + ":" + index })
+
+    return <Target ref={setNodeRef}>{children}</Target>
+}
+
 export const Container = ({ id }: { id: string }) => {
     const items = useModule(ContainerModule, id)
     return (
         <Grid>
-            {items.map((item) => (
-                <ContainerItem key={item.toString()} atom={item} />
+            {items.map((item, i) => (
+                <ContainerTarget id={id} index={i}>
+                    <ContainerItem key={item.toString()} atom={item} />
+                </ContainerTarget>
             ))}
         </Grid>
     )

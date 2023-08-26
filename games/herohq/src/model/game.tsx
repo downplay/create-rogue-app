@@ -1,5 +1,5 @@
 import { atom, useAtom } from "jotai"
-import { useCallback, useEffect, useRef } from "react"
+import { useRef } from "react"
 import {
     recruitsAtom,
     recruitsSeedAtom,
@@ -9,6 +9,7 @@ import {
 import { generateSeed } from "./rng"
 import { HeroModule } from "./hero"
 import { actorsAtom, defineAction, gameTimeTicksAtom } from "./actor"
+import { useFrame, useThree } from "@react-three/fiber"
 
 export const GameLoopAction = defineAction<{ time: number; delta: number }>("GameLoop")
 
@@ -59,31 +60,32 @@ const gameTimeAtom = atom(
     }
 )
 
-export const useGameLoop = () => {
+export const GameLoop = () => {
+    // TODO: Actually not happy with this having to run inside Three's canvas, it means the
+    // game loop can't run if we're off at another screen e.g. town. Should go back to
+    // requestanimationframe? And only have the events.update() bit inside Canvas
+
     // TODO: We'll also need to store something in storage so we can simulate time passed
     // when AFK. Also be careful of multiple windows being open! (we could actually even support
     // this e.g. if you want to monitor different heroes on different screens, once storage
     // is moved to server and everything is websockets)
     const lastTick = useRef(new Date())
     const [gameTime, setGameTime] = useAtom(gameTimeAtom)
-    // TODO: Really we want different components to modularly register some kind of onTick
-    // handler. Maybe similar to how the observable atom works. Then we can proc anything we
-    // need e.g. timed gains, resets etc. Right now the control needs inverting as we're having
-    // update things from here we shouldn't have to.
-    const handleTick = useCallback(() => {
+
+    const events = useThree((state) => state.events)
+    useFrame(() => {
+        // Will trigger a onPointerMove with the last-known pointer event
+        if (events.update) {
+            events.update()
+        }
+        // Update game time
         const currentTick = new Date()
         const passedTime = currentTick.getTime() - lastTick.current.getTime()
         lastTick.current = currentTick
 
         // Here we are actually proccing the time passed
         setGameTime({ type: "increment", delta: passedTime / 1000 })
+    })
 
-        // TODO: Use Three's frame handler instead for performance?
-        requestAnimationFrame(handleTick)
-    }, [])
-    useEffect(() => {
-        // TODO: We should handle unmounting of this loop. We would need an additional ref which
-        // we set as true to unmount.
-        requestAnimationFrame(handleTick)
-    }, [handleTick])
+    return null
 }

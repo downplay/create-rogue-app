@@ -4,12 +4,11 @@ import {
     defineAction,
     defineActor,
     defineData,
-    defineModule,
-    gameTimeTicksAtom
+    defineModule
 } from "./actor"
 import { InteractionAction } from "./player"
 import { GameLoopAction } from "./game"
-import { TeleportAction, WalkToAction } from "./movement"
+import { WalkToAction } from "./movement"
 import { CancelAction } from "./player"
 
 export const LootTargetAction = defineAction<{
@@ -187,4 +186,20 @@ export const InventoryModule = defineModule(
             }
         })
     }
+)
+
+const EQUIP_DEFAULTS = { slots: [] }
+
+const EquipData = defineData<Record<string, string>>("Equip", {})
+
+export const EquipModule = defineModule(
+    "Equip",
+    (_, { get }) => {
+        return {
+            slots: get(EquipData),
+            canEquip: (id: string) => {}
+        }
+    },
+    () => {},
+    EQUIP_DEFAULTS
 )

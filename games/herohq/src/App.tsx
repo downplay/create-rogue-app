@@ -1,6 +1,6 @@
 import "sanitize.css"
 import { Gui } from "./gui/Gui"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { useAtomValue } from "jotai"
 import { useAtomCallback } from "jotai/utils"
 import { actorFamily, actorIdsAtom } from "./model/actor"
@@ -9,7 +9,6 @@ import { GlobalStyles } from "./gui/GlobalStyles"
 const App = () => {
     const initialized = useRef(false)
     const actorIds = useAtomValue(actorIdsAtom)
-    console.log(actorIds)
 
     const readActors = useAtomCallback(useCallback((get) => get(actorIdsAtom), []))
 

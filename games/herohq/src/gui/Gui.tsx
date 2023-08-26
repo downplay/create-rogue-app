@@ -2,7 +2,6 @@ import { atomWithStorage } from "jotai/utils"
 import styled from "@emotion/styled"
 import { useAtom } from "jotai"
 import { Roster } from "./Roster"
-import { useGameLoop } from "../model/game"
 import { Modals } from "./Modals"
 import { useCallback, useMemo } from "react"
 import { City } from "./City"
@@ -11,6 +10,8 @@ import { HQ, HQRoomId } from "./HQ"
 import { Toolbar } from "./Toolbar"
 import Rodal from "rodal"
 import { Inventory } from "./Inventory"
+import { Equip } from "./Equip"
+import { DndContext } from "@dnd-kit/core"
 
 type GuiState =
     | {
@@ -46,7 +47,7 @@ const Grid = styled.div`
     width: 100vw;
     height: 100vh;
     display: grid;
-    grid-template: "main roster";
+    grid-template: "main roster" "main equip" "main inv";
     grid-template-columns: 1fr 200px;
     grid-template-rows: 1fr;
 `
@@ -58,7 +59,6 @@ const Cell = styled.div<{ name: string }>`
 export const Gui = () => {
     const [state, setState] = useAtom(guiStateAtom)
     const [popup, setPopup] = useAtom(guiPopupAtom)
-    useGameLoop()
     const main = useMemo(() => {
         switch (state.mode) {
             case "hq":
@@ -85,7 +85,10 @@ export const Gui = () => {
     }, [setPopup])
 
     return (
-        <>
+        <DndContext
+            onDragEnd={(e) => {
+                console.log("DRAGONED", e)
+            }}>
             <Grid>
                 <Cell name="main">
                     {main}
@@ -93,6 +96,12 @@ export const Gui = () => {
                 </Cell>
                 <Cell name="roster">
                     <Roster />
+                </Cell>
+                <Cell name="equip">
+                    <Equip />
+                </Cell>
+                <Cell name="inv">
+                    <Inventory />
                 </Cell>
             </Grid>
             <Rodal
@@ -102,6 +111,6 @@ export const Gui = () => {
                 {popupElement}
             </Rodal>
             <Modals />
-        </>
+        </DndContext>
     )
 }

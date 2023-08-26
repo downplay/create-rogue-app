@@ -1,12 +1,21 @@
-import { Vector3 as Vector } from "@react-three/fiber"
-import { PropsWithChildren, ReactElement, createContext, useContext, useMemo } from "react"
-import { Vector3, Euler, Quaternion, Matrix3, Matrix4 } from "three"
+import { Vector3 as Vector, useFrame } from "@react-three/fiber"
+import {
+    PropsWithChildren,
+    ReactElement,
+    createContext,
+    forwardRef,
+    useContext,
+    useImperativeHandle,
+    useMemo,
+    useRef
+} from "react"
+import { Vector3, Euler, Quaternion, Matrix3, Matrix4, Mesh } from "three"
 import { isNumber } from "remeda"
 
 export type Direction = readonly [x: number, y: number, z: number]
 
-const ORIGIN = new Vector3(0, 0, 0)
-const UNIT = [1, 1, 1] as const
+export const ORIGIN = new Vector3(0, 0, 0)
+export const UNIT = [1, 1, 1] as const
 const UNIT_X = new Vector3(1, 0, 0)
 const UNIT_Y = new Vector3(0, 1, 0)
 const UNIT_Z = new Vector3(0, 0, 1)
@@ -65,28 +74,62 @@ const normalToEuler = (normal: Vector) => {
 }
 
 type RenderContextContext = {
-    surface: (direction: Vector) => readonly [position: Vector, normal: Vector]
+    surface: (direction: Vector) => readonly [position: Vector3, normal: Vector3]
 }
 
 const DEFAULT_RENDER_CONTEXT: RenderContextContext = {
-    surface: (direction: Vector) => [ORIGIN, direction]
+    surface: (direction: Vector) => [ORIGIN, toVector3(direction)]
 }
 
 export const RenderContext = createContext(DEFAULT_RENDER_CONTEXT)
 
 export const Position = ({ at, children }: PropsWithChildren<{ at: Vector }>) => {
     const context = useContext(RenderContext)
-    const [position, normal] = useMemo(() => context.surface(at), [context, at])
-    const rotation = useMemo(() => normalToEuler(normal), [normal])
-    return (
+    const matrix = useMemo(() => {
         // TODO: We should be able to combine position and rotation into single matrix ourselves
         // and slightly optimise rather than nested groups, it is only so they're applied in
         // correct order
-        <group position={position}>
-            <group rotation={rotation}>{children}</group>
+        const [position, normal] = context.surface(at)
+        const rotation = normalToEuler(normal)
+        // return [position,rotation]
+        const m1 = new Matrix4().makeTranslation(position)
+        const m2 = new Matrix4().makeRotationFromEuler(rotation)
+        m1.multiply(m2)
+        return m1
+    }, [context, at])
+    return (
+        <group matrix={matrix} matrixAutoUpdate={false}>
+            {children}
         </group>
     )
 }
+
+export const PositionRef = forwardRef<Vector3 | undefined, PropsWithChildren<{ at: Vector }>>(
+    ({ at }, ref) => {
+        const context = useContext(RenderContext)
+        const [position] = useMemo(() => context.surface(at), [context, at])
+        // const ref = useRef<Vector3>()
+        const meshRef = useRef<Mesh>(null!)
+        // TODO: We could probably do with having world orientation as well. This whole
+        // thing is overcomplicated. We rather need a regular <Position> and then a
+        // <WorldPositionNotifier> with onPosition and onOrientation callbacks
+        useFrame(() => {
+            if (meshRef.current && ref) {
+                const world = meshRef.current.localToWorld(
+                    new Vector3(position.x, position.y, position.z)
+                )
+                // world.x = world.x + 1
+                // console.log("WORLD", world)
+                if ("current" in ref) {
+                    ref.current = world
+                } else {
+                    ref(world)
+                }
+            }
+        })
+        return <mesh ref={meshRef} />
+    }
+)
 
 const DEFAULT_MATERIAL = <meshStandardMaterial color="hotpink" />
 
@@ -113,6 +156,22 @@ export const Ball = ({
                     unit.multiply(vectorSize)
                     normal.divide(vectorSize)
                 }
+                // const vector = toVector3(direction)
+                // const euler = positionToEuler(vector)
+                // // TODO: Honestly we need to implement a functional Vector library or find a good one
+                // const unit = new Vector3(0, 0.5, 0)
+                // const normal = unit.clone()
+                // if (isNumber(size)) {
+                //     unit.multiplyScalar(size)
+                //     normal.divideScalar(size)
+                // } else {
+                //     const vectorSize = toVector3(size)
+                //     unit.multiply(vectorSize)
+                //     normal.divide(vectorSize)
+                // }
+                // // unit.y = unit.y + vector.z
+                // unit.applyEuler(euler)
+
                 return [unit, normal.normalize()] as const
             }
         }
