@@ -21,8 +21,8 @@ export const gameTimeTicksAtom = atom(0)
 
 export type ActorProps = {
     id: string
-    selected: boolean
-    mode: "game" | "thumbnail"
+    selected?: boolean
+    mode: "game" | "thumbnail" | "equip"
 }
 
 // type ModuleCommand<Opts> =

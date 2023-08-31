@@ -1,17 +1,19 @@
 import { atomWithStorage } from "jotai/utils"
 import styled from "@emotion/styled"
-import { useAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { Roster } from "./Roster"
 import { Modals } from "./Modals"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { City } from "./City"
 import { Dungeon } from "./Dungeon"
 import { HQ, HQRoomId } from "./HQ"
 import { Toolbar } from "./Toolbar"
 import Rodal from "rodal"
-import { Inventory } from "./Inventory"
+import { Inventory, ItemThumbnail } from "./Inventory"
 import { Equip } from "./Equip"
-import { DndContext } from "@dnd-kit/core"
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core"
+import { actorFamily } from "../model/actor"
+import { dispatchDropAtom } from "../model/item"
 
 type GuiState =
     | {
@@ -48,17 +50,26 @@ const Grid = styled.div`
     height: 100vh;
     display: grid;
     grid-template: "main roster" "main equip" "main inv";
-    grid-template-columns: 1fr 200px;
-    grid-template-rows: 1fr;
+    grid-template-columns: 1fr 300px;
+    grid-template-rows: auto auto 1fr;
 `
 const Cell = styled.div<{ name: string }>`
     position: relative;
     grid-area: ${({ name }) => name};
+    overflow: auto;
+`
+
+const SideInventory = styled(Inventory)`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 `
 
 export const Gui = () => {
     const [state, setState] = useAtom(guiStateAtom)
     const [popup, setPopup] = useAtom(guiPopupAtom)
+
+    const dispatchDrop = useSetAtom(dispatchDropAtom)
+
     const main = useMemo(() => {
         switch (state.mode) {
             case "hq":
@@ -84,11 +95,22 @@ export const Gui = () => {
         setPopup({})
     }, [setPopup])
 
+    const [activeId, setActiveId] = useState<string | null>(null)
+
+    const handleDragStart = (e: DragStartEvent) => {
+        // TODO: Probably inspect the data
+        setActiveId(e.active.id.toString())
+    }
+
+    const handleDragEnd = (e: DragEndEvent) => {
+        if (e.over) {
+            dispatchDrop({ source: e.active.data, target: e.over.id, data: e.over.data })
+        }
+        setActiveId(null)
+    }
+
     return (
-        <DndContext
-            onDragEnd={(e) => {
-                console.log("DRAGONED", e)
-            }}>
+        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <Grid>
                 <Cell name="main">
                     {main}
@@ -101,9 +123,12 @@ export const Gui = () => {
                     <Equip />
                 </Cell>
                 <Cell name="inv">
-                    <Inventory />
+                    <SideInventory />
                 </Cell>
             </Grid>
+            <DragOverlay>
+                {activeId ? <ItemThumbnail atom={actorFamily(activeId)} /> : null}
+            </DragOverlay>
             <Rodal
                 visible={!!popup.name}
                 onClose={handlePopupClose}

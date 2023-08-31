@@ -18,28 +18,38 @@ export const AttackTargetData = defineData<{
     target?: string
 }>("AttackTarget", {})
 
-type Attack = {
+export type AttackDefinition = {
     type: "swing" | "stab" | "chop"
     length: number
     activate: number
+    power: number
 }
 
 const DEFAULT_ATTACK = {
     start: 0,
     speed: 1,
-    activated: false
+    activated: false,
+    power: 1
 }
 
 export const AttackData = defineData<{
-    attack?: Attack
+    attack?: AttackDefinition
     start: number
     speed: number
     activated: boolean
 }>("Attack", DEFAULT_ATTACK)
 
-export const ReceiveHitAction = defineAction<{ source: string; attack: Attack; power: number }>(
-    "ReceiveHit"
-)
+type AttackSource = {
+    source: string
+    attack: AttackDefinition
+    power: number
+}
+
+export const ReceiveHitAction = defineAction<AttackSource>("ReceiveHit")
+
+export const DiscoverAttacksAction = defineAction<{
+    attacks: AttackSource[]
+}>("DiscoverAttacks")
 
 export const FightModule = defineModule(
     "Fight",
@@ -64,12 +74,18 @@ export const FightModule = defineModule(
             }
             const time = getAtom(gameTimeTicksAtom)
             if (!current.attack) {
+                const attacks: AttackSource[] = []
+                dispatch(DiscoverAttacksAction, { attacks })
+                const attack = attacks[0]
+                    ? attacks[0].attack
+                    : {
+                          type: "swing",
+                          length: 1,
+                          activate: 0.8,
+                          power: 1
+                      }
                 set(AttackData, {
-                    attack: {
-                        type: "swing",
-                        length: 1,
-                        activate: 0.8
-                    },
+                    attack,
                     start: time,
                     // TODO: Roll for speed and also apply speedmodule
                     speed: 1,

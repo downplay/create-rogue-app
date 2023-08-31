@@ -187,19 +187,3 @@ export const InventoryModule = defineModule(
         })
     }
 )
-
-const EQUIP_DEFAULTS = { slots: [] }
-
-const EquipData = defineData<Record<string, string>>("Equip", {})
-
-export const EquipModule = defineModule(
-    "Equip",
-    (_, { get }) => {
-        return {
-            slots: get(EquipData),
-            canEquip: (id: string) => {}
-        }
-    },
-    () => {},
-    EQUIP_DEFAULTS
-)

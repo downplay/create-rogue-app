@@ -5,11 +5,10 @@ import {
     createContext,
     forwardRef,
     useContext,
-    useImperativeHandle,
     useMemo,
     useRef
 } from "react"
-import { Vector3, Euler, Quaternion, Matrix3, Matrix4, Mesh } from "three"
+import { Vector3, Euler, Matrix4, Mesh } from "three"
 import { isNumber } from "remeda"
 
 export type Direction = readonly [x: number, y: number, z: number]

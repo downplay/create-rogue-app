@@ -5,6 +5,7 @@ import { makeToonMaterial } from "../../3d/materials"
 import { useAtomValue } from "jotai"
 import { ActorProps, gameTimeTicksAtom, useModule } from "../../model/actor"
 import { MovementModule } from "../../model/movement"
+import { EquipHandle } from "../../gui/Equip"
 
 const NeckPosition = new Vector3(0, 0, 0)
 
@@ -33,6 +34,7 @@ export const HumanRender = ({ id }: ActorProps) => {
             {
                 tag: "Arm:1",
                 handed: "Left",
+                slot: "left",
                 position: [-0.25, 0, 0] as const,
                 shoulder: [-0.2, -0.5, 0] as const,
                 elbow: [0.2, -0.5, 0] as const
@@ -40,6 +42,7 @@ export const HumanRender = ({ id }: ActorProps) => {
             {
                 tag: "Arm:2",
                 handed: "Right",
+                slot: "right",
                 position: [0.25, 0, 0] as const,
                 shoulder: [0.3, 0.5, 0] as const,
                 elbow: [0.2, 0, 0] as const
@@ -105,18 +108,21 @@ export const HumanRender = ({ id }: ActorProps) => {
                                         material={BODY_MATERIAL}>
                                         <Position at={0}>
                                             <Ball size={0.05} material={SKIN_MATERIAL}>
-                                                {arm.handed === "Left" && (
-                                                    // Holding a torch here
-                                                    <Position at={LANTERN_POS}>
-                                                        <pointLight
-                                                            color="lightyellow"
-                                                            castShadow
-                                                            shadow-camera-near={0.1}
-                                                            shadow-camera-far={100}
-                                                            intensity={1.5}
-                                                        />
-                                                    </Position>
-                                                )}
+                                                <>
+                                                    <EquipHandle id={id} name={arm.slot} />
+                                                    {arm.handed === "Left" && (
+                                                        // Holding a torch here
+                                                        <Position at={LANTERN_POS}>
+                                                            <pointLight
+                                                                color="lightyellow"
+                                                                castShadow
+                                                                shadow-camera-near={0.1}
+                                                                shadow-camera-far={100}
+                                                                intensity={1.5}
+                                                            />
+                                                        </Position>
+                                                    )}
+                                                </>
                                             </Ball>
                                         </Position>
                                     </Rod>

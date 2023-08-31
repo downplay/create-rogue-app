@@ -1,5 +1,5 @@
 import { ContainerModule, InventoryData, ItemModule } from "../model/item"
-import { useModule, ActorAtom, RenderModule, undefinedAtom, useModuleRef } from "../model/actor"
+import { useModule, ActorAtom, RenderModule, undefinedAtom } from "../model/actor"
 import styled from "@emotion/styled"
 import { useAtomValue } from "jotai"
 import { Canvas } from "@react-three/fiber"
@@ -39,8 +39,6 @@ const Item = styled.div`
 
 const Target = styled(Item)`
     border: solid 2px black;
-    width: 128px;
-    height: 128px;
 `
 
 const Value = styled.div`
@@ -49,7 +47,7 @@ const Value = styled.div`
     right: 10px;
 `
 
-const ContainerItem = ({ atom }: { atom: ActorAtom }) => {
+export const ItemThumbnail = ({ atom }: { atom: ActorAtom }) => {
     const actor = useAtomValue(atom)
     const inv = useModule(ItemModule, actor.id)
     const { setNodeRef, listeners, attributes } = useDraggable({ id: actor.id })
@@ -70,27 +68,27 @@ const ContainerTarget = ({
     index,
     children
 }: PropsWithChildren<{ id: string; index: number }>) => {
-    const { setNodeRef } = useDroppable({ id: id + ":" + index })
+    const { setNodeRef } = useDroppable({ id, data: { type: "Container", index } })
 
     return <Target ref={setNodeRef}>{children}</Target>
 }
 
-export const Container = ({ id }: { id: string }) => {
+export const Container = ({ id, className }: { id: string; className?: string }) => {
     const items = useModule(ContainerModule, id)
     return (
-        <Grid>
+        <Grid className={className}>
             {items.map((item, i) => (
                 <ContainerTarget id={id} index={i}>
-                    <ContainerItem key={item.toString()} atom={item} />
+                    <ItemThumbnail key={item.toString()} atom={item} />
                 </ContainerTarget>
             ))}
         </Grid>
     )
 }
 
-export const Inventory = () => {
+export const Inventory = ({ className }: { className?: string }) => {
     // ({ id }: { id: string }) => {
     const hero = useAtomValue(activeHeroIdAtom)
     const inv = useAtomValue(hero ? InventoryData.family(hero) : undefinedAtom)
-    return inv?.container ? <Container id={inv.container} /> : null
+    return inv?.container ? <Container id={inv.container} className={className} /> : null
 }

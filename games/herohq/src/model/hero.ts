@@ -15,7 +15,8 @@ import { CancelAction, PLAYER_ID } from "./player"
 import { Position } from "./spacial"
 import { FightModule } from "./fight"
 import { HealthModule } from "./health"
-import { EquipModule, InventoryModule, LootModule } from "./item"
+import { InventoryModule, LootModule } from "./item"
+import { EquipModule } from "./equip"
 
 export type Vital = {
     amount: number
