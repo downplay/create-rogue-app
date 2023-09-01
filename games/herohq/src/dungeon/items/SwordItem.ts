@@ -13,7 +13,7 @@ export const SwordItem = defineActor("Sword", [
         {
             // TODO: This schema doesn't quite allow for if we want something to behave
             // differently in a different slot.
-            slots: ["left", "right"],
+            slot: ["left", "right"],
             // requirements: [{type:"level", minimum: 10}],
             effects: [
                 {

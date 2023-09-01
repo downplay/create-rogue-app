@@ -13,7 +13,7 @@ import { Inventory, ItemThumbnail } from "./Inventory"
 import { Equip } from "./Equip"
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import { actorFamily } from "../model/actor"
-import { dispatchDropAtom } from "../model/item"
+import { DragDropModel, dispatchDropAtom } from "../model/equip"
 
 type GuiState =
     | {
@@ -103,8 +103,16 @@ export const Gui = () => {
     }
 
     const handleDragEnd = (e: DragEndEvent) => {
+        console.log("END", e)
         if (e.over) {
-            dispatchDrop({ source: e.active.data, target: e.over.id, data: e.over.data })
+            if (!e.over.data.current) {
+                throw new Error("Missing droppable data: " + e.over.id)
+            }
+            dispatchDrop({
+                source: String(e.active.id),
+                target: String(e.over.id),
+                data: e.over.data.current as DragDropModel["data"]
+            })
         }
         setActiveId(null)
     }

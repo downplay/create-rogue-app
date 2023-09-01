@@ -83,18 +83,20 @@ export const useTextureMaterial = (textures: Textures) => {
 
     return useMemo(
         () => (
+            // <meshPhysicalMaterial
             <meshStandardMaterial
                 displacementScale={0.01}
                 map={colorMap}
                 // TODO: Figure out displacement not really working and
                 // also masking item (could set fake physic floor at 0.2 units above 0)
-                // displacementMap={displacementMap}
+                displacementMap={displacementMap}
                 normalMap={normalMap}
                 normalScale={NORMAL_SCALE}
                 // normalMapType={TangentSpaceNormalMap}
                 roughnessMap={roughnessMap}
                 aoMap={aoMap}
-                aoMapIntensity={0.2}
+                aoMapIntensity={1}
+                // reflectivity={1}
             />
         ),
         [colorMap, displacementMap, normalMap, roughnessMap, aoMap]

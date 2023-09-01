@@ -114,11 +114,15 @@ export const HumanRender = ({ id }: ActorProps) => {
                                                         // Holding a torch here
                                                         <Position at={LANTERN_POS}>
                                                             <pointLight
-                                                                color="lightyellow"
+                                                                color="white"
                                                                 castShadow
                                                                 shadow-camera-near={0.1}
                                                                 shadow-camera-far={100}
-                                                                intensity={1.5}
+                                                                intensity={3}
+                                                                decay={1}
+                                                                // TODO: Distance can increase based on lighting type and player stats
+                                                                // Maybe player gets a default pointlight for their eye strength?
+                                                                distance={20}
                                                             />
                                                         </Position>
                                                     )}

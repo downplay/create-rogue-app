@@ -2,6 +2,7 @@ import { atom } from "jotai"
 import { actorFamily, defineAction, defineData, defineModule } from "./actor"
 import { AttackDefinition, DiscoverAttacksAction } from "./fight"
 import { LevelData } from "./level"
+import { isArray } from "remeda"
 
 const EQUIP_DEFAULTS = { slots: [] }
 
@@ -10,7 +11,7 @@ const EquipData = defineData<Record<string, string>>("Equip", {})
 export type DragDropModel = {
     source: string
     target: string
-    data:
+    data: { id: string } & (
         | {
               type: "Equip"
               name: string
@@ -19,6 +20,7 @@ export type DragDropModel = {
               type: "Container"
               index: number
           }
+    )
 }
 
 const DragDropAction = defineAction<DragDropModel>("DragDrop")
@@ -29,19 +31,32 @@ export const EquipModule = defineModule(
         return {
             slots: get(EquipData),
             canEquip: (id: string) => {
+                // TODO: Must be careful here. We're loading the equipment module to check if the
+                // equipment module actually exists. Would be better to have a has() method to
+                // check it has the module without actually instantiating it
                 const data = get(EquipmentModule, id)
+                return isArray(data.slot) ? !!data.slot.length : !!data.slot
+                // TODO: Also check if we the hero actually have the slot in question (for racial
+                // stuff) as well as it being non-occupied by something cursed, or otherwise
+                // in a non-equippable state e.g. being frozen or unconscious
             }
         }
     },
-    (_, { handle, dispatch, get, set }) => {
+    (_, { handle, dispatch, get, set, self }) => {
         handle(DragDropAction, (payload) => {
+            console.log("DRAGDROP", payload)
             // TODO: Player should be able to react to being equipped
             switch (payload.data.type) {
-                case "Equip":
-                    const data = get(EquipmentModule, id)
-                    if (data.slot)
-                        set(EquipData, (data) => ({ ...data, [payload.data.name]: payload.target }))
+                case "Equip": {
+                    const name = payload.data.name
+                    const data = get(EquipmentModule, payload.source)
+                    const slots = isArray(data.slot) ? data.slot : [data.slot]
+                    console.log(slots, name)
+                    if (slots.includes(name) && self().canEquip(payload.source)) {
+                        set(EquipData, (data) => ({ ...data, [name]: payload.source }))
+                    }
                     break
+                }
                 default:
                     throw new Error("Not handled DragDropAction: " + payload.data.type)
             }
@@ -106,7 +121,8 @@ export const EquipmentModule = defineModule<EquipmentOpts, EquipmentOpts>(
 export const dispatchDropAtom = atom(
     () => {},
     (get, set, update: DragDropModel) => {
-        set(actorFamily(update.target), {
+        console.log("DROP ATOM", update)
+        set(actorFamily(update.data.id), {
             type: "action",
             action: DragDropAction,
             payload: update

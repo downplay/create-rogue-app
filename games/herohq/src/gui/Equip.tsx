@@ -4,7 +4,7 @@ import { RenderModule, actorFamily, undefinedAtom, useModule } from "../model/ac
 import styled from "@emotion/styled"
 import { PropsWithChildren } from "react"
 import { useDroppable } from "@dnd-kit/core"
-import { IconFeet, IconLeftHand, IconRightHand } from "./icons"
+import { IconArmor, IconFeet, IconHelmet, IconLeftHand, IconRightHand } from "./icons"
 import { ItemThumbnail } from "./Inventory"
 import { EquipModule } from "../model/equip"
 
@@ -16,6 +16,8 @@ const Grid = styled.div`
 const Border = styled.div<{ name: string }>`
     border: solid 2px black;
     grid-area: ${({ name }) => name};
+    font-size: 48px;
+    text-align: center;
 `
 
 // TODO: Maybe we need to pass the selected prop down?
@@ -40,13 +42,15 @@ export const EquipHandle = ({ id, name }: { id: string; name: string }) => {
 }
 
 const EquipSlot = ({
+    actorId,
     name,
     children,
     ...rest
-}: PropsWithChildren<{ name: string; title: string }>) => {
+}: PropsWithChildren<{ actorId: string; name: string; title: string }>) => {
     const { setNodeRef } = useDroppable({
-        id: name,
+        id: actorId + ":" + name,
         data: {
+            id: actorId,
             type: "Equip",
             name
         }
@@ -55,8 +59,7 @@ const EquipSlot = ({
         //     accepts: ["type1", "type2"]
         // }
     })
-    const heroId = useAtomValue(activeHeroIdAtom)
-    const current = useModule(EquipModule, heroId || "")
+    const current = useModule(EquipModule, actorId)
     const currentEquip = current?.slots[name]
 
     return (
@@ -67,22 +70,23 @@ const EquipSlot = ({
     )
 }
 
-const EquipGrid = () => {
+const EquipGrid = ({ actorId }: { actorId: string }) => {
+    // TODO: We should actually check EquipModule and map over what slots are there
     return (
         <Grid>
-            <EquipSlot name="head" title="Head">
-                Head
+            <EquipSlot actorId={actorId} name="head" title="Head">
+                <IconHelmet />
             </EquipSlot>
-            <EquipSlot name="left" title="Left hand">
+            <EquipSlot actorId={actorId} name="left" title="Left hand">
                 <IconLeftHand />
             </EquipSlot>
-            <EquipSlot name="right" title="Right hand">
+            <EquipSlot actorId={actorId} name="right" title="Right hand">
                 <IconRightHand />
             </EquipSlot>
-            <EquipSlot name="body" title="Body">
-                Body
+            <EquipSlot actorId={actorId} name="body" title="Body">
+                <IconArmor />
             </EquipSlot>
-            <EquipSlot name="feet" title="Feet">
+            <EquipSlot actorId={actorId} name="feet" title="Feet">
                 <IconFeet />
             </EquipSlot>
         </Grid>
@@ -92,5 +96,5 @@ const EquipGrid = () => {
 export const Equip = () => {
     const hero = useAtomValue(activeHeroIdAtom)
     const equip = useAtomValue(hero ? EquipModule.family(hero) : undefinedAtom)
-    return equip ? <EquipGrid slots={equip.slots} /> : null
+    return hero && equip ? <EquipGrid actorId={hero} slots={equip.slots} /> : null
 }

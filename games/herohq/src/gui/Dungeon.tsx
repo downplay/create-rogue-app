@@ -36,6 +36,8 @@ export const visibleActorIdsFamily = atomFamily((location: string) =>
     })
 )
 
+const GL_SETTINGS = { useLegacyLights: false }
+
 export const Dungeon = ({ location }: { location: string }) => {
     // const hero = useAtom(activeHeroAtom)
     // const dungeon = useAtom(dungeonAtom)
@@ -65,7 +67,7 @@ export const Dungeon = ({ location }: { location: string }) => {
     /* // TODO: We might want to distinguish between dynamic actors vs static scenery // as we
             can optimise for things that aren't really going to move */
     return (
-        <Canvas camera={DEFAULT_CAMERA} shadows="soft">
+        <Canvas camera={DEFAULT_CAMERA} shadows="soft" gl={GL_SETTINGS}>
             <GameLoop />
             <Suspense>
                 <Physics>
