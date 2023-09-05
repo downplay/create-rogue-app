@@ -8,8 +8,9 @@ import {
     useMemo,
     useRef
 } from "react"
-import { Vector3, Euler, Matrix4, Mesh } from "three"
+import { Vector3, Euler, Matrix4, Mesh, Group } from "three"
 import { isNumber } from "remeda"
+import { RapierRigidBody, RigidBody } from "@react-three/rapier"
 
 export type Direction = readonly [x: number, y: number, z: number]
 
@@ -82,7 +83,7 @@ const DEFAULT_RENDER_CONTEXT: RenderContextContext = {
 
 export const RenderContext = createContext(DEFAULT_RENDER_CONTEXT)
 
-export const Position = ({ at, children }: PropsWithChildren<{ at: Vector }>) => {
+export const Position = ({ at = ORIGIN, children }: PropsWithChildren<{ at?: Vector }>) => {
     const context = useContext(RenderContext)
     const matrix = useMemo(() => {
         // TODO: We should be able to combine position and rotation into single matrix ourselves
@@ -203,18 +204,17 @@ type RodCap = number | [number, number]
 type RodCaps = RodCap | [RodCap, RodCap]
 
 // TODO: Should be able to extract common patterns, looks very similar to Ball
-export const Rod = ({
-    length,
-    caps = 1,
-    rotate,
-    children,
-    material = DEFAULT_MATERIAL
-}: PropsWithChildren<{
-    length: number
-    rotate?: Direction
-    caps?: RodCaps
-    material?: ReactElement<any, any>
-}>) => {
+export const Rod = forwardRef<
+    RapierRigidBody,
+    PropsWithChildren<{
+        length: number
+        rotate?: Direction
+        caps?: RodCaps
+        material?: ReactElement<any, any>
+        physics?: boolean
+        debug?: boolean
+    }>
+>(({ length, caps = 1, rotate, children, material = DEFAULT_MATERIAL, physics, debug }, ref) => {
     const matrix = useMemo(() => {
         if (isNumber(caps)) {
             return new Matrix4().makeScale(caps, length, caps)
@@ -238,24 +238,27 @@ export const Rod = ({
                 // but I need some paper to figure out the logic
                 if (wrappedX <= 0.5) {
                     // End cap
-                    position.y = 1 + d.z
+                    position.y = 1 + d.z / length
                     position.x = wrappedX * 4 - 1
                     normal.y = 1
                 } else if (wrappedX < 1) {
                     // RHS
-                    position.x = 1 + d.z
+                    position.x = 1 + d.z / length
                     position.y = 1 - (wrappedX - 0.5) * 2
                     normal.x = 1
                 } else if (wrappedX <= 1.5) {
                     // Base cap
-                    position.y = 0
+                    position.y = 0 - d.z / length
                     position.x = 1 - (wrappedX - 1) * 4
-                    normal.y = -1 - d.z
+                    normal.y = -1
                 } else {
                     // LHS
-                    position.x = -1
+                    position.x = -1 - d.z / length
                     position.y = (wrappedX - 1.5) * 2
                     normal.x = -1 - d.z
+                }
+                if (debug) {
+                    console.log(position, normal)
                 }
                 position.applyAxisAngle(UNIT_Y, (position.x >= 0 ? -1 : 1) * d.y * Math.PI)
                 normal.applyAxisAngle(UNIT_Y, (position.x >= 0 ? -1 : 1) * d.y * Math.PI)
@@ -264,7 +267,7 @@ export const Rod = ({
                 return [position, normal] as const
             }
         }
-    }, [])
+    }, [debug, length])
 
     const rotation = useMemo(() => {
         const euler = rotate ? directionToEuler(rotate) : undefined
@@ -274,16 +277,19 @@ export const Rod = ({
     /* TODO: Params here are r1,r2,l,res,res (see docs) We could use r1 and r2 to implement
         cap ends BUT it means we have to regenerate geometry any time we wanted to change
         sizes of things, rather than using transforms. Not sure which is preferable. */
-
-    return (
-        <>
-            <group rotation={rotation}>
-                <mesh scale={[caps, length, caps]} position={[0, length / 2, 0]} castShadow>
-                    <cylinderGeometry args={[1, 1, 1, 16, 16]} />
-                    {material}
-                </mesh>
-                <RenderContext.Provider value={childContext}>{children}</RenderContext.Provider>
-            </group>
-        </>
+    const mesh = useMemo(
+        () => (
+            <mesh scale={[caps, length, caps]} position={[0, length / 2, 0]} castShadow>
+                <cylinderGeometry args={[1, 1, 1, 16, 16]} />
+                {material}
+            </mesh>
+        ),
+        [caps, length, material]
     )
-}
+    return (
+        <group rotation={rotation}>
+            {physics ? <RigidBody ref={ref}>{mesh}</RigidBody> : mesh}
+            <RenderContext.Provider value={childContext}>{children}</RenderContext.Provider>
+        </group>
+    )
+})

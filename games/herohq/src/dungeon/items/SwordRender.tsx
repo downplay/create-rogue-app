@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { ExtrudeGeometry, Shape } from "three"
-import { makeToonMaterial } from "../../3d/materials"
+import { makeMetalMaterial, makeToonMaterial } from "../../3d/materials"
 import { WithToss } from "../../3d/physics/wrappers"
 import { ActorProps } from "../../model/actor"
 
@@ -12,7 +12,7 @@ import { ActorProps } from "../../model/actor"
 // - titanium
 // - unobtainium
 
-const material = makeToonMaterial(0.49, 0.208, 0.403)
+const material = makeMetalMaterial([0.49, 0.208, 0.403])
 
 export const SwordRender = ({ id, mode }: ActorProps) => {
     // NOTE: Problem with using Extrude to make the sword, it limits us a bit once we want to do more advanced

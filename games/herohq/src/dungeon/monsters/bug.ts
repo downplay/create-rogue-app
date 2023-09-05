@@ -5,6 +5,7 @@ import { HealthModule } from "../../model/health"
 import { ItemData } from "../../model/item"
 import { MovementModule, WanderingModule } from "../../model/movement"
 import { CoinItem } from "../items/CoinItem"
+import { LanternItem } from "../items/Lantern"
 import { SwordItem } from "../items/SwordItem"
 import { BugCorpseRender, BugRender } from "./BugRender"
 
@@ -14,6 +15,7 @@ const BugDrops: DropTable = [
     // level, and boosted by anything else like hero traits or deities (e.g. gold god will
     // specifically boost coin drops)"
     [SwordItem, 1, []],
+    [LanternItem, 1, []],
     [CoinItem, 1 / 2, [[ItemData, { amount: 10 }]]], // ({ rng }) => ({})]]
     [CoinItem, 1 / 2, [[ItemData, { amount: 10 }]]], // ({ rng }) => ({})]]
     [CoinItem, 1 / 2, [[ItemData, { amount: 10 }]]], // ({ rng }) => ({})]]

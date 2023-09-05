@@ -109,7 +109,9 @@ export const HumanRender = ({ id }: ActorProps) => {
                                         <Position at={0}>
                                             <Ball size={0.05} material={SKIN_MATERIAL}>
                                                 <>
-                                                    <EquipHandle id={id} name={arm.slot} />
+                                                    <Position at={LANTERN_POS}>
+                                                        <EquipHandle id={id} name={arm.slot} />
+                                                    </Position>
                                                     {arm.handed === "Left" && (
                                                         // Holding a torch here
                                                         <Position at={LANTERN_POS}>
@@ -118,8 +120,8 @@ export const HumanRender = ({ id }: ActorProps) => {
                                                                 castShadow
                                                                 shadow-camera-near={0.1}
                                                                 shadow-camera-far={100}
-                                                                intensity={3}
-                                                                decay={1}
+                                                                intensity={10}
+                                                                decay={0.8}
                                                                 // TODO: Distance can increase based on lighting type and player stats
                                                                 // Maybe player gets a default pointlight for their eye strength?
                                                                 distance={20}
