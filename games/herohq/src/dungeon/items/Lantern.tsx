@@ -20,6 +20,9 @@ const ORIENT_UPSIDE = new Euler(Math.PI, 0, 0)
 const material = makeMetalMaterial([0.25, 0.208, 0.403])
 // const material = makeToonMaterial(0.49, 0.208, 0.403)
 
+const BAR_WIDTH = 0.05
+const BODY_WIDTH = 0.5
+
 const Lantern = forwardRef(({ physics }: { physics?: boolean } & ActorProps, ref) => {
     const radialStruts = 5
     const endRef = useRef(null)
@@ -27,8 +30,8 @@ const Lantern = forwardRef(({ physics }: { physics?: boolean } & ActorProps, ref
         const output = []
         for (let n = 0; n < radialStruts; n++) {
             output.push(
-                <Position key={n} at={new Vector3(0.24, (2 * n) / radialStruts, 0)}>
-                    <Rod length={LANTERN_LENGTH} caps={0.02} material={material} />
+                <Position key={n} at={new Vector3(0.22, (2 * n) / radialStruts, 0)}>
+                    <Rod length={LANTERN_LENGTH} caps={BAR_WIDTH} material={material} />
                 </Position>
             )
         }
@@ -36,7 +39,7 @@ const Lantern = forwardRef(({ physics }: { physics?: boolean } & ActorProps, ref
     }, [radialStruts])
 
     const body = (
-        <Rod debug caps={0.5} length={0.02} material={material}>
+        <Rod caps={BODY_WIDTH} length={BAR_WIDTH} material={material}>
             <Position at={LIGHT_POSITION}>
                 <pointLight
                     color="white"
@@ -51,7 +54,7 @@ const Lantern = forwardRef(({ physics }: { physics?: boolean } & ActorProps, ref
                 />
             </Position>
             <Position at={END_CAP_POSITION}>
-                <Rod debug caps={0.5} length={0.02} material={material} />
+                <Rod caps={BODY_WIDTH} length={BAR_WIDTH} material={material} />
             </Position>
             {radials}
         </Rod>
@@ -61,13 +64,16 @@ const Lantern = forwardRef(({ physics }: { physics?: boolean } & ActorProps, ref
         <Chain
             ref={ref}
             links={4}
-            length={0.3}
-            width={0.06}
+            length={0.5}
+            width={BAR_WIDTH}
             material={material}
             physics={physics}
             endRef={endRef}>
             {physics ? (
-                <RigidBody ref={endRef} linearDamping={0.1} angularDamping={0.2}>
+                <RigidBody
+                    ref={endRef}
+                    // linearDamping={0.1} angularDamping={0.2}
+                >
                     {body}
                 </RigidBody>
             ) : (

@@ -70,7 +70,7 @@ export const Dungeon = ({ location }: { location: string }) => {
         <Canvas camera={DEFAULT_CAMERA} shadows="soft" gl={GL_SETTINGS}>
             <GameLoop />
             <Suspense>
-                <Physics>
+                <Physics debug>
                     <FollowCamera />
                     <ambientLight intensity={0.1} />
                     {dungeon.rooms.map((r) => (

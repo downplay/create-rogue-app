@@ -74,13 +74,13 @@ const ChainLinkPhysics = forwardRef(
         const bRef = useRef(null)
         const nextCount = count - 1
         const joint = useSphericalJoint(aRef, nextCount ? bRef : endRef, [
-            [0, 0, 0],
+            [0, length / links, 0],
             [0, 0, 0]
         ])
-        // const position = useVector(0, 0, length / links / 2)
-        const position = useVector(0, 0, length / links)
+        const position = useVector(0, 0, 0)
+        // const position = useVector(0, 0, 0)
         return (
-            <Rod ref={aRef} length={length / links / 2} caps={width} physics material={material}>
+            <Rod ref={aRef} length={length / links} caps={width} physics material={material}>
                 <Position at={position}>
                     {nextCount ? (
                         <ChainLinkPhysics

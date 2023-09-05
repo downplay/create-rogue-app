@@ -291,8 +291,8 @@ export const Rod = forwardRef<
             {physics ? (
                 <RigidBody
                     // TODO: We really need to be able to pass all physics props on
-                    angularDamping={0.2}
-                    linearDamping={0.2}
+                    // angularDamping={0.2}
+                    // linearDamping={0.2}
                     ref={ref}>
                     {mesh}
                 </RigidBody>

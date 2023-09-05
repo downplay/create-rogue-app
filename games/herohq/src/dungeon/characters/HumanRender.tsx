@@ -112,7 +112,7 @@ export const HumanRender = ({ id }: ActorProps) => {
                                                     <Position at={LANTERN_POS}>
                                                         <EquipHandle id={id} name={arm.slot} />
                                                     </Position>
-                                                    {arm.handed === "Left" && (
+                                                    {/* {arm.handed === "Left" && (
                                                         // Holding a torch here
                                                         <Position at={LANTERN_POS}>
                                                             <pointLight
@@ -127,7 +127,7 @@ export const HumanRender = ({ id }: ActorProps) => {
                                                                 distance={20}
                                                             />
                                                         </Position>
-                                                    )}
+                                                    )} */}
                                                 </>
                                             </Ball>
                                         </Position>
