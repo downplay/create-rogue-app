@@ -288,7 +288,17 @@ export const Rod = forwardRef<
     )
     return (
         <group rotation={rotation}>
-            {physics ? <RigidBody ref={ref}>{mesh}</RigidBody> : mesh}
+            {physics ? (
+                <RigidBody
+                    // TODO: We really need to be able to pass all physics props on
+                    angularDamping={0.2}
+                    linearDamping={0.2}
+                    ref={ref}>
+                    {mesh}
+                </RigidBody>
+            ) : (
+                mesh
+            )}
             <RenderContext.Provider value={childContext}>{children}</RenderContext.Provider>
         </group>
     )

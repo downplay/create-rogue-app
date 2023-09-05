@@ -53,6 +53,10 @@ export const SwordRender = ({ id, mode }: ActorProps) => {
         <WithToss position={[0, 0.5, 0]}>
             <mesh geometry={geometry}>{material}</mesh>
         </WithToss>
+    ) : mode === "equip" ? (
+        <mesh geometry={geometry} scale={0.5}>
+            {material}
+        </mesh>
     ) : (
         <mesh geometry={geometry}>{material}</mesh>
     )

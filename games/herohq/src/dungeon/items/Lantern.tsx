@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react"
+import { forwardRef, useMemo, useRef } from "react"
 import { Position, Rod } from "../../3d/Parts"
 import { Euler, Vector3 } from "three"
 import { RenderModule, defineActor, ActorProps } from "../../model/actor"
@@ -6,7 +6,7 @@ import { ItemModule } from "../../model/item"
 import { EquipmentModule } from "../../model/equip"
 import { makeMetalMaterial, makeToonMaterial } from "../../3d/materials"
 import { Chain } from "../geometry/Chain"
-import { RigidBody } from "@react-three/rapier"
+import { RigidBody, useFixedJoint } from "@react-three/rapier"
 
 const LANTERN_LENGTH = 0.8
 
@@ -20,7 +20,7 @@ const ORIENT_UPSIDE = new Euler(Math.PI, 0, 0)
 const material = makeMetalMaterial([0.25, 0.208, 0.403])
 // const material = makeToonMaterial(0.49, 0.208, 0.403)
 
-const Lantern = ({ physics }: { physics?: boolean } & ActorProps) => {
+const Lantern = forwardRef(({ physics }: { physics?: boolean } & ActorProps, ref) => {
     const radialStruts = 5
     const endRef = useRef(null)
     const radials = useMemo(() => {
@@ -59,16 +59,23 @@ const Lantern = ({ physics }: { physics?: boolean } & ActorProps) => {
 
     return (
         <Chain
+            ref={ref}
             links={4}
             length={0.3}
             width={0.06}
             material={material}
             physics={physics}
             endRef={endRef}>
-            {physics ? <RigidBody ref={endRef}>{body}</RigidBody> : body}
+            {physics ? (
+                <RigidBody ref={endRef} linearDamping={0.1} angularDamping={0.2}>
+                    {body}
+                </RigidBody>
+            ) : (
+                body
+            )}
         </Chain>
     )
-}
+})
 
 const LanternRenderThumb = ({ id, mode }: ActorProps) => {
     return (
@@ -88,11 +95,23 @@ const LanternRenderWorld = ({ id, mode }: ActorProps) => {
 }
 
 const LanternRenderEquip = ({ id, mode }: ActorProps) => {
+    const aRef = useRef(null)
+    const bRef = useRef(null)
+
+    const joint = useFixedJoint(aRef, bRef, [
+        [0, 0, 0],
+        [0, 0, 0, 1],
+        [0, 0, 0],
+        [0, 0, 0, 1]
+    ])
     return (
-        <group scale={0.3} position={[0, 0, 0]}>
-            {/* <group scale={0.2}> */}
-            <Lantern id={id} mode={mode} physics />
-        </group>
+        <>
+            <RigidBody type="kinematicPosition" ref={aRef} />
+            <group scale={0.3} position={[0, 0, 0]}>
+                {/* <group scale={0.2}> */}
+                <Lantern id={id} mode={mode} physics ref={bRef} />
+            </group>
+        </>
     )
 }
 

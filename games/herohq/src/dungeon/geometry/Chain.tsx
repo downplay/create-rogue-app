@@ -77,9 +77,10 @@ const ChainLinkPhysics = forwardRef(
             [0, 0, 0],
             [0, 0, 0]
         ])
-        const position = useVector(0, 0, 0)
+        // const position = useVector(0, 0, length / links / 2)
+        const position = useVector(0, 0, length / links)
         return (
-            <Rod ref={aRef} length={length / links} caps={width} physics material={material}>
+            <Rod ref={aRef} length={length / links / 2} caps={width} physics material={material}>
                 <Position at={position}>
                     {nextCount ? (
                         <ChainLinkPhysics
@@ -102,30 +103,35 @@ const ChainLinkPhysics = forwardRef(
     }
 )
 
-export const Chain = ({
-    links,
-    children,
-    physics,
-    ...rest
-}: PropsWithChildren<ChainProps & { physics?: boolean }>) => {
-    return physics ? (
-        <ChainLinkPhysics count={links} links={links} {...rest}>
-            {children}
-        </ChainLinkPhysics>
-    ) : (
-        <ChainLink count={links} links={links} {...rest}>
-            {children}
-        </ChainLink>
-    )
-    // const chain = useMemo(() => {
-    //     let output = null
-    //     for (let n = 0; n < links; n++) {
-    //         output = (
-    //             <Rod caps={0.02} length={0.1} material={material}>
-    //                 <Position>{output}</Position>
-    //             </Rod>
-    //         )
-    //     }
-    //     return output
-    // }, [links, length, width])
-}
+export const Chain = forwardRef(
+    (
+        {
+            links,
+            children,
+            physics,
+            ...rest
+        }: PropsWithChildren<ChainProps & { physics?: boolean }>,
+        ref
+    ) => {
+        return physics ? (
+            <ChainLinkPhysics ref={ref} count={links} links={links} {...rest}>
+                {children}
+            </ChainLinkPhysics>
+        ) : (
+            <ChainLink ref={ref} count={links} links={links} {...rest}>
+                {children}
+            </ChainLink>
+        )
+        // const chain = useMemo(() => {
+        //     let output = null
+        //     for (let n = 0; n < links; n++) {
+        //         output = (
+        //             <Rod caps={0.02} length={0.1} material={material}>
+        //                 <Position>{output}</Position>
+        //             </Rod>
+        //         )
+        //     }
+        //     return output
+        // }, [links, length, width])
+    }
+)
