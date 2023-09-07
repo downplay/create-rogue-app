@@ -10,7 +10,7 @@ import {
 } from "react"
 import { Vector3, Euler, Matrix4, Mesh, Group } from "three"
 import { isNumber } from "remeda"
-import { RapierRigidBody, RigidBody } from "@react-three/rapier"
+import { RapierRigidBody, RigidBody, RigidBodyProps } from "@react-three/rapier"
 
 export type Direction = readonly [x: number, y: number, z: number]
 
@@ -203,103 +203,128 @@ export const Ball = ({
 type RodCap = number | [number, number]
 type RodCaps = RodCap | [RodCap, RodCap]
 
+type PhysicsProps = { physics?: boolean } & Pick<
+    RigidBodyProps,
+    "collisionGroups" | "angularDamping" | "angularVelocity"
+>
+
+export enum CollisionGroups {
+    default = 0,
+    rope = 1
+}
+
 // TODO: Should be able to extract common patterns, looks very similar to Ball
 export const Rod = forwardRef<
     RapierRigidBody,
-    PropsWithChildren<{
-        length: number
-        rotate?: Direction
-        caps?: RodCaps
-        material?: ReactElement<any, any>
-        physics?: boolean
-        debug?: boolean
-    }>
->(({ length, caps = 1, rotate, children, material = DEFAULT_MATERIAL, physics, debug }, ref) => {
-    const matrix = useMemo(() => {
-        if (isNumber(caps)) {
-            return new Matrix4().makeScale(caps, length, caps)
-        } else {
-            // TODO: We'll have to do more work on the normal here (and if the rod
-            // is tapered even more work and we have to do it *before* applying axis angle)
-            throw new Error("Complex caps definition not yet supported")
-        }
-    }, [caps, length])
-    const childContext = useMemo(() => {
-        return {
-            surface: (direction: Vector) => {
-                // X=0, end of end cap. =0.25, side of end cap. =0.5, half way down side. =1, base cap.
-                // Logic will be the same for a cuboid but to process y we would also apply square movement.
-                const d = toVector3(direction)
-                // Add in a 0.25 offset so we're dealing with even blocks of 0.5
-                const wrappedX = modulo(d.x + 0.25, 2)
-                const position = new Vector3()
-                const normal = new Vector3()
-                // TODO: We can probably reduce it to 2 if cases with a modulus 2 and a +/-
-                // but I need some paper to figure out the logic
-                if (wrappedX <= 0.5) {
-                    // End cap
-                    position.y = 1 + d.z / length
-                    position.x = wrappedX * 4 - 1
-                    normal.y = 1
-                } else if (wrappedX < 1) {
-                    // RHS
-                    position.x = 1 + d.z / length
-                    position.y = 1 - (wrappedX - 0.5) * 2
-                    normal.x = 1
-                } else if (wrappedX <= 1.5) {
-                    // Base cap
-                    position.y = 0 - d.z / length
-                    position.x = 1 - (wrappedX - 1) * 4
-                    normal.y = -1
-                } else {
-                    // LHS
-                    position.x = -1 - d.z / length
-                    position.y = (wrappedX - 1.5) * 2
-                    normal.x = -1 - d.z
-                }
-                if (debug) {
-                    console.log(position, normal)
-                }
-                position.applyAxisAngle(UNIT_Y, (position.x >= 0 ? -1 : 1) * d.y * Math.PI)
-                normal.applyAxisAngle(UNIT_Y, (position.x >= 0 ? -1 : 1) * d.y * Math.PI)
-                position.applyMatrix4(matrix)
-                normal.applyMatrix4(matrix).normalize()
-                return [position, normal] as const
+    PropsWithChildren<
+        {
+            length: number
+            rotate?: Direction
+            caps?: RodCaps
+            material?: ReactElement<any, any>
+            physics?: boolean
+            debug?: boolean
+        } & PhysicsProps
+    >
+>(
+    (
+        {
+            length,
+            caps = 1,
+            rotate,
+            children,
+            material = DEFAULT_MATERIAL,
+            physics,
+            debug,
+            ...rest
+        },
+        ref
+    ) => {
+        const matrix = useMemo(() => {
+            if (isNumber(caps)) {
+                return new Matrix4().makeScale(caps, length, caps)
+            } else {
+                // TODO: We'll have to do more work on the normal here (and if the rod
+                // is tapered even more work and we have to do it *before* applying axis angle)
+                throw new Error("Complex caps definition not yet supported")
             }
-        }
-    }, [debug, length])
+        }, [caps, length])
+        const childContext = useMemo(() => {
+            return {
+                surface: (direction: Vector) => {
+                    // X=0, end of end cap. =0.25, side of end cap. =0.5, half way down side. =1, base cap.
+                    // Logic will be the same for a cuboid but to process y we would also apply square movement.
+                    const d = toVector3(direction)
+                    // Add in a 0.25 offset so we're dealing with even blocks of 0.5
+                    const wrappedX = modulo(d.x + 0.25, 2)
+                    const position = new Vector3()
+                    const normal = new Vector3()
+                    // TODO: We can probably reduce it to 2 if cases with a modulus 2 and a +/-
+                    // but I need some paper to figure out the logic
+                    if (wrappedX <= 0.5) {
+                        // End cap
+                        position.y = 1 + d.z / length
+                        position.x = wrappedX * 4 - 1
+                        normal.y = 1
+                    } else if (wrappedX < 1) {
+                        // RHS
+                        position.x = 1 + d.z / length
+                        position.y = 1 - (wrappedX - 0.5) * 2
+                        normal.x = 1
+                    } else if (wrappedX <= 1.5) {
+                        // Base cap
+                        position.y = 0 - d.z / length
+                        position.x = 1 - (wrappedX - 1) * 4
+                        normal.y = -1
+                    } else {
+                        // LHS
+                        position.x = -1 - d.z / length
+                        position.y = (wrappedX - 1.5) * 2
+                        normal.x = -1 - d.z
+                    }
+                    if (debug) {
+                        console.log(position, normal)
+                    }
+                    position.applyAxisAngle(UNIT_Y, (position.x >= 0 ? -1 : 1) * d.y * Math.PI)
+                    normal.applyAxisAngle(UNIT_Y, (position.x >= 0 ? -1 : 1) * d.y * Math.PI)
+                    position.applyMatrix4(matrix)
+                    normal.applyMatrix4(matrix).normalize()
+                    return [position, normal] as const
+                }
+            }
+        }, [debug, length])
 
-    const rotation = useMemo(() => {
-        const euler = rotate ? directionToEuler(rotate) : undefined
-        return euler
-    }, [rotate])
+        const rotation = useMemo(() => {
+            const euler = rotate ? directionToEuler(rotate) : undefined
+            return euler
+        }, [rotate])
 
-    /* TODO: Params here are r1,r2,l,res,res (see docs) We could use r1 and r2 to implement
+        /* TODO: Params here are r1,r2,l,res,res (see docs) We could use r1 and r2 to implement
         cap ends BUT it means we have to regenerate geometry any time we wanted to change
         sizes of things, rather than using transforms. Not sure which is preferable. */
-    const mesh = useMemo(
-        () => (
-            <mesh scale={[caps, length, caps]} position={[0, length / 2, 0]} castShadow>
-                <cylinderGeometry args={[1, 1, 1, 16, 16]} />
-                {material}
-            </mesh>
-        ),
-        [caps, length, material]
-    )
-    return (
-        <group rotation={rotation}>
-            {physics ? (
-                <RigidBody
-                    // TODO: We really need to be able to pass all physics props on
-                    // angularDamping={0.2}
-                    // linearDamping={0.2}
-                    ref={ref}>
-                    {mesh}
-                </RigidBody>
-            ) : (
-                mesh
-            )}
-            <RenderContext.Provider value={childContext}>{children}</RenderContext.Provider>
-        </group>
-    )
-})
+        const mesh = useMemo(() => {
+            // const translate =
+            const transform = matrix.clone()
+            const position = new Matrix4().makeTranslation(0, length / 2, 0)
+            const final = position.multiply(matrix)
+            return (
+                <mesh matrix={final} matrixAutoUpdate={false} castShadow>
+                    <cylinderGeometry args={[1, 1, 1, 16, 16]} />
+                    {material}
+                </mesh>
+            )
+        }, [caps, length, material, matrix])
+        return (
+            <group rotation={rotation}>
+                {physics ? (
+                    <RigidBody ref={ref} {...rest} mass={10}>
+                        {mesh}
+                    </RigidBody>
+                ) : (
+                    mesh
+                )}
+                <RenderContext.Provider value={childContext}>{children}</RenderContext.Provider>
+            </group>
+        )
+    }
+)

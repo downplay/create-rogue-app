@@ -1,12 +1,12 @@
 import { forwardRef, useMemo, useRef } from "react"
-import { Position, Rod } from "../../3d/Parts"
+import { Ball, CollisionGroups, ORIGIN, Position, Rod } from "../../3d/Parts"
 import { Euler, Vector3 } from "three"
 import { RenderModule, defineActor, ActorProps } from "../../model/actor"
 import { ItemModule } from "../../model/item"
 import { EquipmentModule } from "../../model/equip"
 import { makeMetalMaterial, makeToonMaterial } from "../../3d/materials"
 import { Chain } from "../geometry/Chain"
-import { RigidBody, useFixedJoint } from "@react-three/rapier"
+import { RigidBody, interactionGroups, useFixedJoint, useSphericalJoint } from "@react-three/rapier"
 
 const LANTERN_LENGTH = 0.8
 
@@ -20,6 +20,7 @@ const ORIENT_UPSIDE = new Euler(Math.PI, 0, 0)
 const material = makeMetalMaterial([0.25, 0.208, 0.403])
 // const material = makeToonMaterial(0.49, 0.208, 0.403)
 
+const CHAIN_WIDTH = 0.03
 const BAR_WIDTH = 0.05
 const BODY_WIDTH = 0.5
 
@@ -39,41 +40,44 @@ const Lantern = forwardRef(({ physics }: { physics?: boolean } & ActorProps, ref
     }, [radialStruts])
 
     const body = (
-        <Rod caps={BODY_WIDTH} length={BAR_WIDTH} material={material}>
-            <Position at={LIGHT_POSITION}>
-                <pointLight
-                    color="white"
-                    castShadow
-                    shadow-camera-near={0.1}
-                    shadow-camera-far={100}
-                    intensity={3}
-                    decay={1}
-                    // TODO: Distance can increase based on lighting type and player stats
-                    // Maybe player gets a default pointlight for their eye strength?
-                    distance={20}
-                />
-            </Position>
-            <Position at={END_CAP_POSITION}>
-                <Rod caps={BODY_WIDTH} length={BAR_WIDTH} material={material} />
-            </Position>
-            {radials}
-        </Rod>
+        <group scale={0.2}>
+            <Rod caps={BODY_WIDTH} length={BAR_WIDTH} material={material}>
+                <Position at={LIGHT_POSITION}>
+                    <pointLight
+                        color="white"
+                        castShadow
+                        shadow-camera-near={0.01}
+                        shadow-camera-far={100}
+                        intensity={3}
+                        decay={1}
+                        // TODO: Distance can increase based on lighting type and player stats
+                        // Maybe player gets a default pointlight for their eye strength?
+                        distance={20}
+                    />
+                </Position>
+                <Position at={END_CAP_POSITION}>
+                    <Rod caps={BODY_WIDTH} length={BAR_WIDTH} material={material} />
+                </Position>
+                {radials}
+            </Rod>
+        </group>
     )
 
     return (
         <Chain
             ref={ref}
             links={4}
-            length={0.5}
-            width={BAR_WIDTH}
+            length={0.3}
+            width={CHAIN_WIDTH}
             material={material}
             physics={physics}
             endRef={endRef}>
             {physics ? (
                 <RigidBody
                     ref={endRef}
-                    // linearDamping={0.1} angularDamping={0.2}
-                >
+                    collisionGroups={interactionGroups(0, [])}
+                    linearDamping={0.8}
+                    angularDamping={0.8}>
                     {body}
                 </RigidBody>
             ) : (
@@ -104,19 +108,30 @@ const LanternRenderEquip = ({ id, mode }: ActorProps) => {
     const aRef = useRef(null)
     const bRef = useRef(null)
 
-    const joint = useFixedJoint(aRef, bRef, [
+    // const joint = useFixedJoint(aRef, bRef, [
+    //     [0, 0, 0],
+    //     [0, 0, 0, 1],
+    //     [0, 0, 0],
+    //     [0, 0, 0, 1]
+    // ])
+
+    const joint = useSphericalJoint(bRef, aRef, [
         [0, 0, 0],
-        [0, 0, 0, 1],
-        [0, 0, 0],
-        [0, 0, 0, 1]
+        [0, 0, 0]
     ])
+
     return (
         <>
-            <RigidBody type="kinematicPosition" ref={aRef} />
-            <group scale={0.3} position={[0, 0, 0]}>
-                {/* <group scale={0.2}> */}
-                <Lantern id={id} mode={mode} physics ref={bRef} />
-            </group>
+            <RigidBody
+                type="kinematicPosition"
+                ref={aRef}
+                collisionGroups={interactionGroups(CollisionGroups.rope, [])}>
+                <Ball size={0.05} material={material} />
+            </RigidBody>
+            {/* <group scale={0.3} position={ORIGIN}> */}
+            {/* <group scale={0.2}> */}
+            <Lantern id={id} mode={mode} ref={bRef} physics />
+            {/* </group> */}
         </>
     )
 }
@@ -129,6 +144,8 @@ const LanternRender = ({ id, mode }: ActorProps) =>
     ) : (
         <LanternRenderWorld id={id} mode={mode} />
     )
+
+const LanternFurnitureRender = ({ id, mode }: ActorProps) => {}
 
 export const LanternItem = defineActor("Lantern", [
     [RenderModule, { renderer: LanternRender }],
@@ -158,3 +175,5 @@ export const LanternItem = defineActor("Lantern", [
         }
     ]
 ])
+
+export const LanternFurniture = defineActor("LanternFurniture", [])

@@ -14,6 +14,7 @@ import { Equip } from "./Equip"
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import { actorFamily } from "../model/actor"
 import { DragDropModel, dispatchDropAtom } from "../model/equip"
+import { GamePad } from "./GamePad"
 
 type GuiState =
     | {
@@ -119,6 +120,7 @@ export const Gui = () => {
 
     return (
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <GamePad />
             <Grid>
                 <Cell name="main">
                     {main}

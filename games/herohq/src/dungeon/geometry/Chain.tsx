@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, PropsWithChildren, forwardRef, useEffect } from "react"
-import { Position, Rod } from "../../3d/Parts"
-import { useSphericalJoint, RapierRigidBody } from "@react-three/rapier"
+import { CollisionGroups, Position, Rod } from "../../3d/Parts"
+import { useSphericalJoint, RapierRigidBody, interactionGroups } from "@react-three/rapier"
 import { useVector } from "../../gui/hooks"
 import { isFunction } from "remeda"
 
@@ -76,11 +76,19 @@ const ChainLinkPhysics = forwardRef(
         const joint = useSphericalJoint(aRef, nextCount ? bRef : endRef, [
             [0, length / links, 0],
             [0, 0, 0]
+            // [0, -length / links / 5, 0],
+            // [0, length / links / 5, 0]
         ])
         const position = useVector(0, 0, 0)
         // const position = useVector(0, 0, 0)
         return (
-            <Rod ref={aRef} length={length / links} caps={width} physics material={material}>
+            <Rod
+                ref={aRef}
+                length={length / links}
+                caps={width}
+                physics
+                material={material}
+                collisionGroups={interactionGroups(CollisionGroups.rope, [])}>
                 <Position at={position}>
                     {nextCount ? (
                         <ChainLinkPhysics
@@ -94,7 +102,6 @@ const ChainLinkPhysics = forwardRef(
                             {children}
                         </ChainLinkPhysics>
                     ) : (
-                        // TODO: I want to get a ref from the original children and apply another spherical joint.
                         <>{children}</>
                     )}
                 </Position>
