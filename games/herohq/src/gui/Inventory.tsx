@@ -78,7 +78,7 @@ export const Container = ({ id, className }: { id: string; className?: string })
     return (
         <Grid className={className}>
             {items.map((item, i) => (
-                <ContainerTarget id={id} index={i}>
+                <ContainerTarget key={id + ":" + i} id={id} index={i}>
                     <ItemThumbnail key={item.toString()} atom={item} />
                 </ContainerTarget>
             ))}

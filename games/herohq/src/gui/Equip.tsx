@@ -2,11 +2,13 @@ import { useAtomValue } from "jotai"
 import { activeHeroIdAtom } from "../model/hero"
 import { RenderModule, actorFamily, undefinedAtom, useModule } from "../model/actor"
 import styled from "@emotion/styled"
-import { PropsWithChildren } from "react"
+import { PropsWithChildren, RefObject } from "react"
 import { useDroppable } from "@dnd-kit/core"
 import { IconArmor, IconFeet, IconHelmet, IconLeftHand, IconRightHand } from "./icons"
 import { ItemThumbnail } from "./Inventory"
-import { EquipModule } from "../model/equip"
+import { EquipModule, EquipmentModule } from "../model/equip"
+import { Vector3 } from "three"
+import { RapierRigidBody } from "@react-three/rapier"
 
 const Grid = styled.div`
     display: grid;
@@ -22,23 +24,66 @@ const Border = styled.div<{ name: string }>`
 
 // TODO: Maybe we need to pass the selected prop down?
 const EquipActor = ({
-    id /* , isSelected = false */
+    id /* , isSelected = false */,
+    handleRef
 }: {
     id: string /*; isSelected?: boolean*/
+    handleRef: RefObject<RapierRigidBody>
 }) => {
     const Renderer = useModule(RenderModule, id)
+    const equip = useModule(EquipmentModule, id)
+    const EquipmentRenderer = equip.renderer
     return (
         // <group rotation={FixedActorRotate}>
-        <Renderer id={id} mode="equip" />
+        EquipmentRenderer ? (
+            <EquipmentRenderer id={id} mode="equip" handleRef={handleRef} />
+        ) : (
+            <Renderer id={id} mode="equip" />
+        )
         // </group>
     )
 }
 
-export const EquipHandle = ({ id, name }: { id: string; name: string }) => {
+// export const EquipHandle = ({ id, name }: { id: string; name: string }) => {
+//     // TODO: We'll need more, actually need normal as well
+//     const positionRef = useRef<Vector3>(null)
+//     // TODO: Will this even work? Should maybe have a handler rather
+//     useEffect(() => {
+
+//     }, [positionRef.current])
+//     return <PositionRef ref={positionRef} />
+// }
+
+export const EquipHandle = ({
+    id,
+    name,
+    positionRef,
+    handleRef
+}: {
+    id: string
+    name: string
+    positionRef: RefObject<Vector3>
+    handleRef: RefObject<RapierRigidBody>
+}) => {
     const equip = useModule(EquipModule, id)
     const item = equip.slots[name]
     // const itemAtom = useAtomValue(item ? )
-    return item ? <EquipActor id={item} /> : null
+    // const groupRef = useRef<Group>(null)
+    // useFrame(() => {
+    //     if (groupRef.current && positionRef.current) {
+    //         groupRef.current.position.set(
+    //             positionRef.current.x,
+    //             positionRef.current.y,
+    //             positionRef.current.z
+    //         )
+    //     }
+    // })
+
+    return item ? (
+        // <group ref={groupRef}>
+        <EquipActor id={item} handleRef={handleRef} />
+    ) : // </group>
+    null
 }
 
 const EquipSlot = ({

@@ -17,7 +17,7 @@ export type Direction = readonly [x: number, y: number, z: number]
 export const ORIGIN = new Vector3(0, 0, 0)
 export const UNIT = [1, 1, 1] as const
 const UNIT_X = new Vector3(1, 0, 0)
-const UNIT_Y = new Vector3(0, 1, 0)
+export const UNIT_Y = new Vector3(0, 1, 0)
 const UNIT_Z = new Vector3(0, 0, 1)
 
 // True module. % is actually remainder, not modulo: negative numbers will still
@@ -104,10 +104,10 @@ export const Position = ({ at = ORIGIN, children }: PropsWithChildren<{ at?: Vec
     )
 }
 
-export const PositionRef = forwardRef<Vector3 | undefined, PropsWithChildren<{ at: Vector }>>(
+export const PositionRef = forwardRef<Vector3 | undefined, PropsWithChildren<{ at?: Vector }>>(
     ({ at }, ref) => {
         const context = useContext(RenderContext)
-        const [position] = useMemo(() => context.surface(at), [context, at])
+        const [position] = useMemo(() => (at ? context.surface(at) : [ORIGIN]), [context, at])
         // const ref = useRef<Vector3>()
         const meshRef = useRef<Mesh>(null!)
         // TODO: We could probably do with having world orientation as well. This whole

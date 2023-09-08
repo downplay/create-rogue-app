@@ -59,7 +59,7 @@ export const MovementModule = defineModule(
                     set(LocationData, (l) => ({
                         ...l,
                         position: target,
-                        direction
+                        ...(distance ? { direction } : {})
                     }))
                     set(MovementData, { target: undefined })
                     return

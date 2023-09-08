@@ -1,11 +1,19 @@
-import { useEffect, useMemo, useRef } from "react"
-import { Ball, ORIGIN, Position, PositionRef, Rod } from "../../3d/Parts"
-import { Mesh, PointLight, PointLightShadow, Vector3 } from "three"
+import { RefObject, createRef, useEffect, useMemo, useRef } from "react"
+import { Ball, ORIGIN, Position, PositionRef, Rod, UNIT_Y } from "../../3d/Parts"
+import { Mesh, PointLight, PointLightShadow, Quaternion, Vector3 } from "three"
 import { makeToonMaterial } from "../../3d/materials"
 import { useAtomValue } from "jotai"
-import { ActorProps, gameTimeTicksAtom, useModule } from "../../model/actor"
+import {
+    ActorProps,
+    LocationData,
+    gameTimeTicksAtom,
+    useAtomRef,
+    useModule
+} from "../../model/actor"
 import { MovementModule } from "../../model/movement"
 import { EquipHandle } from "../../gui/Equip"
+import { RapierRigidBody, RigidBody } from "@react-three/rapier"
+import { useFrame } from "@react-three/fiber"
 
 const NeckPosition = new Vector3(0, 0, 0)
 
@@ -16,6 +24,9 @@ const LEG_MATERIAL = makeToonMaterial(0.66, 0.4, 0.3)
 const CYCLE_SPEED = 1
 
 const LANTERN_POS = [0, 0, 1] as const
+
+// TODO: Do this generically. Get a list of slots from the equipmodule
+const HUMAN_SLOTS = ["head", "left", "right", "body", "feet"]
 
 export const HumanRender = ({ id }: ActorProps) => {
     const movement = useModule(MovementModule, id)
@@ -82,37 +93,76 @@ export const HumanRender = ({ id }: ActorProps) => {
     /* // TODO: We need a kind of slot-fill system where the hands/legs can be given a
         <Slot /> component and name and via a context we can attach accessories to it */
 
+    const slotRefs = useMemo(() => {
+        return HUMAN_SLOTS.reduce((acc, name) => {
+            acc[name] = createRef<Vector3>()
+            return acc
+        }, {} as Record<string, RefObject<Vector3>>)
+    }, [])
+    const kinematicRef = useRef<RapierRigidBody>(null)
+
+    const slots = useMemo(
+        () =>
+            Object.entries(slotRefs).map(([name, ref]) => (
+                <EquipHandle
+                    key={name}
+                    id={id}
+                    name={name}
+                    positionRef={ref}
+                    handleRef={kinematicRef}
+                />
+            )),
+        [slotRefs, kinematicRef]
+    )
+
+    const location = useAtomRef(LocationData.family(id))
+    useFrame(() => {
+        if (!kinematicRef.current) {
+            return
+        }
+        kinematicRef.current.setNextKinematicTranslation(
+            // TODO: Maybe we can optimise by having a Vector3 cached in LocationModule
+            // If position isn't changing we're creating a bunch of unncessesary Vector3 instances
+            new Vector3(location.current.position.x, 0, location.current.position.y)
+        )
+        kinematicRef.current.setNextKinematicRotation(
+            new Quaternion().setFromAxisAngle(UNIT_Y, -location.current.direction * 2 * Math.PI)
+        )
+    })
+
     return (
         <>
-            <group position={offset}>
-                <Ball size={bodySize} material={BODY_MATERIAL}>
-                    <Position at={NeckPosition}>
-                        <Rod length={neckLength} caps={neckRadius} material={SKIN_MATERIAL}>
-                            <Position at={NeckPosition}>
-                                <Ball size={headSize} material={SKIN_MATERIAL} />
-                            </Position>
-                        </Rod>
-                    </Position>
-                    {arms.map((arm) => (
-                        <Position key={arm.tag} at={arm.position}>
-                            <Rod
-                                length={0.14}
-                                caps={0.02}
-                                rotate={arm.shoulder}
-                                material={BODY_MATERIAL}>
-                                <Position at={0}>
-                                    <Rod
-                                        length={0.17}
-                                        caps={0.02}
-                                        rotate={arm.elbow}
-                                        material={BODY_MATERIAL}>
-                                        <Position at={0}>
-                                            <Ball size={0.05} material={SKIN_MATERIAL}>
-                                                <>
-                                                    <Position at={LANTERN_POS}>
-                                                        <EquipHandle id={id} name={arm.slot} />
-                                                    </Position>
-                                                    {/* {arm.handed === "Left" && (
+            <RigidBody type="kinematicPosition" ref={kinematicRef}>
+                <group position={offset}>
+                    <Ball size={bodySize} material={BODY_MATERIAL}>
+                        <Position at={NeckPosition}>
+                            <Rod length={neckLength} caps={neckRadius} material={SKIN_MATERIAL}>
+                                <Position at={NeckPosition}>
+                                    <Ball size={headSize} material={SKIN_MATERIAL} />
+                                </Position>
+                            </Rod>
+                        </Position>
+                        {arms.map((arm) => (
+                            <Position key={arm.tag} at={arm.position}>
+                                <Rod
+                                    length={0.14}
+                                    caps={0.02}
+                                    rotate={arm.shoulder}
+                                    material={BODY_MATERIAL}>
+                                    <Position at={0}>
+                                        <Rod
+                                            length={0.17}
+                                            caps={0.02}
+                                            rotate={arm.elbow}
+                                            material={BODY_MATERIAL}>
+                                            <Position at={0}>
+                                                <Ball size={0.05} material={SKIN_MATERIAL}>
+                                                    <>
+                                                        <PositionRef
+                                                            at={LANTERN_POS}
+                                                            ref={slotRefs[arm.slot]}
+                                                        />
+                                                        {/* {arm.handed === "Left" && (
                                                         // Holding a torch here
                                                         <Position at={LANTERN_POS}>
                                                             <pointLight
@@ -128,30 +178,36 @@ export const HumanRender = ({ id }: ActorProps) => {
                                                             />
                                                         </Position>
                                                     )} */}
-                                                </>
-                                            </Ball>
-                                        </Position>
-                                    </Rod>
-                                </Position>
-                            </Rod>
-                        </Position>
-                    ))}
-                    {legs.map((leg) => (
-                        <Position key={leg.tag} at={leg.position}>
-                            <Rod length={0.14} caps={0.02} rotate={leg.hip} material={LEG_MATERIAL}>
-                                <Position at={0}>
-                                    <Rod
-                                        length={0.17}
-                                        caps={0.02}
-                                        rotate={leg.knee}
-                                        material={LEG_MATERIAL}
-                                    />
-                                </Position>
-                            </Rod>
-                        </Position>
-                    ))}
-                </Ball>
-            </group>
+                                                    </>
+                                                </Ball>
+                                            </Position>
+                                        </Rod>
+                                    </Position>
+                                </Rod>
+                            </Position>
+                        ))}
+                        {legs.map((leg) => (
+                            <Position key={leg.tag} at={leg.position}>
+                                <Rod
+                                    length={0.14}
+                                    caps={0.02}
+                                    rotate={leg.hip}
+                                    material={LEG_MATERIAL}>
+                                    <Position at={0}>
+                                        <Rod
+                                            length={0.17}
+                                            caps={0.02}
+                                            rotate={leg.knee}
+                                            material={LEG_MATERIAL}
+                                        />
+                                    </Position>
+                                </Rod>
+                            </Position>
+                        ))}
+                    </Ball>
+                </group>
+            </RigidBody>
+            {slots}
         </>
     )
 }

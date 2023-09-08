@@ -17,6 +17,7 @@ import { FightModule } from "./fight"
 import { HealthModule } from "./health"
 import { InventoryModule, LootModule } from "./item"
 import { EquipModule } from "./equip"
+import { HeroRender } from "../dungeon/characters/HeroRender"
 
 export type Vital = {
     amount: number
@@ -50,7 +51,7 @@ export const HeroModule = defineModule(
 )
 
 export const HeroActor = defineActor("Hero", [
-    [RenderModule, { renderer: HumanRender }],
+    [RenderModule, { renderer: HeroRender }],
     HealthModule,
     SpeedModule,
     MovementModule,

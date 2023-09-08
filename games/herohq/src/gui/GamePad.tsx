@@ -1,7 +1,7 @@
 import { atom, useSetAtom } from "jotai"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { useGamepads, GamepadRef } from "react-ts-gamepads"
-import { useRaf, useRafLoop } from "react-use"
+import { useRafLoop } from "react-use"
 import { activeHeroAtom } from "../model/hero"
 import { LocationData, SpeedModule } from "../model/actor"
 import { zoomFactorAtom } from "../3d/FollowCamera"
@@ -37,7 +37,7 @@ export const GamePad = () => {
     const setZoomFactor = useSetAtom(zoomFactorAtom)
     useRafLoop(() => {
         if (!gamepads[0]) {
-            console.log(gamepads)
+            // console.log(gamepads)
             return
         }
         const newTime = new Date().getTime()

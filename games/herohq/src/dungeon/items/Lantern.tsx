@@ -3,10 +3,16 @@ import { Ball, CollisionGroups, ORIGIN, Position, Rod } from "../../3d/Parts"
 import { Euler, Vector3 } from "three"
 import { RenderModule, defineActor, ActorProps } from "../../model/actor"
 import { ItemModule } from "../../model/item"
-import { EquipmentModule } from "../../model/equip"
+import { EquipActorProps, EquipmentModule } from "../../model/equip"
 import { makeMetalMaterial, makeToonMaterial } from "../../3d/materials"
 import { Chain } from "../geometry/Chain"
-import { RigidBody, interactionGroups, useFixedJoint, useSphericalJoint } from "@react-three/rapier"
+import {
+    RapierRigidBody,
+    RigidBody,
+    interactionGroups,
+    useFixedJoint,
+    useSphericalJoint
+} from "@react-three/rapier"
 
 const LANTERN_LENGTH = 0.8
 
@@ -89,7 +95,7 @@ const Lantern = forwardRef(({ physics }: { physics?: boolean } & ActorProps, ref
 
 const LanternRenderThumb = ({ id, mode }: ActorProps) => {
     return (
-        <group scale={1} position={[0, 1, 0]} rotation={ORIENT_UPSIDE}>
+        <group scale={2} position={[0, 1, 0]} rotation={ORIENT_UPSIDE}>
             <Lantern id={id} mode={mode} />
         </group>
     )
@@ -104,9 +110,8 @@ const LanternRenderWorld = ({ id, mode }: ActorProps) => {
     )
 }
 
-const LanternRenderEquip = ({ id, mode }: ActorProps) => {
-    const aRef = useRef(null)
-    const bRef = useRef(null)
+const LanternRenderEquip = ({ id, handleRef }: EquipActorProps) => {
+    const bodyRef = useRef<RapierRigidBody>(null)
 
     // const joint = useFixedJoint(aRef, bRef, [
     //     [0, 0, 0],
@@ -115,22 +120,25 @@ const LanternRenderEquip = ({ id, mode }: ActorProps) => {
     //     [0, 0, 0, 1]
     // ])
 
-    const joint = useSphericalJoint(bRef, aRef, [
+    const joint = useFixedJoint(handleRef, bodyRef, [
         [0, 0, 0],
-        [0, 0, 0]
+        [0, 0, 0, 1],
+        [0, 0, 0],
+        [0, 0, 0, 1]
     ])
 
     return (
         <>
-            <RigidBody
+            {/* <RigidBody
                 type="kinematicPosition"
                 ref={aRef}
                 collisionGroups={interactionGroups(CollisionGroups.rope, [])}>
                 <Ball size={0.05} material={material} />
-            </RigidBody>
+            </RigidBody> */}
             {/* <group scale={0.3} position={ORIGIN}> */}
             {/* <group scale={0.2}> */}
-            <Lantern id={id} mode={mode} ref={bRef} physics />
+
+            <Lantern id={id} ref={bodyRef} mode="equip" physics />
             {/* </group> */}
         </>
     )
@@ -139,8 +147,6 @@ const LanternRenderEquip = ({ id, mode }: ActorProps) => {
 const LanternRender = ({ id, mode }: ActorProps) =>
     mode === "thumbnail" ? (
         <LanternRenderThumb id={id} mode={mode} />
-    ) : mode === "equip" ? (
-        <LanternRenderEquip id={id} mode={mode} />
     ) : (
         <LanternRenderWorld id={id} mode={mode} />
     )
@@ -153,6 +159,7 @@ export const LanternItem = defineActor("Lantern", [
     [
         EquipmentModule,
         {
+            renderer: LanternRenderEquip,
             // TODO: This schema doesn't quite allow for if we want something to behave
             // differently in a different slot.
             slot: ["left", "right"],

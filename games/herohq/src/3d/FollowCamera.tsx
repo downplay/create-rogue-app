@@ -19,7 +19,11 @@ export const FollowCamera = () => {
         }
         // TODO: Only recompute center etc if room/player changes or player moves
         // TODO: Give the camera accelerated movement towards the focus point
-        const focus = new Vector3(locationRef.current.position.x, 0, locationRef.current.position.y)
+        const focus = new Vector3(
+            locationRef.current.position.x,
+            0.5,
+            locationRef.current.position.y
+        )
         let target = focus
         let center = new Vector3(focus.x, focus.y, focus.z)
         if (room.current) {

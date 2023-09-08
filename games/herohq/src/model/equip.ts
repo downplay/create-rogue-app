@@ -1,8 +1,10 @@
 import { atom } from "jotai"
-import { actorFamily, defineAction, defineData, defineModule } from "./actor"
+import { ActorProps, actorFamily, defineAction, defineData, defineModule } from "./actor"
 import { AttackDefinition, DiscoverAttacksAction } from "./fight"
 import { LevelData } from "./level"
 import { isArray } from "remeda"
+import { ComponentType, RefObject } from "react"
+import { RapierRigidBody } from "@react-three/rapier"
 
 const EQUIP_DEFAULTS = { slots: [] }
 
@@ -77,7 +79,10 @@ export const EquipModule = defineModule(
 // a better biological term for this already). A hero with this can equip with their feet equally as their
 // hands.
 
+export type EquipActorProps = ActorProps & { handleRef: RefObject<RapierRigidBody> }
+
 type EquipmentOpts = {
+    renderer?: ComponentType<EquipActorProps>
     slot: string | string[]
     effects: { type: "attack"; attack: AttackDefinition }[]
 }

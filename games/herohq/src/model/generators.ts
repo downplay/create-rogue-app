@@ -63,7 +63,7 @@ export const generateRooms = (rng: Random, level: number) => {
 }
 
 const randomPlacement: RoomGenerator = ({ room, rng, level }) => {
-    const mobMax = Math.ceil(room.area.width * room.area.height) / 100
+    const mobMax = Math.ceil(room.area.width * room.area.height) / 20
     const dist = rng.logNormal(0.5, 0.5)
     const mobCount = Math.min(mobMax, dist())
     const entities: EntityData[] = []

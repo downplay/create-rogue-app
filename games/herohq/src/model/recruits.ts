@@ -46,7 +46,7 @@ export const recruitsAtom = atom((get) => {
         // TODO: Play with mu and sigma in the distribution to get the nicest curve. Also we should
         // ensure at least 1 recruit that is within a low limit at least early on so the player
         // can afford it, maybe we should cap max level as well. (Unlockable later).
-        const id = "Hero:" + seed + ":" + n
+        const id = ["Hero", seed, n].join(":")
         const weight = distribution()
         interviewees.push({
             id,

@@ -70,7 +70,7 @@ export const Dungeon = ({ location }: { location: string }) => {
         <Canvas camera={DEFAULT_CAMERA} shadows="soft" gl={GL_SETTINGS}>
             <GameLoop />
             <Suspense>
-                <Physics debug predictionDistance={0.1}>
+                <Physics>
                     {/* <Physics> */}
                     <FollowCamera />
                     <ambientLight intensity={0.5} />

@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, useRef } from "react"
 import { useAtomValue } from "jotai"
 import { Euler } from "three"
 import { Ball, Direction, Position, Rod } from "../../3d/Parts"
@@ -6,6 +6,8 @@ import { makeToonMaterial } from "../../3d/materials"
 import { ActorCreatedData, ActorProps, gameTimeTicksAtom, useModule } from "../../model/actor"
 import { MovementModule } from "../../model/movement"
 import { WithToss } from "../../3d/physics/wrappers"
+import { NonPhysicsActor, PhysicsActor, SelectableActor } from "../Actor"
+import { RapierRigidBody } from "@react-three/rapier"
 
 // TODO: Some advanced bugs might have different numbers of legs
 const LEG_PAIRS_COUNT = 3
@@ -71,26 +73,34 @@ export const BugRender = ({ id }: ActorProps) => {
     // by the game loop. At that point we get current world position of the limb (maybe with ref to the Ball)
     // and start rendering it outside the group with ragdoll physics. Would look awesome.
     return (
-        <group rotation={ORIENT_FORWARDS} position={[0, 0.25, 0]}>
-            <Ball size={0.5} material={BODY_MATERIAL}>
-                {legs.map((l) => (
-                    <Position key={l.index} at={l.position}>
-                        <Ball size={0.1} material={LEG_MATERIAL} />
-                        <Rod length={0.3} caps={0.05} rotate={l.rotate} material={LEG_MATERIAL}>
-                            <Position at={0}>
+        <SelectableActor id={id}>
+            <NonPhysicsActor id={id}>
+                <group rotation={ORIENT_FORWARDS} position={[0, 0.25, 0]}>
+                    <Ball size={0.5} material={BODY_MATERIAL}>
+                        {legs.map((l) => (
+                            <Position key={l.index} at={l.position}>
                                 <Ball size={0.1} material={LEG_MATERIAL} />
                                 <Rod
-                                    length={0.5}
-                                    caps={0.04}
-                                    rotate={l.knee}
-                                    material={LEG_MATERIAL}
-                                />
+                                    length={0.3}
+                                    caps={0.05}
+                                    rotate={l.rotate}
+                                    material={LEG_MATERIAL}>
+                                    <Position at={0}>
+                                        <Ball size={0.1} material={LEG_MATERIAL} />
+                                        <Rod
+                                            length={0.5}
+                                            caps={0.04}
+                                            rotate={l.knee}
+                                            material={LEG_MATERIAL}
+                                        />
+                                    </Position>
+                                </Rod>
                             </Position>
-                        </Rod>
-                    </Position>
-                ))}
-            </Ball>
-        </group>
+                        ))}
+                    </Ball>
+                </group>
+            </NonPhysicsActor>
+        </SelectableActor>
     )
 }
 
@@ -145,28 +155,37 @@ export const BugCorpseRender = ({ id }: ActorProps) => {
         }
         return legs
     }, [time])
+
+    const bodyRef = useRef<RapierRigidBody>(null)
+
     return (
-        <WithToss>
-            <group rotation={ORIENT_FORWARDS} position={[0, 0.25, 0]}>
-                <Ball size={0.5} material={BODY_MATERIAL}>
-                    {legs.map((l) => (
-                        <Position key={l.index} at={l.position}>
-                            <Ball size={0.1} material={LEG_MATERIAL} />
-                            <Rod length={0.3} caps={0.05} rotate={l.rotate} material={LEG_MATERIAL}>
-                                <Position at={0}>
-                                    <Ball size={0.1} material={LEG_MATERIAL} />
-                                    <Rod
-                                        length={0.5}
-                                        caps={0.04}
-                                        rotate={l.knee}
-                                        material={LEG_MATERIAL}
-                                    />
-                                </Position>
-                            </Rod>
-                        </Position>
-                    ))}
-                </Ball>
-            </group>
-        </WithToss>
+        <PhysicsActor id={id} bodyRef={bodyRef}>
+            <WithToss ref={bodyRef}>
+                <group rotation={ORIENT_FORWARDS} position={[0, 0.25, 0]}>
+                    <Ball size={0.5} material={BODY_MATERIAL}>
+                        {legs.map((l) => (
+                            <Position key={l.index} at={l.position}>
+                                <Ball size={0.1} material={LEG_MATERIAL} />
+                                <Rod
+                                    length={0.3}
+                                    caps={0.05}
+                                    rotate={l.rotate}
+                                    material={LEG_MATERIAL}>
+                                    <Position at={0}>
+                                        <Ball size={0.1} material={LEG_MATERIAL} />
+                                        <Rod
+                                            length={0.5}
+                                            caps={0.04}
+                                            rotate={l.knee}
+                                            material={LEG_MATERIAL}
+                                        />
+                                    </Position>
+                                </Rod>
+                            </Position>
+                        ))}
+                    </Ball>
+                </group>
+            </WithToss>
+        </PhysicsActor>
     )
 }
