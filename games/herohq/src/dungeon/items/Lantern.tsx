@@ -13,6 +13,7 @@ import {
     useFixedJoint,
     useSphericalJoint
 } from "@react-three/rapier"
+import { PhysicsActor } from "../Actor"
 
 const LANTERN_LENGTH = 0.8
 
@@ -102,11 +103,13 @@ const LanternRenderThumb = ({ id, mode }: ActorProps) => {
 }
 
 const LanternRenderWorld = ({ id, mode }: ActorProps) => {
+    const bodyRef = useRef<RapierRigidBody>(null)
+
     return (
-        <group scale={0.5} position={[0, 0, 0]} rotation={ORIENT_UPSIDE}>
+        <PhysicsActor id={id} bodyRef={bodyRef} position={[0, 0.5, 0]} rotation={ORIENT_UPSIDE}>
             {/* <group scale={0.2}> */}
-            <Lantern id={id} mode={mode} physics />
-        </group>
+            <Lantern ref={bodyRef} id={id} mode={mode} physics />
+        </PhysicsActor>
     )
 }
 
