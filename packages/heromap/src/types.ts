@@ -1,8 +1,8 @@
-export type MapNode = {
+export type MapNode<E = any> = {
     type: "Heromap::MapNode"
     lines: String[]
     legend: OperationNode[]
-    externals: Record<string, any>
+    externals: Record<string, E>
 }
 
 export type OperationNode = BrushOpNode | OrOpsNode | AndOpsNode

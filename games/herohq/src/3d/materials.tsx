@@ -1,4 +1,5 @@
 import { useTexture } from "@react-three/drei"
+import { atomFamily } from "jotai/utils"
 import { useMemo } from "react"
 import { isArray } from "remeda"
 import {
@@ -72,6 +73,7 @@ export type Textures = [base: string, height: string, normal: string, rough: str
 const NORMAL_SCALE = new Vector2(0.2, 0.2)
 
 export const useTextureMaterial = (textures: Textures) => {
+    // TODO: Optimise more so this uses atom families for caching rather than useMemo
     const [colorMap, displacementMap, normalMap, roughnessMap, aoMap] = useTexture(
         textures,
         (t) => {

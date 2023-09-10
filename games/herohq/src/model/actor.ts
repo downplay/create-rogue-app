@@ -488,14 +488,15 @@ export const LocationData = defineData("Location", DEFAULT_ACTOR_LOCATION)
 
 // TODO: Maybe we should even split position into its own atom since it gets updated frequently
 // but things that will change from room don't need to be updated so frequently
-// export const LocationModule = defineModule(
-//     "Location",
-//     () => {
-//         switch (update.type) {
-//         }
-//     }
-//     // return atomWithStorage<ActorLocation>(id + ":Location", DEFAULT_ACTOR_LOCATION)
-// )
+
+// TODO: Maybe some opts like initial offset / spin (and how to randomise it?)
+export const LocationModule = defineModule(
+    "Location",
+    (_, { get }) => {
+        return get(LocationData)
+    }
+    // return atomWithStorage<ActorLocation>(id + ":Location", DEFAULT_ACTOR_LOCATION)
+)
 
 // export const actorMovementFamily = atomFamily((id: string) => {
 //     return atomWithStorage<ActorMovement>(id + ":Movement", {})

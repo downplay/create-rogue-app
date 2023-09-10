@@ -17,9 +17,10 @@ export type EntityData = {
     data: DataSpec<any>[]
 }
 
-type RoomGeneratorProps = {
+export type RoomGeneratorProps = {
     rng: Random
     level: number
+    place: string
     seed: string
     room: RoomData
     get: Getter
@@ -45,7 +46,7 @@ const classicGridLayoutGenerator: DungeonGenerator = ({ level, rng }) => {
                 height: Math.floor(5 + irwin() * 5)
             }
             rooms.push({
-                id: "Room:" + level + ":" + n + ":" + m,
+                id: ["Room", level, n, m].join(":"),
                 area: {
                     x: m * CELL_SIZE + rng.int(1, CELL_SIZE - mapSize.width - 1),
                     y: n * CELL_SIZE + rng.int(1, CELL_SIZE - mapSize.height - 1),
