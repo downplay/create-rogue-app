@@ -1,77 +1,8 @@
-import { useCallback, useMemo } from "react"
-import { Vector3 } from "three"
-import { ThreeEvent } from "@react-three/fiber"
-import { useSetAtom } from "jotai"
-import { heroControlAtom } from "../../model/hero"
+import { useMemo } from "react"
 import { Quad } from "../../model/spacial"
-import { RigidBody } from "@react-three/rapier"
-import {
-    Brick1Texture,
-    Brick2Texture,
-    Brick3Texture,
-    Brick4Texture,
-    Tile1Texture,
-    Tile2Texture,
-    Tile3Texture,
-    Tile4Texture
-} from "../../3d/textures/bricks"
-import { useTextureMaterial } from "../../3d/materials"
-
-// TODO: Floor/wall can be extracted as a "Tile" component with a height range and material
-
+import { Floor } from "./FloorRender"
+import { WallMerged } from "./WallRender"
 // TODO: Maybe rename height to depth to be less confusing and use height for actual height
-
-// const FLOOR_DEFAULT_MATERIAL = <meshStandardMaterial color="darkslategrey" />
-
-const Floor = ({ area }: { area: Quad }) => {
-    const setHeroControl = useSetAtom(heroControlAtom)
-
-    const boxArgs = useMemo(() => [area.width, 1, area.height] as [number, number, number], [area])
-    const boxPosition = useMemo(
-        () => new Vector3(area.x + area.width / 2, -0.5, area.y + area.height / 2),
-        [area]
-    )
-
-    const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
-        const gameX = e.point.x
-        const gameY = e.point.z
-        setHeroControl({
-            type: "WalkTo",
-            target: { x: gameX, y: gameY }
-        })
-    }, [])
-
-    const material = useTextureMaterial(Tile4Texture)
-
-    // TODO: Handle mouse move etc events and display a target
-    return (
-        <RigidBody type="fixed">
-            <mesh position={boxPosition} receiveShadow onClick={handleClick}>
-                <boxGeometry args={boxArgs} />
-                {material}
-            </mesh>
-        </RigidBody>
-    )
-}
-
-// const WALL_DEFAULT_MATERIAL = <meshStandardMaterial color="lightslategrey" />
-
-const Wall = ({ area }: { area: Quad }) => {
-    const boxArgs = useMemo(() => [area.width, 1, area.height] as [number, number, number], [area])
-    const boxPosition = useMemo(
-        () => new Vector3(area.x + area.width / 2, 0.5, area.y + area.height / 2),
-        [area]
-    )
-    const material = useTextureMaterial(Brick4Texture)
-    return (
-        <RigidBody type="fixed">
-            <mesh position={boxPosition} receiveShadow>
-                <boxGeometry args={boxArgs} />
-                {material}
-            </mesh>
-        </RigidBody>
-    )
-}
 
 // Basic stone room
 // TODO: Integrate heromap. Build room out of many tiles rather than single
@@ -97,7 +28,7 @@ export const Room = ({ id, area }: { id: string; area: Quad }) => {
         <>
             <Floor area={area} />
             {walls.map((wall) => (
-                <Wall key={wall.key} area={wall.area} />
+                <WallMerged key={wall.key} area={wall.area} />
             ))}
         </>
     )

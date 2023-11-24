@@ -1,8 +1,10 @@
 import { ReactElement, useCallback } from "react"
-import { IconCity, IconDungeon, IconHome, IconInventory } from "./icons"
+import { IconCity, IconDungeon, IconHome, IconInventory, IconRandom } from "./icons"
 import { guiPopupAtom, guiStateAtom } from "./Gui"
 import { useAtom } from "jotai"
 import styled from "@emotion/styled"
+import { dungeonAtom } from "../model/dungeon"
+import { visibleActorIdsFamily } from "./Dungeon"
 
 const Tools = styled.div`
     position: absolute;
@@ -29,18 +31,26 @@ export const Toolbar = () => {
     const handleOpenCity = useCallback(() => {
         setPopup({})
         setState({ mode: "town" })
-    }, [setState])
+    }, [setPopup, setState])
     const handleOpenHQ = useCallback(() => {
         setPopup({})
         setState({ mode: "hq" })
-    }, [setState])
+    }, [setPopup, setState])
     const handleOpenDungeon = useCallback(() => {
         setPopup({})
         setState({ mode: "dungeon", seed: "banana", floor: 1 })
-    }, [setState])
+    }, [setPopup, setState])
     const handleOpenInventory = useCallback(() => {
         setPopup(({ name }) => (name === "inventory" ? {} : { name: "inventory" }))
-    }, [setState])
+    }, [setPopup])
+
+    const [dungeon, setDungeon] = useAtom(dungeonAtom)
+    const handleInitDungeon = useCallback(
+        (name: string) => {
+            setDungeon({ type: "initialize", generator: name })
+        },
+        [setDungeon]
+    )
 
     return (
         <Tools>
@@ -54,6 +64,7 @@ export const Toolbar = () => {
                 icon={<IconInventory />}
                 onClick={handleOpenInventory}
             />
+            <ToolButton caption="Generate" icon={<IconRandom />} onClick={handleInitDungeon} />
         </Tools>
     )
 }

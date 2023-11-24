@@ -2,12 +2,19 @@ import { atom } from "jotai"
 import { makeRng } from "./rng"
 import { generateRooms, populateRoom } from "./generators"
 import { roomsAtom } from "./room"
+import { actorFamily } from "./actor"
+import { visibleActorIdsFamily } from "../gui/Dungeon"
 
 export const UNITS_PER_CELL = 10
 
+type DungeonGenerator = {
+    location: string
+}
+
 type DungeonUpdateCommand = {
     type: "initialize"
-    level: number
+    location: string
+    generator: DungeonGenerator
 }
 
 // TODO: Handle this seed.
@@ -21,7 +28,13 @@ export const dungeonAtom = atom(
     },
     (get, set, update: DungeonUpdateCommand) => {
         switch (update.type) {
-            case "initialize":
+            case "initialize": {
+                const actors = get(visibleActorIdsFamily(update.location))
+                for (const a of actors) {
+                    if (get(actorFamily(a)).type !== "Hero") {
+                        set(actorFamily(a), { type: "destroy" })
+                    }
+                }
                 // TODO: Make sure we recycle any dungeons/actors we don't need
                 const seed = get(dungeonSeedAtom)
                 const rng = makeRng(seed)
@@ -31,6 +44,7 @@ export const dungeonAtom = atom(
                 }
                 set(roomsAtom, rooms)
                 break
+            }
         }
     }
 )

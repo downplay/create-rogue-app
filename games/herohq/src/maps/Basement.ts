@@ -2,6 +2,7 @@ import { map } from "@hero/map"
 
 import { defineActor } from "../model/actor"
 import { MapExternals, defineMap } from "./map"
+import { FloorTile, TextureIndexData } from "../dungeon/levels/Floor"
 
 const MicroBug = defineActor("MicroBug", [])
 
@@ -19,7 +20,11 @@ export const BasementMap = defineMap(
 #,3,,,,,3,#
 ###########
 
-Floor = ${({ rng }) => rng.un}
+Floor = ${({ rng }) => ({
+        type: FloorTile,
+        data: [[TextureIndexData, rng.integer(0)]]
+    })}
+MicroBug = ${MicroBug}
 [123] = #
 123 = .
 3  = ,

@@ -11,7 +11,8 @@ export {
     GiVineFlower as IconGarden,
     GiSteeltoeBoots as IconFeet,
     GiElfHelmet as IconHelmet,
-    GiAbdominalArmor as IconArmor
+    GiAbdominalArmor as IconArmor,
+    GiPerspectiveDiceSixFacesRandom as IconRandom
 } from "react-icons/gi"
 export { MdCastle as IconHome, MdSoupKitchen as IconKitchen } from "react-icons/md"
 export { FaMountainCity as IconCity, FaSuitcaseMedical as IconMedic } from "react-icons/fa6"

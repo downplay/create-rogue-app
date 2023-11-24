@@ -1,10 +1,12 @@
+import { useCallback, useMemo } from "react"
+import { Vector3 } from "three"
+import { ThreeEvent } from "@react-three/fiber"
+import { RigidBody } from "@react-three/rapier"
+
 import { useSetAtom } from "jotai"
 import { useModule, LocationModule, useData } from "../../model/actor"
 import { Quad } from "../../model/spacial"
 import { heroControlAtom } from "../../model/hero"
-import { useCallback, useMemo } from "react"
-import { Vector3 } from "three"
-import { ThreeEvent } from "@react-three/fiber"
 import { useTextureMaterial } from "../../3d/materials"
 import {
     Tile1Texture,
@@ -14,8 +16,7 @@ import {
     Tile5Texture,
     Tile6Texture
 } from "../../3d/textures/bricks"
-import { RigidBody } from "@react-three/rapier"
-import { TextureIndexData } from "./FloorTile"
+import { TextureIndexData } from "./tile"
 
 const Textures = [
     Tile1Texture,
@@ -25,6 +26,7 @@ const Textures = [
     Tile5Texture,
     Tile6Texture
 ]
+// TODO: Floor/wall can be extracted as a "Tile" component with a height range and material
 
 // TODO: BIG todo. Would be much more efficient to combine together all floor tiles in the map
 // and draw geometry by hand for the entire floor.
